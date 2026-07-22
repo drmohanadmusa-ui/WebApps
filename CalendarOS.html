@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalendarOS — Daily Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --ink:#181C22;
+  --ink-soft:#2B313B;
+  --paper:#F7F4EC;
+  --paper-raised:#FFFFFF;
+  --paper-dim:#EDE9DD;
+  --line:#DCD6C4;
+  --brass:#B9862F;
+  --brass-deep:#8E661F;
+  --teal:#3C7A73;
+  --teal-soft:#E4EEEC;
+  --flag:#B5432E;
+  --flag-soft:#F5E3DE;
+  --slate:#6B7280;
+  --slate-light:#9CA3AF;
+  --gold-stamp:#C8963E;
+
+  --font-display:'Fraunces', serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+
+  --radius-s:6px;
+  --radius-m:10px;
+  --radius-l:16px;
+  --shadow-card: 0 1px 2px rgba(24,28,34,0.06), 0 1px 1px rgba(24,28,34,0.04);
+  --shadow-pop: 0 12px 32px rgba(24,28,34,0.18);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--brass); color:#fff;}
+
+button{font-family:inherit; cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px;}
+
+a{color:inherit;}
+
+/* ============ APP SHELL ============ */
+#app{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:236px;
+  flex-shrink:0;
+  background:var(--ink);
+  color:#EDE9DD;
+  display:flex;
+  flex-direction:column;
+  padding:22px 16px;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.brand{
+  font-family:var(--font-display);
+  font-size:22px;
+  font-weight:600;
+  letter-spacing:0.01em;
+  color:#fff;
+  padding:4px 8px 4px;
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.brand .brand-mark{
+  width:10px;height:10px;border-radius:2px;
+  background:var(--brass);
+  display:inline-block;
+  transform:rotate(45deg);
+  flex-shrink:0;
+}
+.brand-sub{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#8A93A3;
+  padding:0 8px 22px;
+}
+
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-top:6px;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:var(--radius-s);
+  color:#C7CCD6;
+  background:transparent;
+  border:none;
+  text-align:left;
+  font-size:13.5px;
+  font-weight:500;
+  transition:background .12s ease, color .12s ease;
+}
+.nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+.nav-item.active{background:var(--brass); color:#1a1408;}
+.nav-item .nav-icon{width:16px; text-align:center; font-size:14px; opacity:.9;}
+.nav-count{
+  margin-left:auto;
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  background:rgba(255,255,255,0.1);
+  padding:1px 6px;
+  border-radius:20px;
+  color:#C7CCD6;
+}
+.nav-item.active .nav-count{background:rgba(0,0,0,0.15); color:#1a1408;}
+
+.sidebar-footer{
+  margin-top:auto;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,0.08);
+}
+.today-chip{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:#8A93A3;
+  padding:6px 8px;
+  line-height:1.5;
+}
+.today-chip b{color:#EDE9DD; font-weight:600;}
+
+.sync-badge{
+  display:flex; align-items:center; gap:7px;
+  font-family:var(--font-mono); font-size:10.5px;
+  padding:7px 9px; border-radius:8px;
+  color:#C7CCD6; background:rgba(255,255,255,0.05);
+  margin-bottom:6px; cursor:default;
+}
+.sync-badge-dot{width:7px; height:7px; border-radius:50%; background:#6B7280; flex-shrink:0;}
+.sync-badge.on .sync-badge-dot{background:#4C8C5C;}
+.sync-badge.on{color:#9FCBA8;}
+.sync-badge.syncing .sync-badge-dot{background:var(--brass); animation:pulse-dot 1s ease-in-out infinite;}
+.sync-badge.syncing{color:#E0C68A;}
+.sync-badge.error{cursor:pointer; color:#E7A79C; background:rgba(197,90,73,0.15);}
+.sync-badge.error .sync-badge-dot{background:var(--flag);}
+.sync-badge.off{color:#8A93A3;}
+@keyframes pulse-dot{0%,100%{opacity:1;} 50%{opacity:.3;}}
+
+.main{
+  flex:1;
+  min-width:0;
+  padding:28px 36px 80px;
+  max-width:1180px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:26px;
+  flex-wrap:wrap;
+}
+.page-title{
+  font-family:var(--font-display);
+  font-size:28px;
+  font-weight:600;
+  margin:0;
+  flex:1;
+  min-width:180px;
+}
+.page-sub{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  color:var(--slate);
+  margin-top:2px;
+  letter-spacing:0.02em;
+}
+
+.search-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:8px 14px;
+  min-width:220px;
+}
+.search-box input{
+  border:none; outline:none; background:transparent;
+  font-size:13px; width:100%; color:var(--ink);
+}
+.search-box .icon{color:var(--slate-light); font-size:13px;}
+
+.btn{
+  border:1px solid var(--ink);
+  background:var(--ink);
+  color:#fff;
+  padding:9px 16px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:transform .08s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-card);}
+.btn:active{transform:translateY(0);}
+.btn.secondary{background:transparent; color:var(--ink); border-color:var(--line);}
+.btn.brass{background:var(--brass); border-color:var(--brass); color:#211705;}
+.btn.ghost{background:transparent; border-color:transparent; color:var(--slate); padding:6px 8px;}
+.btn.danger{background:transparent; color:var(--flag); border-color:var(--flag-soft);}
+.btn.sm{padding:6px 11px; font-size:12px;}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+
+/* ============ CARD / SECTION ============ */
+.section{margin-bottom:30px;}
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:12px;
+}
+.section-head h2{
+  font-family:var(--font-display);
+  font-size:17px;
+  font-weight:600;
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-count{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--slate);
+}
+
+.card{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--radius-m);
+  box-shadow:var(--shadow-card);
+}
+
+/* ============ TASK TICKET (signature element) ============ */
+.ticket-list{display:flex; flex-direction:column; gap:8px;}
+.ticket{
+  position:relative;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--radius-m);
+  padding:13px 16px 13px 8px;
+  transition:box-shadow .15s ease, border-color .15s ease;
+}
+.ticket:hover{box-shadow:var(--shadow-card); border-color:#C9C2AC;}
+.ticket::before{
+  content:"";
+  position:absolute;
+  left:-6px; top:50%;
+  width:12px; height:12px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:50%;
+  transform:translateY(-50%);
+}
+.ticket.done{
+  opacity:.85;
+  background:color-mix(in srgb, var(--completed-color, var(--teal)) 8%, var(--paper-raised));
+  border-color:color-mix(in srgb, var(--completed-color, var(--teal)) 30%, var(--line));
+}
+.ticket.overdue{border-color:#E4B7AA; background:linear-gradient(90deg, var(--flag-soft) 0%, var(--paper-raised) 90px);}
+
+.tick-btn{
+  flex-shrink:0;
+  width:22px; height:22px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:#fff;
+  margin-top:2px;
+  display:flex; align-items:center; justify-content:center;
+  color:transparent;
+  transition:all .12s ease;
+}
+.tick-btn:hover{border-color:var(--brass);}
+.tick-btn.checked{background:var(--completed-color, var(--teal)); border-color:var(--completed-color, var(--teal)); color:#fff;}
+.tick-btn.missed-tick{background:#C98A3E; border-color:#C98A3E; color:#fff; font-weight:700;}
+
+.ticket-body{flex:1; min-width:0;}
+.ticket-title-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.ticket-title{
+  font-size:14px; font-weight:600; color:var(--ink);
+  line-height:1.35;
+}
+.ticket.done .ticket-title{text-decoration:line-through; color:var(--completed-deep, var(--slate));}
+.ticket.missed .ticket-title{text-decoration:line-through; color:#A87B3F;}
+body.dark-mode .ticket.missed .ticket-title{color:#D8B078;}
+.ticket-meta{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  margin-top:5px;
+  font-family:var(--font-mono);
+  font-size:10.8px;
+  color:var(--slate);
+}
+.tag{
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px;
+  border-radius:20px;
+  background:var(--paper-dim);
+  font-family:var(--font-mono);
+  font-size:10.3px;
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+.tag.recur{background:var(--teal-soft); color:var(--teal);}
+.tag.pri-High{background:var(--flag-soft); color:var(--flag);}
+.tag.pri-Medium{background:#F3EBD8; color:var(--brass-deep);}
+.tag.pri-Low{background:var(--paper-dim); color:var(--slate);}
+
+.stamp{
+  position:absolute;
+  top:10px; right:78px;
+  font-family:var(--font-mono);
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:0.09em;
+  padding:3px 8px;
+  border-radius:4px;
+  border:1px solid currentColor;
+  transform:rotate(3deg);
+  text-transform:uppercase;
+  background:var(--paper-raised);
+  white-space:nowrap;
+}
+.stamp.overdue{color:var(--flag);}
+.stamp.streak{color:var(--brass-deep); border-style:dashed;}
+.stamp.reschedule{color:#7C5C8C; cursor:pointer; text-decoration:underline dotted;}
+
+.ticket-actions{
+  display:flex; gap:2px; margin-left:auto; flex-shrink:0;
+  opacity:0; transition:opacity .12s ease;
+}
+.ticket:hover .ticket-actions, .ticket:focus-within .ticket-actions{opacity:1;}
+.icon-btn{
+  width:26px; height:26px; border-radius:6px; border:none; background:transparent;
+  color:var(--slate-light); display:flex; align-items:center; justify-content:center; font-size:13px;
+}
+.icon-btn:hover{background:var(--paper-dim); color:var(--ink);}
+.icon-btn.missed-active{background:var(--flag-soft); color:var(--flag);}
+
+.tag-onetime{background:var(--flag-soft); color:var(--flag); font-weight:600;}
+.tag.stat-pill{background:var(--paper-dim); color:var(--ink-soft);}
+
+.select-check{
+  flex-shrink:0; width:20px; height:20px; border-radius:5px; border:1.5px solid var(--line);
+  background:#fff; margin-top:3px; display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:#fff;
+}
+.select-check.checked{background:var(--brass); border-color:var(--brass);}
+
+.batch-bar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:12px 16px; margin-bottom:14px; background:var(--paper-dim);
+  border:1px solid var(--line); border-radius:10px;
+}
+.batch-bar-count{font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--ink);}
+.batch-bar select, .batch-bar input[type=date]{
+  border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:12.5px; background:var(--paper-raised);
+}
+.batch-date-toggle{display:flex; align-items:center; gap:5px; font-size:12.5px; color:var(--slate);}
+
+.ticket.missed{border-color:#E8C9A0; background:linear-gradient(90deg, #FBF0DE 0%, var(--paper-raised) 90px);}
+body.dark-mode .ticket.missed{background:linear-gradient(90deg, rgba(232,201,160,0.12) 0%, var(--paper-raised) 90px);}
+
+.empty-state{
+  text-align:center;
+  padding:42px 20px;
+  color:var(--slate);
+  font-size:13.5px;
+}
+.empty-state .glyph{font-size:26px; margin-bottom:8px; display:block;}
+
+/* ============ STAT STRIP ============ */
+.stat-strip{display:flex; gap:12px; margin-bottom:26px; flex-wrap:wrap;}
+.stat-card{
+  flex:1; min-width:130px;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--radius-m);
+  padding:14px 16px;
+}
+.stat-num{font-family:var(--font-display); font-size:26px; font-weight:600; line-height:1;}
+.stat-label{font-family:var(--font-mono); font-size:10.5px; color:var(--slate); margin-top:6px; text-transform:uppercase; letter-spacing:0.04em;}
+.stat-card.flag .stat-num{color:var(--flag);}
+.stat-card.teal .stat-num{color:var(--teal);}
+.stat-card.brass .stat-num{color:var(--brass-deep);}
+
+/* ============ FILTER BAR ============ */
+.filter-bar{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;
+}
+.chip-select{
+  display:flex; background:var(--paper-dim); border-radius:999px; padding:3px; gap:2px;
+}
+.chip-select button{
+  border:none; background:transparent; padding:6px 13px; border-radius:999px;
+  font-size:12px; font-weight:600; color:var(--slate);
+}
+.chip-select button.active{background:var(--ink); color:#fff;}
+
+select.filter-select, input.filter-date{
+  border:1px solid var(--line); background:var(--paper-raised);
+  border-radius:8px; padding:7px 10px; font-size:12.5px; color:var(--ink);
+}
+
+/* ============ FORMS / MODAL ============ */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(24,28,34,0.45);
+  display:flex; align-items:center; justify-content:center; z-index:100;
+  padding:20px;
+  backdrop-filter:blur(2px);
+}
+.modal{
+  background:var(--paper-raised);
+  border-radius:var(--radius-l);
+  max-width:480px; width:100%;
+  max-height:88vh; overflow-y:auto;
+  box-shadow:var(--shadow-pop);
+  padding:26px;
+}
+.modal.wide{max-width:640px;}
+.modal h3{
+  font-family:var(--font-display); font-size:20px; margin:0 0 4px;
+}
+.modal .modal-sub{font-size:12.5px; color:var(--slate); margin-bottom:18px;}
+
+.field{margin-bottom:14px;}
+.field label{
+  display:block; font-size:11.5px; font-weight:600; color:var(--slate);
+  text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px;
+}
+.field input, .field select, .field textarea{
+  width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px;
+  font-size:13.5px; background:var(--paper); color:var(--ink);
+}
+.field textarea{resize:vertical; min-height:60px;}
+.field-row{display:flex; gap:10px;}
+.field-row > .field{flex:1;}
+.modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:20px;}
+
+.radio-pills{display:flex; gap:6px; flex-wrap:wrap;}
+.radio-pill{
+  padding:6px 12px; border-radius:999px; border:1px solid var(--line);
+  font-size:12px; font-weight:600; color:var(--slate); background:var(--paper);
+}
+.radio-pill.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+/* ============ CALENDAR ============ */
+.cal-header{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+.cal-header h2{font-family:var(--font-display); font-size:20px; margin:0; min-width:190px;}
+.cal-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+}
+.cal-dow{
+  font-family:var(--font-mono); font-size:10px; text-transform:uppercase; color:var(--slate);
+  text-align:center; padding-bottom:4px; letter-spacing:0.05em;
+}
+.cal-cell{
+  aspect-ratio:1/0.82;
+  border:1px solid var(--line); border-radius:8px; background:var(--paper-raised);
+  padding:6px; position:relative; cursor:pointer;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.cal-cell:hover{border-color:var(--brass);}
+.cal-cell.empty{background:transparent; border:none; cursor:default;}
+.cal-cell.today{border-color:var(--brass); border-width:2px;}
+.cal-cell .date-num{font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
+.cal-cell .hijri-num{font-family:var(--font-mono); font-size:8.5px; color:var(--slate-light);}
+.dot-row{display:flex; gap:3px; flex-wrap:wrap;}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--brass);}
+.dot.over{background:var(--flag);}
+.density-count{font-family:var(--font-mono); font-size:9.5px; color:var(--slate); align-self:flex-end;}
+
+/* ============ LISTS VIEW ============ */
+.lists-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:14px;
+}
+.list-card{padding:16px;}
+.list-card h4{
+  font-family:var(--font-display); font-size:15px; margin:0 0 10px; display:flex; align-items:center; justify-content:space-between;
+}
+.list-items{display:flex; flex-direction:column; gap:5px; margin-bottom:8px;}
+.list-item{display:flex; align-items:center; gap:8px; font-size:13px;}
+.list-item .li-check{
+  width:16px; height:16px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;
+}
+.list-item .li-check.checked{background:var(--teal); border-color:var(--teal);}
+.list-item.done span.li-text{text-decoration:line-through; color:var(--slate-light);}
+.li-text{flex:1;}
+.li-cat{font-family:var(--font-mono); font-size:9.5px; color:var(--slate-light);}
+.add-item-row{display:flex; gap:6px; margin-top:8px;}
+.add-item-row input{flex:1; border:1px dashed var(--line); border-radius:6px; padding:6px 8px; font-size:12px; background:transparent;}
+
+/* ============ HEALTH LOG ============ */
+.health-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px;}
+.health-input-card{padding:16px;}
+.health-input-card label{display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; color:var(--slate); margin-bottom:8px;}
+.health-input-card .big-input{display:flex; align-items:baseline; gap:6px;}
+.health-input-card input[type=number]{
+  width:100%; border:none; background:transparent; font-family:var(--font-display); font-size:30px; font-weight:600; color:var(--ink); padding:0;
+}
+.health-input-card .unit{font-family:var(--font-mono); font-size:11px; color:var(--slate);}
+.toggle-yn{display:flex; gap:6px;}
+.toggle-yn button{flex:1; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--paper); font-weight:600; font-size:13px; color:var(--slate);}
+.toggle-yn button.active{background:var(--teal); border-color:var(--teal); color:#fff;}
+
+table.log-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+table.log-table th{
+  text-align:left; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; color:var(--slate);
+  padding:8px 10px; border-bottom:1px solid var(--line);
+}
+table.log-table td{padding:9px 10px; border-bottom:1px solid var(--paper-dim);}
+
+/* ============ SETTINGS ============ */
+.tag-editor{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+.tag-editable{
+  display:flex; align-items:center; gap:6px; background:var(--paper-dim); border-radius:20px; padding:5px 10px 5px 12px; font-size:12.5px;
+}
+.tag-editable button{border:none; background:transparent; color:var(--slate-light); font-size:13px; line-height:1;}
+
+/* ============ GROUPED SECTIONS (location grouping) ============ */
+.group-block{margin-bottom:18px;}
+.group-header{
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  padding:8px 4px; user-select:none;
+}
+.group-header .caret{
+  font-size:10px; color:var(--slate); transition:transform .15s ease;
+  display:inline-block;
+}
+.group-header.collapsed .caret{transform:rotate(-90deg);}
+.group-header h3{
+  font-family:var(--font-display); font-size:15px; margin:0; font-weight:600;
+}
+.group-header .group-count{
+  font-family:var(--font-mono); font-size:10.5px; color:var(--slate);
+  background:var(--paper-dim); padding:2px 8px; border-radius:20px; margin-left:2px;
+}
+.group-body{display:flex; flex-direction:column; gap:8px;}
+.group-body.collapsed{display:none;}
+
+.toggle-switch-row{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--slate);}
+.toggle-switch{
+  position:relative; width:38px; height:21px; border-radius:20px; background:var(--paper-dim);
+  border:1px solid var(--line); cursor:pointer; flex-shrink:0;
+}
+.toggle-switch .knob{
+  position:absolute; top:1px; left:1px; width:17px; height:17px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.25); transition:left .15s ease;
+}
+.toggle-switch.on{background:var(--teal);}
+.toggle-switch.on .knob{left:18px;}
+
+/* ============ TYPE CHOOSER ============ */
+.type-choice-grid{display:flex; gap:12px; margin-top:6px;}
+.type-choice{
+  flex:1; border:1.5px solid var(--line); border-radius:12px; padding:18px 14px;
+  text-align:left; background:var(--paper);
+  transition:border-color .12s ease, transform .1s ease;
+}
+.type-choice:hover{border-color:var(--brass); transform:translateY(-1px);}
+.type-choice .tc-icon{font-size:20px; margin-bottom:8px; display:block;}
+.type-choice .tc-title{font-weight:700; font-size:14px; margin-bottom:3px;}
+.type-choice .tc-sub{font-size:11.5px; color:var(--slate); line-height:1.4;}
+
+/* ============ SYNC PANEL ============ */
+.sync-status{
+  display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px;
+  padding:4px 10px; border-radius:20px; background:var(--paper-dim); color:var(--slate);
+}
+.sync-status.on{background:var(--teal-soft); color:var(--teal);}
+.sync-dot{width:7px; height:7px; border-radius:50%; background:var(--slate-light);}
+.sync-status.on .sync-dot{background:var(--teal);}
+.sql-block{
+  background:var(--ink); color:#D8E4E0; font-family:var(--font-mono); font-size:11.5px;
+  padding:14px; border-radius:8px; white-space:pre-wrap; line-height:1.6; overflow-x:auto;
+}
+.sync-warning{
+  background:var(--flag-soft); color:var(--flag); border-radius:8px; padding:10px 12px;
+  font-size:12px; line-height:1.5; margin-top:10px;
+}
+
+/* ============ REORDER LIST (drag and drop) ============ */
+.reorder-list{display:flex; flex-direction:column; gap:6px; max-width:340px;}
+.reorder-item{
+  display:flex; align-items:center; gap:10px;
+  background:var(--paper); border:1px solid var(--line); border-radius:8px;
+  padding:9px 12px; font-size:13px; cursor:grab;
+  transition:opacity .12s ease, box-shadow .12s ease;
+}
+.reorder-item:active{cursor:grabbing;}
+.reorder-item.dragging{opacity:.4; box-shadow:var(--shadow-pop);}
+.drag-handle{color:var(--slate-light); font-size:14px; user-select:none;}
+
+/* ============ COLOR SWATCHES ============ */
+.swatch-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
+.swatch{
+  width:30px; height:30px; border-radius:50%; border:2px solid transparent;
+  cursor:pointer; position:relative; flex-shrink:0;
+}
+.swatch.selected{border-color:var(--ink);}
+.swatch.selected::after{
+  content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:13px; text-shadow:0 1px 2px rgba(0,0,0,0.4);
+}
+.color-row{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+.color-row label{
+  font-size:12.5px; font-weight:500; color:var(--ink-soft); min-width:120px;
+}
+.color-row input[type=color]{
+  width:36px; height:30px; border:1px solid var(--line); border-radius:6px; padding:2px; background:var(--paper-raised);
+}
+
+/* ============ DARK MODE TOGGLE (sidebar) ============ */
+.brand-row{display:flex; align-items:center; justify-content:space-between;}
+.dark-toggle-btn{
+  width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06); color:#EDE9DD; font-size:13px; flex-shrink:0;
+}
+.dark-toggle-btn:hover{background:rgba(255,255,255,0.12);}
+
+/* ============ HIDE-PAGES TOGGLES ============ */
+.page-toggle-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 0; border-bottom:1px solid var(--paper-dim);
+}
+.page-toggle-row:last-child{border-bottom:none;}
+.page-toggle-row .ptr-label{font-size:13px; font-weight:500;}
+.page-toggle-row .ptr-locked{font-family:var(--font-mono); font-size:10px; color:var(--slate-light);}
+
+/* ============ WEEKEND DAY SELECTOR (calendar) ============ */
+.weekend-day-pill{
+  padding:6px 12px; border-radius:999px; border:1px solid var(--line);
+  font-size:12px; font-weight:600; color:var(--slate); background:var(--paper);
+}
+.weekend-day-pill.active{background:var(--flag); border-color:var(--flag); color:#fff;}
+.cal-cell.weekend{background:color-mix(in srgb, var(--brass) 8%, var(--paper-raised));}
+
+/* ============ DARK MODE THEME OVERRIDES ============ */
+body.dark-mode{
+  --ink:#EDE9DD;
+  --ink-soft:#C7CCD6;
+  --paper:#181C22;
+  --paper-raised:#20252C;
+  --paper-dim:#2A3038;
+  --line:#3A4048;
+  --slate:#9CA3AF;
+  --slate-light:#6B7280;
+}
+body.dark-mode .sidebar{background:#0F1216;}
+body.dark-mode .ticket-title{color:var(--ink);}
+body.dark-mode input, body.dark-mode select, body.dark-mode textarea{
+  background:var(--paper); color:var(--ink); border-color:var(--line);
+}
+body.dark-mode .sql-block{background:#0F1216;}
+body.dark-mode .loading-screen{background:#0F1216;}
+
+
+.newday-summary{background:var(--paper-dim); border-radius:10px; padding:14px; margin:14px 0; font-size:13px;}
+.newday-summary .row{display:flex; justify-content:space-between; padding:4px 0;}
+
+/* ============ MISC ============ */
+.hidden{display:none !important;}
+.loading-screen{
+  position:fixed; inset:0; background:var(--ink); color:#EDE9DD;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; z-index:999;
+  font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em;
+}
+.loading-screen .brand-mark{width:14px;height:14px;background:var(--brass); transform:rotate(45deg); animation:spin 1.1s linear infinite;}
+@keyframes spin{to{transform:rotate(405deg);}}
+
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#fff; padding:11px 18px; border-radius:8px; font-size:13px;
+  box-shadow:var(--shadow-pop); z-index:200; font-weight:500;
+  display:flex; align-items:center; gap:8px;
+}
+
+/* ============ PASSCODE GATE ============ */
+.gate-screen{
+  position:fixed; inset:0; background:var(--ink); color:#EDE9DD;
+  display:flex; align-items:center; justify-content:center; z-index:1000;
+  padding:20px;
+}
+.gate-card{
+  background:var(--paper-raised); color:var(--ink); border-radius:var(--radius-l);
+  max-width:380px; width:100%; padding:32px; box-shadow:var(--shadow-pop);
+}
+.gate-card.wide{max-width:440px;}
+.gate-brand{display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:20px; font-weight:600; margin-bottom:4px;}
+.gate-brand .brand-mark{width:10px;height:10px;border-radius:2px; background:var(--brass); transform:rotate(45deg); flex-shrink:0;}
+.gate-sub{font-size:12.5px; color:var(--slate); margin-bottom:22px; line-height:1.5;}
+.gate-card .field{margin-bottom:14px;}
+.gate-card .field label{
+  display:block; font-size:11.5px; font-weight:600; color:var(--slate);
+  text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px;
+}
+.gate-card input{
+  width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:8px;
+  font-size:15px; background:var(--paper); color:var(--ink); font-family:var(--font-mono);
+  letter-spacing:0.05em;
+}
+.gate-error{
+  background:var(--flag-soft); color:var(--flag); border-radius:8px; padding:9px 12px;
+  font-size:12.5px; margin-bottom:14px; display:none;
+}
+.gate-error.show{display:block;}
+.gate-link{
+  display:inline-block; margin-top:16px; font-size:12px; color:var(--slate);
+  text-decoration:underline; cursor:pointer; background:none; border:none; font-family:inherit;
+}
+.gate-link:hover{color:var(--ink);}
+.gate-divider{
+  display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--slate-light); font-size:11px;
+  text-transform:uppercase; letter-spacing:0.05em;
+}
+.gate-divider::before, .gate-divider::after{content:""; flex:1; height:1px; background:var(--line);}
+
+@media (max-width: 860px){
+  #app{flex-direction:column;}
+  .sidebar{width:100%; height:auto; position:relative; flex-direction:row; align-items:center; overflow-x:auto; padding:12px;}
+  .brand-sub, .sidebar-footer, .brand{display:none;}
+  .nav{flex-direction:row;}
+  .main{padding:18px;}
+  .stat-strip{gap:8px;}
+}
+</style>
+</head>
+<body>
+
+<div id="gateScreen"></div>
+
+<div class="loading-screen hidden" id="loadingScreen">
+  <div class="brand-mark"></div>
+  <div>LOADING CALENDAROS…</div>
+</div>
+
+<div id="app" class="hidden"></div>
+
+<script id="seed-data" type="application/json">{"oneTime": [{"id": "ot1", "name": "Look into CME-4 courses", "location": "1.Office", "silo": "Career Development", "due": "2026-09-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot2", "name": "Look into Ali Yield max portfolio and the expected returns", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot3", "name": "Next bull cycle, risk on before halving, and all in on July post having year", "location": "1.Office", "silo": "Financial", "due": "2026-12-31", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot4", "name": "Adjust the trading file so the maximum loss is equivalent to the last trade games + + + Adjust the trading file to show the timeframe of the analysis", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot5", "name": "Start negotiations with Suits Cafe", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot6", "name": "Send follow up Whatsapp Message to Al Balad Al Amin", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot7", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot8", "name": "Book Villa inspection date", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-27", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot9", "name": "Throw out the watermelon", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-19", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot10", "name": "Update Lamees Account details and transfer her amount for this month", "location": "1.Office", "silo": "Financial", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot11", "name": "Convert the Todo file into webapp", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot12", "name": "Do the ironing", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot13", "name": "Follow up with RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot14", "name": "Finalize Meal Plan for the week (Egg Muffins + Ceaser Salad + Creamy pasta with grilled chicken)", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot15", "name": "Change my phone screen protector", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot16", "name": "Buy yougurt + Lemon", "location": "2.Errand", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot17", "name": "Send Rua Details to ABM", "location": "5.Last", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot18", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot19", "name": "Meal Prep (Ceaser Salad)", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot20", "name": "Deep Clean the Kitchen after Salad", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot21", "name": "Get in touch with Amazon about the refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot22", "name": "Restart the dishwasher", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot23", "name": "Create a short and impactful one to two lines fro intrdocutions", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot24", "name": "Book a date for car update & sim installation", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot25", "name": "Join LinkedIn premium and set monitering for \"Investor Relationgs Manager\"", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-10-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot26", "name": "Maybe a web app for work tasks follow ups?", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot27", "name": "Follow up with Umama from RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot28", "name": "Take two biscusts for Hebah and for Faisal", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot29", "name": "Re-contact Amazon for refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-24", "done": false, "priority": "Medium", "notes": ""}], "recurring": [{"id": "rt1", "name": "Lamees birthday preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt2", "name": "Lamees Birthday", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "25-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt3", "name": "Anniversary Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-10", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt4", "name": "Anniversary Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "11-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt5", "name": "Valentine Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt6", "name": "Valentine Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "14-02", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt7", "name": "Marriage Day Anniversary preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "20-03", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt8", "name": "Marriage Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "24-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt9", "name": "Make sure wellness benefits balance is used", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt10", "name": "Update the Personal Dashboard file with new features", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt11", "name": "Send statements to all accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt12", "name": "Post my accrual, budget and holding accounts clearance JVs", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt13", "name": "Review my P&L", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt14", "name": "Close my accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt15", "name": "Transfer the villa rent H2", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt16", "name": "Transfer the villa rent H1", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-06", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt17", "name": "Check if dates are correct (Esp. Monthly)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt18", "name": "Call Lamees' Parents", "location": "2.Errand", "silo": "Personal Tasks", "type": "Weekly", "detail": "Friday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt19", "name": "Pay Zain Data sim fees (SR 287.50) - 0535941766", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt20", "name": "Pay utilities bills for Villa", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "24", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt21", "name": "Shave down", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt22", "name": "Trim nails", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt23", "name": "Post the family crypto adjustment JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt24", "name": "Reconcile and log all crypto purchases", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt25", "name": "Make sure my ledger is updated", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt26", "name": "Work on / Review my stressors", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt27", "name": "Send Lamees a Song", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "13", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt28", "name": "Arrange work PC folders (Downloads + Desktop)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt29", "name": "Call for elevator maintenance", "location": "1.Office", "silo": "Financial", "type": "Every X Days", "detail": "55", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt30", "name": "Weekly buying of crypto", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt31", "name": "Read a part of the Mastering the Mental Game of Trading", "location": "3.Home", "silo": "Self Development", "type": "Every X Days", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt32", "name": "What will be Lamees' Gift for this month", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt33", "name": "Clean the dishwasher", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "120", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt34", "name": "Clean the washing machine & dryer", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "90", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt35", "name": "Prepare next day \"Casual\" clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt36", "name": "Send to Hussam his spending report", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "15", "start": "2026-01-01", "end": "2026-05-17", "priority": "Medium", "notes": ""}, {"id": "rt37", "name": "Lamees' Parents Birthday (Hala 09-05, Fareed 29-05)", "location": "1.Office", "silo": "Personal Tasks", "type": "Yearly", "detail": "01-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt38", "name": "Make sure all trades are logged", "location": "1.Office", "silo": "Financial", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt39", "name": "Pay Off Rajhi Visa & SNB Master Card", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "27", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt40", "name": "Post Budget JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt41", "name": "Reconcile Malaa rental income portfolio", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt42", "name": "Invest in Drahim - Abdulrahim Portfolio (for lower fees)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt43", "name": "Keep track of the 14th of every month (Crypto Volatility)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "12", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt44", "name": "Renew Mushtaq Authorization", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "170", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt45", "name": "Download simah report", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt46", "name": "Send other departments portal emails", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt47", "name": "Take last month's SNB cashback and invest it", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt48", "name": "Go through the Udemy (Break into CRE) Course or the Udacity Nano Degree", "location": "1.Office", "silo": "Self Development", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt49", "name": "Buy a new zain Data Sim (Look into buying the 171 SAR sim)", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "85", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt50", "name": "Respond to \"Partner with RUA\" queries", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt51", "name": "Do my laundry", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt52", "name": "Press my clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt53", "name": "Deep Clean the Kitchen", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt54", "name": "Water the plants if needed (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt55", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt56", "name": "Water the plants if needed (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt57", "name": "Plan my meals for the week + Order Groceries", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt58", "name": "Send current month PHD progress report", "location": "1.Office", "silo": "Self Development", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt59", "name": "Use the nose spray (Work)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt60", "name": "Use the nose spray (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt61", "name": "Take the money from Hussam account", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "26", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt62", "name": "Take the multivitamins + Zinc", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt63", "name": "Watch some videos from tools of the trade curriculum", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt64", "name": "Take the Vitamin D tablet (after food)", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": "2026-05-18", "priority": "Medium", "notes": ""}, {"id": "rt65", "name": "Drink Electrolytes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt66", "name": "Catchup on my inbox (Work)", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt67", "name": "Add new courses to LinkedIn", "location": "1.Office", "silo": "Career Development", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt68", "name": "Check if I have extra cash to deposit into Malaa", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt69", "name": "Check the JED>MED list", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt70", "name": "Check the Goals sheet and compare against the plan", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt71", "name": "Invest last month's rental income", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt72", "name": "Check the Buy wish list", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt73", "name": "Go over some of the document in the \"To Read\" List", "location": "1.Office", "silo": "Work", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt74", "name": "Take my GLP-1 injection", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt75", "name": "Refrsh the Car ad (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt76", "name": "Conslidate my Learning Respources (Icloud notes, and linkedin)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-11", "priority": "Medium", "notes": ""}, {"id": "rt77", "name": "Review LinkedIn and look for new jobs", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt78", "name": "Monjaro Follow up", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt79", "name": "Apply for a job", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt80", "name": "Categorize Linkedin Posts (Saved)", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2026-05-04", "end": "2026-06-01", "priority": "Medium", "notes": ""}, {"id": "rt81", "name": "Work on my ledger app on https://lovable.dev/ & https://www.figma.com/ - OLD", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-07-19", "priority": "Medium", "notes": ""}, {"id": "rt82", "name": "Revisit Lamees Birthday Preparations", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "3", "start": "2026-05-05", "end": "2026-05-31", "priority": "Medium", "notes": ""}, {"id": "rt83", "name": "Send to Anan the water Bill", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-05-05", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt84", "name": "Refrsh the Car ad (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt85", "name": "Catchup on my inbox (Personal)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt86", "name": "Log Current Weight", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt87", "name": "Log Meal - Breakfast", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt88", "name": "Log Meal - Lunch", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt89", "name": "Log Meal - Snack", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt90", "name": "Log Meal - Dinner", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt91", "name": "List the car in other selling sites", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-08", "end": "2026-05-10", "priority": "Medium", "notes": ""}, {"id": "rt92", "name": "3d Print Graduation hats", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-10", "end": "2026-05-14", "priority": "Medium", "notes": ""}, {"id": "rt93", "name": "Do LinkedIn Quizzes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt94", "name": "Close previous day in Lose It!", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-21", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt95", "name": "Clear the \"Done\" one time tasks", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt96", "name": "Update the LedgerOS app with Claude", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt97", "name": "Train it home", "location": "3.Home", "silo": "Personal Tasks", "type": "Days of Week", "detail": "Mon,Wed,Fri", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt98", "name": "Apply ear medcine", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-20", "end": "2026-07-24", "priority": "Medium", "notes": ""}, {"id": "rt99", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}]}</script>
+<script id="seed-lists" type="application/json">[{"title": "Things to Pack (MED > JED)", "items": [], "id": "list1"}, {"title": "Things to buy from JARIR", "items": [], "id": "list2"}, {"title": "Things to buy from Super Market", "items": [], "id": "list3"}, {"title": "Things to buy from Jawharat", "items": [], "id": "list4"}, {"title": "Things to Buy (Wish List)", "items": [{"text": "Replica brand shoes", "category": "Clothes", "done": false, "id": "list5_item1"}], "id": "list5"}, {"title": "Things to Pack (JED > MED)", "items": [], "id": "list6"}, {"title": "Things to buy from Saudia Amazon", "items": [], "id": "list7"}, {"title": "Things to buy from Mini Market", "items": [], "id": "list8"}, {"title": "To buy from Vegetable Store", "items": [], "id": "list9"}, {"title": "Career Discussion Points with Kashif", "items": [{"text": "Need to start leading some initiatives", "done": false, "id": "list10_item1"}, {"text": "Any feedback on the way I handled the developer selection project?", "done": false, "id": "list10_item2"}, {"text": "Any feedback on the way I handled the developer database project?", "done": false, "id": "list10_item3"}, {"text": "Manager = Senior Manager? If yes, what do I need to improve?", "done": false, "id": "list10_item4"}, {"text": "For next level (Director), what do I need to work on?", "done": false, "id": "list10_item5"}], "id": "list10"}, {"title": "To Do Before Travel", "items": [{"text": "Go home", "done": false, "id": "list11_item1"}, {"text": "Move laptop things to hotel bag", "done": false, "id": "list11_item2"}, {"text": "Make coffee", "done": false, "id": "list11_item3"}, {"text": "Empty the dishwasher", "done": false, "id": "list11_item4"}, {"text": "Start dishwasher cleaner", "done": false, "id": "list11_item5"}, {"text": "Take medicine", "done": false, "id": "list11_item6"}, {"text": "Take the electrolytes pills", "done": false, "id": "list11_item7"}, {"text": "Take the bags to my car", "done": false, "id": "list11_item8"}, {"text": "Hit the road", "done": false, "id": "list11_item9"}], "id": "list11"}, {"title": "Gift Ideas For Lamees", "items": [{"text": "I DO clock with the exact time", "done": false, "id": "list12_item1"}, {"text": "Disney projector", "done": false, "id": "list12_item2"}], "id": "list12"}, {"title": "Things to Buy (Realistic)", "items": [{"text": "Good size taqias", "category": "Clothes", "done": false, "id": "list13_item1"}, {"text": "Good size eqals", "category": "Clothes", "done": false, "id": "list13_item2"}, {"text": "Cartier copy pens (the green one)", "category": "Accessories", "done": false, "id": "list13_item3"}, {"text": "Sirwal sunnah", "category": "Clothes", "done": false, "id": "list13_item4"}], "id": "list13"}, {"title": "Home Cleaning Steps (Before a Visit)", "items": [{"text": "Iron all clothes", "done": false, "id": "list14_item1"}, {"text": "Finish laundry", "done": false, "id": "list14_item2"}, {"text": "Deep clean the bathrooms", "done": false, "id": "list14_item3"}, {"text": "Deep clean the kitchen", "done": false, "id": "list14_item4"}, {"text": "Wipe all surfaces", "done": false, "id": "list14_item5"}, {"text": "Clean the couches", "done": false, "id": "list14_item6"}, {"text": "Vacuum the floors", "done": false, "id": "list14_item7"}, {"text": "Wipe the floors", "done": false, "id": "list14_item8"}], "id": "list14"}, {"title": "Car Selling Websites", "items": [], "id": "list15"}, {"title": "Things to Pack (For Canada Trip)", "items": [], "id": "list16"}, {"title": "Zain SIM Tracker", "items": [{"text": "Jeddah Home", "done": false, "id": "list17_item1"}, {"text": "Madinah Home", "done": false, "id": "list17_item2"}, {"text": "Muhammad Madani", "done": false, "id": "list17_item3"}, {"text": "Lamees Car", "done": false, "id": "list17_item4"}, {"text": "BYD Car", "done": false, "id": "list17_item5"}], "id": "list17"}]</script>
+
+<script>
+/* =========================================================
+   CalendarOS — Daily Ops
+   A task/schedule web app converted from Personal_ToDo_List_V2_0.xlsx
+   ========================================================= */
+
+/* ---------- Storage fallback ----------
+   window.storage is an API Claude.ai injects only when this file is rendered
+   as an artifact inside claude.ai — it does not exist if this HTML file is
+   opened directly in a browser (downloaded, double-clicked, self-hosted,
+   etc). Rather than hard-depending on it, fall back to the browser's own
+   localStorage with the same get/set/delete/list shape, so the app works
+   fully standalone too. Supabase sync (if configured) is unaffected either
+   way since it talks to Supabase directly over fetch(). */
+const usingNativeAppStorage = (typeof window.storage !== 'undefined' && window.storage !== null);
+if(!usingNativeAppStorage){
+  console.warn('window.storage not found — running standalone using this browser\'s local storage instead.');
+  window.storage = {
+    async get(key, shared){
+      const raw = localStorage.getItem('cos_'+key);
+      if(raw === null) return null;
+      return { key, value: raw, shared: !!shared };
+    },
+    async set(key, value, shared){
+      localStorage.setItem('cos_'+key, value);
+      return { key, value, shared: !!shared };
+    },
+    async delete(key, shared){
+      localStorage.removeItem('cos_'+key);
+      return { key, deleted:true, shared: !!shared };
+    },
+    async list(prefix, shared){
+      const keys = Object.keys(localStorage)
+        .filter(k=>k.startsWith('cos_'))
+        .map(k=>k.slice(4))
+        .filter(k=> !prefix || k.startsWith(prefix));
+      return { keys, prefix, shared: !!shared };
+    }
+  };
+}
+
+/* ---------- App Version (bump on every shipped change) ---------- */
+const APP_VERSION = '1.6.0';
+const APP_NAME = 'CalendarOS';
+
+/* ---------- Constants ---------- */
+const DOW_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const RECUR_TYPES = ['Daily','Days of Week','Weekly','Bi-Weekly','Monthly','Yearly','Every X Days'];
+const PRIORITIES = ['High','Medium','Low'];
+const MAX_UNDO = 5;
+const ACCENT_PRESETS = ['#B9862F','#2F6E68','#3E6491','#7C5C8C','#4C7A3D','#3A3F47'];
+const COMPLETED_PRESETS = ['#3C7A73','#4C8C5C','#6B8C4C','#5C7999','#7A7A7A'];
+const HIDEABLE_PAGES = [
+  ['overdue','Overdue'],
+  ['tasks','All Tasks'],
+  ['calendar','Calendar'],
+  ['lists','Lists'],
+  ['health','Health Log'],
+];
+const DEFAULT_SETTINGS_EXTRAS = {
+  weekendDays: ['Fri','Sat'],
+  completedColor: '#3C7A73',
+  accentColor: '#B9862F',
+  recurTypeColors: {
+    'Daily': '#B9862F',
+    'Days of Week': '#3C7A73',
+    'Weekly': '#5C7999',
+    'Bi-Weekly': '#8E661F',
+    'Monthly': '#A0527A',
+    'Yearly': '#4C7A3D',
+    'Every X Days': '#7C5CBF',
+  },
+  siloColors: {
+    'Financial': '#4C7A3D',
+    'Work': '#5C7999',
+    'Personal Tasks': '#B9862F',
+    'Self Development': '#7C5CBF',
+    'Career Development': '#A0527A',
+    'Home Maintenance': '#8E661F',
+    'Lamees': '#C1443D',
+  },
+  hiddenPages: [],
+  pageOrder: ['dashboard','overdue','tasks','calendar','lists','health','settings'],
+  rememberUnlock: true,
+  darkMode: false,
+  localPasscode: null, // used only when no Supabase sync is configured on this device
+};
+// Fills in any settings fields missing from a saved blob (e.g. one written by
+// an earlier version of the app), including partially-missing nested objects
+// like recurTypeColors. Safe to call any time — never overwrites real values.
+function backfillSettingsDefaults(){
+  Object.keys(DEFAULT_SETTINGS_EXTRAS).forEach(k=>{
+    if(state.settings[k] === undefined || state.settings[k] === null){
+      state.settings[k] = DEFAULT_SETTINGS_EXTRAS[k];
+    }
+  });
+  // recurTypeColors can exist but be missing individual newer types
+  RECUR_TYPES.forEach(type=>{
+    if(!state.settings.recurTypeColors[type]){
+      state.settings.recurTypeColors[type] = DEFAULT_SETTINGS_EXTRAS.recurTypeColors[type] || '#3C7A73';
+    }
+  });
+  if(!state.settings.siloColors) state.settings.siloColors = {};
+  // any locations/pages added since pageOrder was created should still show up
+  const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','lists','health','settings'];
+  if(!state.settings.pageOrder) state.settings.pageOrder = ALL_PAGE_KEYS.slice();
+  ALL_PAGE_KEYS.forEach(k=>{ if(!state.settings.pageOrder.includes(k)) state.settings.pageOrder.push(k); });
+}
+
+// NOTE: storage key prefix stays "dispatch:" (the app's original internal name)
+// so existing users don't lose data on this rename. Only the displayed brand changed.
+const STORAGE_KEYS = {
+  TASKS: 'dispatch:tasks',        // { oneTime:[], recurring:[], completions:{} }
+  LISTS: 'dispatch:lists',        // [ {id,title,items:[]} ]
+  HEALTH: 'dispatch:health',      // [ {date,water,no2,calDeficit} ]
+  SETTINGS: 'dispatch:settings',  // { locations, silos, lastActiveDate, sync }
+  SYNC_META: 'dispatch:syncmeta', // { dirty, lastSyncedAt, lastError }
+  UNLOCK: 'dispatch:unlock',      // { pin: '<last successfully entered pin>' } — only set if "remember" is on
+};
+
+/* ---------- App State ---------- */
+const state = {
+  view: 'dashboard',
+  tasks: { oneTime: [], recurring: [], completions: {} }, // completions: { taskId: [dateStr,...] }
+  lists: [],
+  health: [],
+  settings: { locations: [], silos: [], lastActiveDate: null, sync: null },
+  selectedDate: todayStr(),
+  dashboardFilter: 'Today', // Today | Next7 | Next30 | Custom
+  locationFilter: 'All',
+  searchQuery: '',
+  groupByLocation: true, // always defaults on each load, per user preference — not persisted
+  calMonthCursor: null, // {year, month}
+  calDensityMode: 'all', // 'all' | 'oneTime'
+  loaded: false,
+  undoStack: [], // [{kind, taskId, dateStr, prevValue}]
+  // status: 'off' | 'syncing' | 'synced' | 'pending' | 'error'
+  syncMeta: { status: 'off', dirty: false, lastSyncedAt: null, lastError: null, progress: null },
+};
+
+/* ---------- Date helpers ---------- */
+function todayStr(){
+  const d = new Date();
+  return fmtDate(d);
+}
+function fmtDate(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function parseDate(s){
+  if(!s) return null;
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function addDays(dateStr, n){
+  const d = parseDate(dateStr);
+  d.setDate(d.getDate()+n);
+  return fmtDate(d);
+}
+function daysBetween(aStr, bStr){
+  const a = parseDate(aStr), b = parseDate(bStr);
+  return Math.round((b - a) / 86400000);
+}
+function isPast(dateStr, refStr){
+  return daysBetween(dateStr, refStr) > 0;
+}
+function humanDate(dateStr){
+  if(!dateStr) return '—';
+  const d = parseDate(dateStr);
+  const t = parseDate(todayStr());
+  const diff = daysBetween(todayStr(), dateStr);
+  if(diff === 0) return 'Today';
+  if(diff === 1) return 'Tomorrow';
+  if(diff === -1) return 'Yesterday';
+  return `${DOW_ABBR[d.getDay()]}, ${MONTH_NAMES[d.getMonth()].slice(0,3)} ${d.getDate()}`;
+}
+function fullDate(dateStr){
+  const d = parseDate(dateStr);
+  return `${DOW_FULL[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+/* ---------- Recurrence Engine ---------- */
+// Determine whether a recurring task is "due" (should show) on a given date.
+function isDueOn(task, dateStr){
+  if(task.start && dateStr < task.start) return false;
+  if(task.end && dateStr > task.end) return false;
+  const d = parseDate(dateStr);
+  const dow = d.getDay();
+
+  switch(task.type){
+    case 'Daily':
+      return true;
+    case 'Days of Week': {
+      if(!task.detail) return false;
+      const days = task.detail.split(',').map(s=>s.trim());
+      return days.includes(DOW_ABBR[dow]);
+    }
+    case 'Weekly': {
+      if(!task.detail) return false;
+      return task.detail.trim().toLowerCase() === DOW_FULL[dow].toLowerCase();
+    }
+    case 'Bi-Weekly': {
+      if(!task.detail) return false;
+      if(task.detail.trim().toLowerCase() !== DOW_FULL[dow].toLowerCase()) return false;
+      const startD = parseDate(task.start);
+      // align to the first matching weekday on/after start
+      let firstOcc = new Date(startD);
+      while(firstOcc.getDay() !== dow) firstOcc.setDate(firstOcc.getDate()+1);
+      const weeksDiff = Math.floor((d - firstOcc) / (7*86400000));
+      return weeksDiff >= 0 && weeksDiff % 2 === 0;
+    }
+    case 'Monthly': {
+      const dom = parseInt(task.detail, 10);
+      if(isNaN(dom)) return false;
+      // clamp to last day of month for short months
+      const lastDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+      return d.getDate() === Math.min(dom, lastDay);
+    }
+    case 'Yearly': {
+      if(!task.detail || !task.detail.includes('-')) return false;
+      const [mm, dd] = task.detail.split('-').map(Number);
+      return (d.getMonth()+1) === mm && d.getDate() === dd;
+    }
+    case 'Every X Days': {
+      const n = parseInt(task.detail, 10);
+      if(isNaN(n) || n <= 0) return false;
+      const diff = daysBetween(task.start, dateStr);
+      return diff >= 0 && diff % n === 0;
+    }
+    default:
+      return false;
+  }
+}
+
+/* ---------- Occurrence completion tracking ----------
+   state.tasks.completions[taskId] = { 'YYYY-MM-DD': { status:'done'|'missed', loggedAt: isoString } }
+   Replaces the old flat array-of-dates format; migrateCompletionsFormat() upgrades
+   any old data on load. */
+function getOccurrence(taskId, dateStr){
+  const log = state.tasks.completions[taskId];
+  return log ? log[dateStr] : undefined;
+}
+function isCompletedOn(taskId, dateStr){
+  const o = getOccurrence(taskId, dateStr);
+  return !!(o && o.status === 'done');
+}
+function isMissedOn(taskId, dateStr){
+  const o = getOccurrence(taskId, dateStr);
+  return !!(o && o.status === 'missed');
+}
+// Pending deletes to push to Supabase — entries removed locally that Supabase
+// still needs to be told about (fixes: unchecking didn't sync — see changelog).
+const pendingCompletionDeletes = [];
+function setOccurrenceStatus(taskId, dateStr, status){
+  // status: 'done' | 'missed' | null (null clears the occurrence entirely)
+  const c = state.tasks.completions;
+  if(!c[taskId]) c[taskId] = {};
+  const existed = !!c[taskId][dateStr];
+  if(status === null){
+    delete c[taskId][dateStr];
+    if(existed) pendingCompletionDeletes.push({ taskId, date: dateStr });
+  } else {
+    c[taskId][dateStr] = { status, loggedAt: new Date().toISOString() };
+  }
+  saveTasks();
+}
+// Toggle helpers: clicking an already-active state clears it; each is
+// mutually exclusive with the other (marking done clears a missed flag, etc).
+function toggleDone(taskId, dateStr){
+  setOccurrenceStatus(taskId, dateStr, isCompletedOn(taskId, dateStr) ? null : 'done');
+}
+function toggleMissed(taskId, dateStr){
+  setOccurrenceStatus(taskId, dateStr, isMissedOn(taskId, dateStr) ? null : 'missed');
+}
+function migrateCompletionsFormat(){
+  const c = state.tasks.completions;
+  Object.keys(c).forEach(taskId=>{
+    if(Array.isArray(c[taskId])){
+      const obj = {};
+      c[taskId].forEach(dateStr=>{ obj[dateStr] = { status:'done', loggedAt: null }; });
+      c[taskId] = obj;
+    }
+  });
+}
+
+// Compute current streak (consecutive due-occurrences completed) ending at refDate (exclusive of today unless done)
+function computeStreak(task, refDateStr){
+  let streak = 0;
+  let cursor = refDateStr;
+  let guard = 0;
+  while(guard < 730){
+    guard++;
+    if(cursor < task.start) break;
+    if(isDueOn(task, cursor)){
+      if(isCompletedOn(task.id, cursor)){
+        streak++;
+      } else {
+        break;
+      }
+    }
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
+
+// On-time % and average delay in days, based only on occurrences the person
+// actually logged (checked done or flagged missed) — untouched days aren't
+// counted since we have no signal either way.
+function computeOnTimeStats(task){
+  const log = state.tasks.completions[task.id];
+  if(!log) return null;
+  const entries = Object.entries(log);
+  if(!entries.length) return null;
+  let doneCount = 0, missedCount = 0, delaySum = 0;
+  entries.forEach(([dateStr, o])=>{
+    if(o.status === 'missed'){ missedCount++; return; }
+    if(o.status === 'done'){
+      doneCount++;
+      if(o.loggedAt){
+        const loggedDateStr = fmtDate(new Date(o.loggedAt));
+        delaySum += Math.max(0, daysBetween(dateStr, loggedDateStr));
+      }
+    }
+  });
+  const total = doneCount + missedCount;
+  if(total === 0) return null;
+  return {
+    onTimePercent: Math.round((doneCount/total)*100),
+    avgDelayDays: doneCount ? +(delaySum/doneCount).toFixed(1) : 0,
+    total,
+  };
+}
+
+/* ---------- Overdue helpers ---------- */
+function oneTimeIsOverdue(t){
+  return !t.done && t.due && t.due < todayStr();
+}
+
+/* ---------- Storage (window.storage persistence) ---------- */
+// Loads ONLY settings — used to check whether a passcode gate is needed
+// before anything else (tasks, lists, health, or any Supabase sync) touches
+// memory or the network. Deliberately minimal and fast.
+async function loadSettingsOnly(){
+  try{
+    const settingsRes = await safeGet(STORAGE_KEYS.SETTINGS);
+    if(settingsRes){
+      state.settings = JSON.parse(settingsRes.value);
+      if(!state.settings.sync) state.settings.sync = null;
+      backfillSettingsDefaults();
+    } else {
+      state.settings = Object.assign({
+        locations: ['1.Office','2.Errand','3.Home','4.Madinah','5.Last'],
+        silos: ['Financial','Work','Personal Tasks','Self Development','Career Development','Home Maintenance','Lamees'],
+        lastActiveDate: todayStr(),
+        sync: null,
+      }, DEFAULT_SETTINGS_EXTRAS);
+    }
+  } catch(e){
+    console.error('Settings load error', e);
+  }
+}
+
+async function loadAll(){
+  try{
+    const [tasksRes, listsRes, healthRes] = await Promise.all([
+      safeGet(STORAGE_KEYS.TASKS),
+      safeGet(STORAGE_KEYS.LISTS),
+      safeGet(STORAGE_KEYS.HEALTH),
+    ]);
+
+    if(tasksRes){
+      state.tasks = JSON.parse(tasksRes.value);
+      migrateCompletionsFormat();
+      state.tasks.oneTime.forEach(t=>{ if(!t.dueHistory) t.dueHistory = []; });
+    } else {
+      // seed from the original spreadsheet
+      const seed = JSON.parse(document.getElementById('seed-data').textContent);
+      seed.oneTime.forEach(t=>{ t.dueHistory = []; });
+      state.tasks = { oneTime: seed.oneTime, recurring: seed.recurring, completions: {} };
+      await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), false);
+    }
+
+    if(listsRes){
+      state.lists = JSON.parse(listsRes.value);
+    } else {
+      state.lists = JSON.parse(document.getElementById('seed-lists').textContent);
+      await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false);
+    }
+
+    if(healthRes){
+      state.health = JSON.parse(healthRes.value);
+    } else {
+      state.health = [];
+    }
+
+    // settings were already loaded by loadSettingsOnly() before the gate;
+    // if for some reason this runs standalone, make sure they're present.
+    if(!state.settings || !state.settings.locations) await loadSettingsOnly();
+    if(!state.settings.sync) state.settings.sync = null;
+
+    const syncMetaRes = await safeGet(STORAGE_KEYS.SYNC_META);
+    if(syncMetaRes){
+      const saved = JSON.parse(syncMetaRes.value);
+      state.syncMeta = Object.assign(state.syncMeta, saved, { status: 'off' });
+    }
+  } catch(e){
+    console.error('Load error', e);
+  }
+
+  // If cross-device sync is configured, get to the freshest possible state
+  // before the app becomes usable.
+  //   - If the last session ended with unconfirmed local changes (dirty),
+  //     push local first so it can never be silently overwritten by a stale
+  //     remote copy — local always wins over an incomplete sync.
+  //   - Otherwise, pull from Supabase since remote is trusted authoritative
+  //     (e.g. changes made from another device).
+  if(syncConfigured()){
+    state.syncMeta.status = 'syncing';
+    const verb = state.syncMeta.dirty ? 'SENDING UNSAVED CHANGES' : 'PULLING LATEST FROM SUPABASE';
+    setLoadingText(verb + '…');
+    const onProgress = (cur, total)=> setLoadingText(`${verb}… ${Math.round((cur/total)*100)}%`);
+    try{
+      if(state.syncMeta.dirty){
+        await pushFullStateToSupabase(onProgress);
+        await markSyncSuccess();
+      } else {
+        await pullFromSupabase(onProgress);
+        await markSyncSuccess();
+      }
+    } catch(e){
+      console.error('Supabase sync on load failed', e);
+      await markSyncError(e.message || String(e));
+      setLoadingText('SYNC UNAVAILABLE — CONTINUING OFFLINE…');
+      await new Promise(r=>setTimeout(r, 900));
+    }
+  }
+
+  state.loaded = true;
+}
+
+function markSyncDirty(){
+  // In-memory only — no storage write here. This is a transient "in flight"
+  // state; the outcome (success or error) writes to storage a moment later
+  // regardless, so persisting this intermediate step would only add an extra
+  // storage call per save for no durability benefit.
+  state.syncMeta.dirty = true;
+  state.syncMeta.status = 'syncing';
+}
+async function markSyncSuccess(){
+  state.syncMeta.dirty = false;
+  state.syncMeta.status = 'synced';
+  state.syncMeta.lastSyncedAt = new Date().toISOString();
+  state.syncMeta.lastError = null;
+  await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta));
+}
+async function markSyncError(message){
+  state.syncMeta.status = 'error';
+  state.syncMeta.lastError = message;
+  // dirty stays true — we know local hasn't been confirmed on the server
+  await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta));
+}
+
+/* ---------- Supabase sync (optional, cross-device) ----------
+   Normalized tables (see Settings > Sync for the exact SQL):
+     one_time_tasks, recurring_tasks, task_completions, lists, list_items,
+     health_logs, app_settings — each scoped by a "pin" column.
+   Each entity table also carries a `meta jsonb` column for fields added
+   later without needing a migration first.
+   Security note: RLS on these tables is permissive (open to anyone holding
+   the anon key). The PIN is an app-level convenience, not a cryptographic
+   guarantee. */
+function syncConfigured(){
+  const s = state.settings.sync;
+  return !!(s && s.url && s.anonKey && s.pin);
+}
+function supaHeaders(extra){
+  const s = state.settings.sync;
+  return Object.assign({ apikey: s.anonKey, Authorization: `Bearer ${s.anonKey}`, 'Content-Type':'application/json' }, extra||{});
+}
+// Guards every Supabase call so a dead network or unreachable project can
+// never hang the app on the loading screen forever.
+async function fetchWithTimeout(url, options, timeoutMs){
+  timeoutMs = timeoutMs || 10000;
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeoutMs);
+  try{
+    return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+  } catch(e){
+    if(e.name === 'AbortError') throw new Error('Supabase request timed out — check your connection');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function supaUpsert(table, rows, conflictCols){
+  if(!rows.length) return;
+  const s = state.settings.sync;
+  const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?on_conflict=${conflictCols}`;
+  const res = await fetchWithTimeout(url, {
+    method: 'POST',
+    headers: supaHeaders({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+    body: JSON.stringify(rows)
+  });
+  if(!res.ok) throw new Error(`${table} upsert failed: ${res.status} ${await res.text()}`);
+}
+async function supaDeleteMatch(table, matchQuery){
+  const s = state.settings.sync;
+  const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?${matchQuery}`;
+  const res = await fetchWithTimeout(url, { method:'DELETE', headers: supaHeaders() });
+  if(!res.ok) throw new Error(`${table} delete failed: ${res.status}`);
+}
+async function supaSelectAll(table){
+  const s = state.settings.sync;
+  const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?pin=eq.${encodeURIComponent(s.pin)}&select=*`;
+  const res = await fetchWithTimeout(url, { headers: supaHeaders() });
+  if(!res.ok) throw new Error(`${table} select failed: ${res.status}`);
+  return await res.json();
+}
+
+/* ---- row <-> app-object mapping ---- */
+function oneTimeToRow(t){
+  const s = state.settings.sync;
+  return { id:t.id, pin:s.pin, name:t.name, location:t.location, silo:t.silo, priority:t.priority,
+           due:t.due||null, done:!!t.done, done_date:t.doneDate||null, notes:t.notes||'',
+           due_history: t.dueHistory||[], meta:{}, updated_at:new Date().toISOString() };
+}
+function rowToOneTime(r){
+  return { id:r.id, name:r.name, location:r.location, silo:r.silo, priority:r.priority||'Medium',
+           due:r.due, done:!!r.done, doneDate:r.done_date, notes:r.notes||'', dueHistory:r.due_history||[] };
+}
+function recurringToRow(t){
+  const s = state.settings.sync;
+  return { id:t.id, pin:s.pin, name:t.name, location:t.location, silo:t.silo, priority:t.priority,
+           type:t.type, detail:t.detail||'', start_date:t.start||null, end_date:t.end||null, notes:t.notes||'', meta:{}, updated_at:new Date().toISOString() };
+}
+function rowToRecurring(r){
+  return { id:r.id, name:r.name, location:r.location, silo:r.silo, priority:r.priority||'Medium',
+           type:r.type, detail:r.detail, start:r.start_date, end:r.end_date, notes:r.notes||'' };
+}
+function listToRow(l, idx){
+  const s = state.settings.sync;
+  return { id:l.id, pin:s.pin, title:l.title, sort_order:idx, updated_at:new Date().toISOString() };
+}
+function listItemToRow(item, listId, idx){
+  const s = state.settings.sync;
+  return { id:item.id, pin:s.pin, list_id:listId, text:item.text, category:item.category||null, done:!!item.done, sort_order:idx };
+}
+function healthToRow(h){
+  const s = state.settings.sync;
+  return { pin:s.pin, log_date:h.date, water:h.water, no2:h.no2===null||h.no2===undefined?null:h.no2, cal_deficit:h.calDeficit };
+}
+function buildCompletionRows(){
+  const s = state.settings.sync;
+  const rows = [];
+  Object.entries(state.tasks.completions).forEach(([taskId, byDate])=>{
+    Object.entries(byDate).forEach(([dateStr, o])=>{
+      rows.push({ pin: s.pin, task_id: taskId, completed_date: dateStr, status: o.status, logged_at: o.loggedAt });
+    });
+  });
+  return rows;
+}
+// Actually tells Supabase about locally-removed occurrences (the root cause
+// of "unchecking doesn't sync" — see changelog). Safe to call even if the
+// list is empty; only removes entries once the delete call succeeds.
+async function flushPendingCompletionDeletes(){
+  while(pendingCompletionDeletes.length){
+    const { taskId, date } = pendingCompletionDeletes[0];
+    await supaDeleteMatch('task_completions', `task_id=eq.${encodeURIComponent(taskId)}&completed_date=eq.${encodeURIComponent(date)}`);
+    pendingCompletionDeletes.shift();
+  }
+}
+
+/* ---- full push / pull ---- */
+async function pushFullStateToSupabase(onProgress){
+  const steps = [
+    ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
+    ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
+    ()=> flushPendingCompletionDeletes(),
+    ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
+    ()=> supaUpsert('lists', state.lists.map((l,i)=>listToRow(l,i)), 'id'),
+    ()=> {
+      const itemRows = [];
+      state.lists.forEach(l=> l.items.forEach((it,i)=> itemRows.push(listItemToRow(it, l.id, i))));
+      return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
+    },
+    ()=> { const rows = state.health.map(healthToRow); return rows.length ? supaUpsert('health_logs', rows, 'pin,log_date') : null; },
+    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
+  ];
+  for(let i=0;i<steps.length;i++){
+    await steps[i]();
+    if(onProgress) onProgress(i+1, steps.length);
+  }
+}
+
+async function pullFromSupabase(onProgress){
+  const tables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','app_settings'];
+  const results = {};
+  for(let i=0;i<tables.length;i++){
+    results[tables[i]] = await supaSelectAll(tables[i]);
+    if(onProgress) onProgress(i+1, tables.length);
+  }
+  const { one_time_tasks:oneTimeRows, recurring_tasks:recurringRows, task_completions:completionRows,
+          lists:listRows, list_items:itemRows, health_logs:healthRows, app_settings:settingsRows } = results;
+
+  const hasAnyRemoteData = oneTimeRows.length || recurringRows.length || listRows.length;
+
+  if(hasAnyRemoteData){
+    state.tasks.oneTime = oneTimeRows.map(rowToOneTime);
+    state.tasks.recurring = recurringRows.map(rowToRecurring);
+    const completions = {};
+    completionRows.forEach(r=>{
+      if(!completions[r.task_id]) completions[r.task_id] = {};
+      completions[r.task_id][r.completed_date] = { status: r.status || 'done', loggedAt: r.logged_at || null };
+    });
+    state.tasks.completions = completions;
+
+    listRows.sort((a,b)=> (a.sort_order||0)-(b.sort_order||0));
+    const itemsByList = {};
+    itemRows.sort((a,b)=> (a.sort_order||0)-(b.sort_order||0)).forEach(r=>{
+      if(!itemsByList[r.list_id]) itemsByList[r.list_id] = [];
+      itemsByList[r.list_id].push({ id:r.id, text:r.text, category:r.category, done:!!r.done });
+    });
+    state.lists = listRows.map(l=>({ id:l.id, title:l.title, items: itemsByList[l.id] || [] }));
+
+    state.health = healthRows.map(r=>({ date:r.log_date, water:r.water, no2:r.no2, calDeficit:r.cal_deficit }));
+
+    if(settingsRows.length){
+      state.settings.locations = settingsRows[0].locations || state.settings.locations;
+      state.settings.silos = settingsRows[0].silos || state.settings.silos;
+    }
+    pendingCompletionDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
+
+    await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), false);
+    await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false);
+    await window.storage.set(STORAGE_KEYS.HEALTH, JSON.stringify(state.health), false);
+    await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false);
+  } else {
+    // nothing remote yet — seed it from what we have locally
+    await pushFullStateToSupabase(onProgress);
+  }
+}
+
+async function testSupabaseConnection(url, anonKey, pin){
+  const testUrl = `${url.replace(/\/$/,'')}/rest/v1/one_time_tasks?pin=eq.${encodeURIComponent(pin)}&limit=1`;
+  const res = await fetchWithTimeout(testUrl, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }, 10000);
+  if(!res.ok) throw new Error('Connection test failed: HTTP ' + res.status);
+  return true;
+}
+
+async function safeGet(key){
+  try{
+    return await window.storage.get(key, false);
+  } catch(e){
+    return null;
+  }
+}
+
+// Wraps window.storage.set with a couple of short retries before giving up —
+// a transient rejection (e.g. two writes landing in the same instant) shouldn't
+// mean a lost change. Returns true/false instead of throwing, and surfaces the
+// real error message so a genuine failure is diagnosable without dev tools.
+async function safeStorageSet(key, value, label){
+  const delays = [0, 300, 900];
+  let lastErr = null;
+  for(let i=0;i<delays.length;i++){
+    if(delays[i]) await new Promise(r=>setTimeout(r, delays[i]));
+    try{
+      await window.storage.set(key, value, false);
+      return true;
+    } catch(e){
+      lastErr = e;
+    }
+  }
+  console.error(`Local save failed for "${label||key}" after retries:`, lastErr);
+  showToast(`⚠ Save failed: ${lastErr && lastErr.message ? lastErr.message : 'storage unavailable'}`);
+  return false;
+}
+
+// Runs a list of {label, fn} sync steps sequentially, updating syncMeta
+// progress (and the badge) after each so "syncing... 43%" is real progress,
+// not a guess. Used by every save path so progress shows up everywhere.
+// Serializes every sync push so two saves can never race each other. Without
+// this, a slow/earlier save could still be holding a stale, larger snapshot
+// of the data (e.g. a completion row that has since been unchecked) and
+// overwrite a newer, smaller snapshot if it happens to finish later —
+// resurrecting things that were just deleted. Queuing means only one sync
+// runs at a time, and each one reads state fresh right when its turn comes
+// (see the lazy `()=> ...` closures below), not from a snapshot taken back
+// when the click happened.
+let syncChain = Promise.resolve();
+function enqueueSync(taskFn){
+  const run = () => taskFn().catch(e=> console.error('queued sync task failed', e));
+  syncChain = syncChain.then(run, run);
+  return syncChain;
+}
+
+async function runSyncSteps(steps){
+  markSyncDirty();
+  state.syncMeta.progress = { current: 0, total: steps.length };
+  updateSyncBadge();
+  try{
+    for(let i=0;i<steps.length;i++){
+      await steps[i]();
+      state.syncMeta.progress = { current: i+1, total: steps.length };
+      updateSyncBadge();
+    }
+    await markSyncSuccess();
+  } catch(e){
+    console.error('sync step failed', e);
+    await markSyncError(e.message||String(e));
+  }
+  updateSyncBadge();
+}
+
+async function saveTasks(){
+  await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), 'tasks');
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
+      ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
+      ()=> flushPendingCompletionDeletes(),
+      ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
+    ]));
+  }
+}
+async function saveLists(){
+  await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaUpsert('lists', state.lists.map((l,i)=>listToRow(l,i)), 'id'),
+      ()=> {
+        const itemRows = [];
+        state.lists.forEach(l=> l.items.forEach((it,i)=> itemRows.push(listItemToRow(it, l.id, i))));
+        return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
+      },
+    ]));
+  }
+}
+async function saveHealth(){
+  await safeStorageSet(STORAGE_KEYS.HEALTH, JSON.stringify(state.health), 'health log');
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaUpsert('health_logs', state.health.map(healthToRow), 'pin,log_date'),
+    ]));
+  }
+}
+async function saveSettings(){
+  await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ]));
+  }
+}
+
+/* ---------- ID generator ---------- */
+function newId(prefix){
+  return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+/* ---------- Dynamic theming (accent color, completed color, dark mode) ---------- */
+function darken(hex, amount){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const num = parseInt(hex,16);
+  let r = (num>>16) - Math.round(255*amount);
+  let g = ((num>>8)&0xff) - Math.round(255*amount);
+  let b = (num&0xff) - Math.round(255*amount);
+  r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+  return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function applyDynamicTheme(){
+  let styleEl = document.getElementById('dynamicTheme');
+  if(!styleEl){
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamicTheme';
+    document.head.appendChild(styleEl);
+  }
+  const accent = state.settings.accentColor || '#B9862F';
+  const completed = state.settings.completedColor || '#3C7A73';
+  styleEl.textContent = `
+    :root{
+      --brass: ${accent};
+      --brass-deep: ${darken(accent, 0.18)};
+      --completed-color: ${completed};
+      --completed-deep: ${darken(completed, 0.2)};
+    }
+  `;
+  document.body.classList.toggle('dark-mode', !!state.settings.darkMode);
+}
+function recurTypeColor(type){
+  return (state.settings.recurTypeColors && state.settings.recurTypeColors[type]) || 'var(--teal)';
+}
+
+const SILO_FALLBACK_PALETTE = ['#B9862F','#3C7A73','#5C7999','#8E661F','#A0527A','#4C7A3D','#7C5CBF','#C1443D','#3A3F47'];
+function siloColor(silo){
+  if(!state.settings.siloColors) state.settings.siloColors = {};
+  if(state.settings.siloColors[silo]) return state.settings.siloColors[silo];
+  // stable fallback: hash the name so the same silo always gets the same color
+  // even before it's been explicitly assigned one in Settings
+  let hash = 0;
+  for(let i=0;i<silo.length;i++) hash = (hash*31 + silo.charCodeAt(i)) >>> 0;
+  return SILO_FALLBACK_PALETTE[hash % SILO_FALLBACK_PALETTE.length];
+}
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function showToast(msg){
+  let el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'flex';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.display = 'none'; }, 2400);
+}
+
+function escapeHtml(s){
+  if(s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =========================================================
+   DATA QUERIES
+   ========================================================= */
+function getOverdueOneTime(){
+  return state.tasks.oneTime
+    .filter(oneTimeIsOverdue)
+    .sort((a,b)=> a.due < b.due ? -1 : 1);
+}
+
+function matchesFilters(item){
+  if(state.locationFilter !== 'All' && item.location !== state.locationFilter) return false;
+  if(state.searchQuery){
+    const q = state.searchQuery.toLowerCase();
+    const hay = `${item.name} ${item.location} ${item.silo}`.toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+// Build the unified due-list for the dashboard given current filter window
+function getDashboardTasks(){
+  const sel = state.selectedDate;
+  let windowDays = 0;
+  if(state.dashboardFilter === 'Today') windowDays = 0;
+  else if(state.dashboardFilter === 'Next7') windowDays = 7;
+  else if(state.dashboardFilter === 'Next30') windowDays = 30;
+  const endDate = addDays(sel, windowDays);
+
+  const rows = [];
+
+  // one-time tasks due within window (and not done)
+  state.tasks.oneTime.forEach(t=>{
+    if(t.done) return;
+    if(!t.due) return;
+    if(t.due >= sel && t.due <= endDate){
+      rows.push({ kind:'oneTime', task:t, dueOn:t.due, overdue: oneTimeIsOverdue(t) });
+    }
+  });
+
+  // completed-today one-time tasks stay visible (muted) in the Today view only,
+  // regardless of their original due date — they drop off once the day rolls over.
+  if(state.dashboardFilter === 'Today' && sel === todayStr()){
+    state.tasks.oneTime.forEach(t=>{
+      if(t.done && t.doneDate === todayStr()){
+        rows.push({ kind:'oneTime', task:t, dueOn:t.due, overdue:false, completedToday:true });
+      }
+    });
+  }
+
+  // overdue one-time — only pinned when looking at "Today". When viewing a
+  // specific past date, that date's own overdue task already appears above
+  // via the normal due-within-window match, so it isn't duplicated here.
+  if(sel === todayStr()){
+    getOverdueOneTime().forEach(t=>{
+      rows.push({ kind:'oneTime', task:t, dueOn:t.due, overdue:true });
+    });
+  }
+
+  // recurring tasks — earliest occurrence within window
+  state.tasks.recurring.forEach(t=>{
+    for(let i=0;i<=windowDays;i++){
+      const d = addDays(sel, i);
+      if(isDueOn(t, d)){
+        rows.push({ kind:'recurring', task:t, dueOn:d, overdue:false });
+        break;
+      }
+    }
+  });
+
+  // dedupe overdue duplicates (a one-time task could theoretically be both overdue+in-window; overdue wins already separate list)
+  const seen = new Set();
+  const deduped = [];
+  rows.forEach(r=>{
+    const key = r.kind+'_'+r.task.id+'_'+(r.overdue?'OD':(r.completedToday?'DONE':'W'));
+    if(seen.has(key)) return;
+    seen.add(key);
+    if(matchesFilters(r.task)) deduped.push(r);
+  });
+
+  // sort: overdue first, then normal tasks by due date/priority, completed-today last
+  const prOrder = {High:0, Medium:1, Low:2};
+  deduped.sort((a,b)=>{
+    const aDone = !!a.completedToday, bDone = !!b.completedToday;
+    if(aDone !== bDone) return aDone ? 1 : -1;
+    if(a.overdue !== b.overdue) return a.overdue ? -1 : 1;
+    if(a.dueOn !== b.dueOn) return a.dueOn < b.dueOn ? -1 : 1;
+    return (prOrder[a.task.priority]??1) - (prOrder[b.task.priority]??1);
+  });
+  return deduped;
+}
+
+function countDueToday(){
+  const sel = todayStr();
+  let count = 0;
+  state.tasks.oneTime.forEach(t=>{ if(!t.done && t.due === sel) count++; });
+  state.tasks.recurring.forEach(t=>{ if(isDueOn(t, sel) && !isCompletedOn(t.id, sel)) count++; });
+  return count;
+}
+
+/* =========================================================
+   RENDER: SHELL
+   ========================================================= */
+function render(){
+  applyDynamicTheme();
+  const app = document.getElementById('app');
+  const overdueCount = getOverdueOneTime().length;
+  const dueToday = countDueToday();
+  const hidden = state.settings.hiddenPages || [];
+
+  const NAV_META = {
+    dashboard: ['▣','Dashboard', dueToday],
+    overdue: ['⚑','Overdue', overdueCount],
+    tasks: ['☰','All Tasks'],
+    calendar: ['▦','Calendar'],
+    lists: ['▤','Lists'],
+    health: ['♥','Health Log'],
+    settings: ['⚙','Settings'],
+  };
+  const order = (state.settings.pageOrder && state.settings.pageOrder.length) ? state.settings.pageOrder : Object.keys(NAV_META);
+  const navItems = order
+    .filter(key => NAV_META[key] && (key === 'dashboard' || key === 'settings' || !hidden.includes(key)))
+    .map(key => [key, ...NAV_META[key]]);
+
+  app.innerHTML = `
+    <div class="sidebar">
+      <div class="brand-row">
+        <div class="brand"><span class="brand-mark"></span>${APP_NAME}</div>
+        <button class="dark-toggle-btn" title="Toggle dark mode" onclick="toggleDarkMode()">${state.settings.darkMode ? '☀' : '☾'}</button>
+      </div>
+      <div class="brand-sub">Daily Operations</div>
+      <div class="nav">
+        ${navItems.map(([key,icon,label,count])=>navItem(key,icon,label,count)).join('')}
+      </div>
+      <div class="sidebar-footer">
+        <div id="syncBadgeWrap">${syncBadgeHtml()}</div>
+        <div class="today-chip">TODAY<br><b>${fullDate(todayStr())}</b></div>
+      </div>
+    </div>
+    <div class="main" id="mainContent"></div>
+  `;
+  renderMain();
+}
+
+function syncBadgeHtml(){
+  if(!syncConfigured()){
+    return `<div class="sync-badge off" title="Cross-device sync isn't set up">
+      <span class="sync-badge-dot"></span>Local only
+    </div>`;
+  }
+  const m = state.syncMeta;
+  const relTime = m.lastSyncedAt ? timeAgo(m.lastSyncedAt) : 'never';
+  if(m.status === 'syncing'){
+    const pct = m.progress && m.progress.total ? Math.round((m.progress.current/m.progress.total)*100) : null;
+    return `<div class="sync-badge syncing" title="Syncing with Supabase…">
+      <span class="sync-badge-dot"></span>Syncing${pct!==null?` ${pct}%`:'…'}
+    </div>`;
+  }
+  if(m.status === 'error' || m.dirty){
+    return `<div class="sync-badge error" title="${escapeHtml(m.lastError||'Changes are waiting to sync')}" onclick="retrySync()">
+      <span class="sync-badge-dot"></span>Sync pending — retry
+    </div>`;
+  }
+  return `<div class="sync-badge on" title="Last synced ${relTime}">
+    <span class="sync-badge-dot"></span>Synced ${relTime}
+  </div>`;
+}
+function updateSyncBadge(){
+  const el = document.getElementById('syncBadgeWrap');
+  if(el) el.innerHTML = syncBadgeHtml();
+}
+function timeAgo(isoStr){
+  const diffMs = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+async function retrySync(){
+  if(!syncConfigured()) return;
+  state.syncMeta.status = 'syncing';
+  updateSyncBadge();
+  await enqueueSync(async ()=>{
+    try{
+      await pushFullStateToSupabase((cur,total)=>{
+        state.syncMeta.progress = { current: cur, total };
+        updateSyncBadge();
+        renderMain(); // keeps the Settings-page progress line live too
+      });
+      await markSyncSuccess();
+      showToast('Synced');
+    } catch(e){
+      console.error('Retry sync failed', e);
+      await markSyncError(e.message||String(e));
+      showToast('Sync retry failed — still saved locally');
+    }
+  });
+  updateSyncBadge();
+}
+
+function toggleDarkMode(){
+  state.settings.darkMode = !state.settings.darkMode;
+  saveSettings();
+  render();
+}
+
+async function toggleRememberUnlock(){
+  state.settings.rememberUnlock = state.settings.rememberUnlock===false ? true : false;
+  if(state.settings.rememberUnlock === false) await forgetRememberedUnlock();
+  await saveSettings();
+  renderMain();
+}
+async function lockNow(){
+  await forgetRememberedUnlock();
+  showToast('Locked — reload the app to see the passcode screen');
+}
+
+function navItem(view, icon, label, count){
+  const active = state.view === view ? 'active' : '';
+  const countHtml = (count !== undefined) ? `<span class="nav-count">${count}</span>` : '';
+  return `<button class="nav-item ${active}" onclick="setView('${view}')">
+    <span class="nav-icon">${icon}</span>${label}${countHtml}
+  </button>`;
+}
+
+function setView(v){
+  state.view = v;
+  if(v !== 'tasks'){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); }
+  render();
+}
+
+function renderMain(){
+  applyDynamicTheme();
+  const el = document.getElementById('mainContent');
+  if((state.settings.hiddenPages||[]).includes(state.view)){
+    state.view = 'dashboard';
+  }
+  try{
+    if(state.view === 'dashboard') el.innerHTML = renderDashboard();
+    else if(state.view === 'overdue') el.innerHTML = renderOverdueView();
+    else if(state.view === 'tasks') el.innerHTML = renderTasksView();
+    else if(state.view === 'calendar') el.innerHTML = renderCalendarView();
+    else if(state.view === 'lists') el.innerHTML = renderListsView();
+    else if(state.view === 'health') el.innerHTML = renderHealthView();
+    else if(state.view === 'settings') el.innerHTML = renderSettingsView();
+  } catch(err){
+    console.error('Render error on view:', state.view, err);
+    el.innerHTML = `
+      <div class="card" style="padding:24px; max-width:520px;">
+        <h2 style="font-family:var(--font-display); margin-top:0;">This page hit a snag</h2>
+        <p style="color:var(--slate); font-size:13px; line-height:1.6;">
+          ${escapeHtml(err.message)}
+        </p>
+        <p style="color:var(--slate); font-size:13px;">This is usually caused by a settings value left over from an older version. Repairing resets any missing appearance settings to their defaults — it won't touch your tasks, lists, or health log.</p>
+        <button class="btn brass" onclick="repairSettingsAndRetry()">Repair &amp; Retry</button>
+      </div>`;
+  }
+}
+
+async function repairSettingsAndRetry(){
+  backfillSettingsDefaults();
+  await saveSettings();
+  renderMain();
+  showToast('Settings repaired');
+}
+
+/* =========================================================
+   RENDER: DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const rows = getDashboardTasks();
+  const overdueN = getOverdueOneTime().length;
+  const doneToday = state.tasks.oneTime.filter(t=>t.done && t.due===todayStr()).length +
+    state.tasks.recurring.filter(t=> isDueOn(t, todayStr()) && isCompletedOn(t.id, todayStr())).length;
+  const totalToday = countDueToday() + doneToday;
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">${humanDate(state.selectedDate)}</h1>
+        <div class="page-sub">${fullDate(state.selectedDate)}</div>
+      </div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input type="text" placeholder="Search tasks…" value="${escapeHtml(state.searchQuery)}" oninput="onSearch(this.value)">
+      </div>
+      <button class="btn brass" onclick="openNewTaskChooser()">+ New Task</button>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-card">
+        <div class="stat-num">${totalToday}</div>
+        <div class="stat-label">Due Today</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-num">${doneToday}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card flag">
+        <div class="stat-num">${overdueN}</div>
+        <div class="stat-label">Overdue</div>
+      </div>
+      <div class="stat-card brass">
+        <div class="stat-num">${state.tasks.recurring.length}</div>
+        <div class="stat-label">Recurring Tasks</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="chip-select">
+        ${['Today','Next7','Next30'].map(f=>`<button class="${state.dashboardFilter===f?'active':''}" onclick="setDashboardFilter('${f}')">${f==='Today'?'Today':f==='Next7'?'Next 7 Days':'Next 30 Days'}</button>`).join('')}
+      </div>
+      <input type="date" class="filter-date" value="${state.selectedDate}" onchange="setSelectedDate(this.value)">
+      ${state.selectedDate!==todayStr() ? `<button class="btn ghost sm" onclick="setSelectedDate('${todayStr()}')">↺ Jump to Today</button>` : ''}
+      <div class="toggle-switch-row" style="margin-left:auto;">
+        <span>Group by location</span>
+        <div class="toggle-switch ${state.groupByLocation?'on':''}" onclick="toggleGroupByLocation()"><div class="knob"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Tasks</h2>
+        <span class="section-count">${rows.length} shown</span>
+      </div>
+      ${state.groupByLocation ? renderGroupedTickets(rows) : renderTicketList(rows)}
+    </div>
+  `;
+}
+
+function toggleGroupByLocation(){
+  state.groupByLocation = !state.groupByLocation;
+  renderMain();
+}
+
+const collapsedGroups = new Set();
+function toggleGroupCollapse(loc){
+  if(collapsedGroups.has(loc)) collapsedGroups.delete(loc);
+  else collapsedGroups.add(loc);
+  renderMain();
+}
+
+function renderGroupedTickets(rows){
+  if(rows.length === 0){
+    return `<div class="card empty-state"><span class="glyph">☺</span>Nothing here. Clear runway ahead.</div>`;
+  }
+  const groups = {};
+  rows.forEach(r=>{
+    const loc = r.task.location || 'Unassigned';
+    if(!groups[loc]) groups[loc] = [];
+    groups[loc].push(r);
+  });
+  const locOrder = state.settings.locations.filter(l=>groups[l]).concat(Object.keys(groups).filter(l=>!state.settings.locations.includes(l)));
+  return locOrder.map(loc=>{
+    const groupRows = groups[loc];
+    const collapsed = collapsedGroups.has(loc);
+    return `
+      <div class="group-block">
+        <div class="group-header ${collapsed?'collapsed':''}" onclick="toggleGroupCollapse('${escapeHtml(loc)}')">
+          <span class="caret">▾</span>
+          <h3>${escapeHtml(loc)}</h3>
+          <span class="group-count">${groupRows.length}</span>
+        </div>
+        <div class="group-body ${collapsed?'collapsed':''}">
+          ${sortWithCompletedLast(groupRows).map(r=>renderTicket(r, {hideLocation:true})).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ---------- New Task type chooser ---------- */
+function openNewTaskChooser(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'typeChooserOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>New Task</h3>
+      <div class="modal-sub">What kind of task is this?</div>
+      <div class="type-choice-grid">
+        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); openTaskModal('oneTime');">
+          <span class="tc-icon">◎</span>
+          <div class="tc-title">One-Time</div>
+          <div class="tc-sub">Happens once, has a due date.</div>
+        </button>
+        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); openTaskModal('recurring');">
+          <span class="tc-icon">↻</span>
+          <div class="tc-title">Recurring</div>
+          <div class="tc-sub">Repeats on a schedule.</div>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('typeChooserOverlay').remove();">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function isRowCompleted(row){
+  return row.kind==='recurring' ? isCompletedOn(row.task.id, row.dueOn) : !!row.task.done;
+}
+function isRowResolved(row){
+  // "resolved" = no longer needs attention today — either done or explicitly
+  // flagged missed. Both sink to the bottom of their section.
+  return isRowCompleted(row) || (row.kind==='recurring' && isMissedOn(row.task.id, row.dueOn));
+}
+function sortWithCompletedLast(rows){
+  return rows.map((r,i)=>({r,i})).sort((a,b)=>{
+    const aDone = isRowResolved(a.r), bDone = isRowResolved(b.r);
+    if(aDone !== bDone) return aDone ? 1 : -1;
+    return a.i - b.i; // stable: preserve original relative order otherwise
+  }).map(x=>x.r);
+}
+
+function renderTicketList(rows, opts){
+  if(rows.length === 0){
+    return `<div class="card empty-state"><span class="glyph">☺</span>Nothing here. Clear runway ahead.</div>`;
+  }
+  return `<div class="ticket-list">${sortWithCompletedLast(rows).map(r=>renderTicket(r, opts)).join('')}</div>`;
+}
+
+function renderTicket(row, opts){
+  opts = opts || {};
+  const t = row.task;
+  const isRecurring = row.kind === 'recurring';
+  const dateForCompletion = row.dueOn;
+  const completed = isRecurring ? isCompletedOn(t.id, dateForCompletion) : t.done;
+  const missed = isRecurring && isMissedOn(t.id, dateForCompletion);
+  const overdue = row.overdue;
+  const streak = isRecurring ? computeStreak(t, addDays(dateForCompletion,-1)) : 0;
+  const onTimeStats = isRecurring ? computeOnTimeStats(t) : null;
+
+  const typeTag = isRecurring
+    ? `<span class="tag recur" style="background:${recurTypeColor(t.type)}22; color:${recurTypeColor(t.type)};">${t.type} ↻</span>`
+    : `<span class="tag tag-onetime">One-Time</span>`;
+
+  const priTag = `<span class="tag pri-${t.priority}">${t.priority}</span>`;
+  const siloTag = `<span class="tag" style="background:${siloColor(t.silo)}22; color:${siloColor(t.silo)};">${escapeHtml(t.silo)}</span>`;
+  const locTag = opts.hideLocation ? '' : `<span class="tag">${escapeHtml(t.location)}</span>`;
+  const statsTag = onTimeStats ? `<span class="tag stat-pill" title="${onTimeStats.total} logged occurrence${onTimeStats.total===1?'':'s'}">${onTimeStats.onTimePercent}% on-time${onTimeStats.avgDelayDays>0?` · +${onTimeStats.avgDelayDays}d avg`:''}</span>` : '';
+
+  const dueLabel = isRecurring
+    ? (t.detail ? `${t.type}${t.type==='Days of Week'||t.type==='Weekly'||t.type==='Bi-Weekly' ? ' · '+t.detail : ''}` : t.type)
+    : humanDate(t.due);
+
+  // one stamp at a time, priority: overdue > rescheduled > streak
+  let stamp = '';
+  if(overdue){
+    stamp = `<div class="stamp overdue">Overdue</div>`;
+  } else if(!isRecurring && t.dueHistory && t.dueHistory.length){
+    stamp = `<div class="stamp reschedule" onclick="event.stopPropagation(); showRescheduleHistory('${t.id}')" title="Click to see previous dates">Rescheduled ${t.dueHistory.length}×</div>`;
+  } else if(isRecurring && streak >= 2){
+    stamp = `<div class="stamp streak">${streak} day streak</div>`;
+  }
+
+  const tickClass = completed ? 'checked' : (missed ? 'missed-tick' : '');
+  const tickGlyph = missed ? '✕' : '✓';
+  const missedBtn = isRecurring
+    ? `<button class="icon-btn ${missed?'missed-active':''}" title="${missed?'Unmark missed':'Mark missed for this day'}" onclick="toggleMissedTask('${t.id}','${dateForCompletion}')">⚑</button>`
+    : '';
+  const selectBox = state.batchSelectMode
+    ? `<button class="li-check select-check ${state.selectedTaskIds.has(t.id)?'checked':''}" onclick="toggleTaskSelected('${t.id}')">${state.selectedTaskIds.has(t.id)?'✓':''}</button>`
+    : '';
+
+  return `
+    <div class="ticket ${completed?'done':''} ${overdue?'overdue':''} ${missed?'missed':''}">
+      ${stamp}
+      ${selectBox}
+      <button class="tick-btn ${tickClass}" onclick="toggleComplete('${row.kind}','${t.id}','${dateForCompletion}')">${tickGlyph}</button>
+      <div class="ticket-body">
+        <div class="ticket-title-row">
+          <span class="ticket-title">${escapeHtml(t.name)}</span>
+        </div>
+        <div class="ticket-meta">
+          ${locTag}
+          ${siloTag}
+          ${typeTag}
+          ${priTag}
+          ${statsTag}
+          <span>${dueLabel}</span>
+        </div>
+      </div>
+      <div class="ticket-actions">
+        ${missedBtn}
+        <button class="icon-btn" title="Edit" onclick="openTaskModal('${row.kind}','${t.id}')">✎</button>
+        <button class="icon-btn" title="Delete" onclick="deleteTask('${row.kind}','${t.id}')">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+function onSearch(v){
+  state.searchQuery = v;
+  renderMain();
+  // restore focus
+  const inp = document.querySelector('.search-box input');
+  if(inp){ inp.focus(); inp.selectionStart = inp.selectionEnd = inp.value.length; }
+}
+function setDashboardFilter(f){ state.dashboardFilter = f; renderMain(); }
+function setSelectedDate(v){ state.selectedDate = v; renderMain(); }
+function setLocationFilter(v){ state.locationFilter = v; renderMain(); }
+
+async function toggleComplete(kind, taskId, dateStr, isUndo){
+  if(kind === 'oneTime'){
+    const t = state.tasks.oneTime.find(x=>x.id===taskId);
+    if(!t) return;
+    const prevDone = t.done;
+    t.done = !t.done;
+    t.doneDate = t.done ? todayStr() : null;
+    await saveTasks();
+    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: prevDone, name: t.name });
+  } else {
+    const t = state.tasks.recurring.find(x=>x.id===taskId);
+    if(!t) return;
+    const cur = isCompletedOn(taskId, dateStr);
+    toggleDone(taskId, dateStr);
+    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: cur, name: t.name });
+  }
+  renderMain();
+}
+
+async function toggleMissedTask(taskId, dateStr){
+  toggleMissed(taskId, dateStr);
+  renderMain();
+}
+
+/* ---------- Undo (Ctrl+Z / Cmd+Z) ---------- */
+function pushUndo(entry){
+  state.undoStack.push(entry);
+  if(state.undoStack.length > MAX_UNDO) state.undoStack.shift();
+}
+async function undoLast(){
+  const entry = state.undoStack.pop();
+  if(!entry) { showToast('Nothing to undo'); return; }
+  if(entry.kind === 'oneTime'){
+    const t = state.tasks.oneTime.find(x=>x.id===entry.taskId);
+    if(t){ t.done = entry.prevValue; t.doneDate = t.done ? todayStr() : null; await saveTasks(); }
+  } else {
+    setOccurrenceStatus(entry.taskId, entry.dateStr, entry.prevValue ? 'done' : null);
+  }
+  renderMain();
+  showToast(`Undid: ${entry.name}`);
+}
+document.addEventListener('keydown', (e)=>{
+  const isUndoCombo = (e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z');
+  if(isUndoCombo && !e.shiftKey){
+    // don't hijack undo while typing in a text field
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
+    e.preventDefault();
+    undoLast();
+  }
+  const isSaveCombo = (e.ctrlKey || e.metaKey) && e.key === 'Enter';
+  if(isSaveCombo && document.getElementById('modalOverlay')){
+    e.preventDefault();
+    saveTaskModal();
+  }
+});
+
+async function deleteTask(kind, taskId){
+  if(!confirm('Delete this task? This cannot be undone.')) return;
+  if(kind === 'oneTime'){
+    state.tasks.oneTime = state.tasks.oneTime.filter(t=>t.id!==taskId);
+  } else {
+    state.tasks.recurring = state.tasks.recurring.filter(t=>t.id!==taskId);
+    delete state.tasks.completions[taskId];
+  }
+  await saveTasks();
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaDeleteMatch(kind === 'oneTime' ? 'one_time_tasks' : 'recurring_tasks', `id=eq.${encodeURIComponent(taskId)}`),
+      ()=> kind === 'recurring' ? supaDeleteMatch('task_completions', `task_id=eq.${encodeURIComponent(taskId)}`) : null,
+    ]));
+  }
+  renderMain();
+  showToast('Task deleted');
+}
+
+/* =========================================================
+   RENDER: OVERDUE VIEW
+   ========================================================= */
+function renderOverdueView(){
+  const rows = getOverdueOneTime().filter(matchesFilters).map(t=>({kind:'oneTime', task:t, dueOn:t.due, overdue:true}));
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Overdue</h1>
+        <div class="page-sub">One-time tasks past their due date</div>
+      </div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input type="text" placeholder="Search…" value="${escapeHtml(state.searchQuery)}" oninput="onSearch(this.value)">
+      </div>
+    </div>
+    <div class="section">
+      ${renderTicketList(rows)}
+    </div>
+  `;
+}
+
+/* =========================================================
+   RENDER: ALL TASKS VIEW
+   ========================================================= */
+if(!state.tasksTab) state.tasksTab = 'oneTime';
+
+if(!state.tasksGroupByLocation) state.tasksGroupByLocation = true;
+if(!state.batchSelectMode) state.batchSelectMode = false;
+if(!state.selectedTaskIds) state.selectedTaskIds = new Set();
+
+function renderTasksView(){
+  const tab = state.tasksTab;
+  const oneTimeList = state.tasks.oneTime.filter(matchesFilters)
+    .sort((a,b)=> (a.due||'9999') < (b.due||'9999') ? -1 : 1);
+  const recurringList = state.tasks.recurring.filter(matchesFilters)
+    .sort((a,b)=> a.name.localeCompare(b.name));
+
+  const rows = tab === 'oneTime'
+    ? oneTimeList.map(t=>({kind:'oneTime', task:t, dueOn:t.due||'', overdue:oneTimeIsOverdue(t)}))
+    : recurringList.map(t=>({kind:'recurring', task:t, dueOn:todayStr(), overdue:false}));
+
+  const selCount = state.selectedTaskIds.size;
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">All Tasks</h1>
+        <div class="page-sub">${state.tasks.oneTime.length} one-time · ${state.tasks.recurring.length} recurring</div>
+      </div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input type="text" placeholder="Search tasks…" value="${escapeHtml(state.searchQuery)}" oninput="onSearch(this.value)">
+      </div>
+      ${state.batchSelectMode
+        ? `<button class="btn secondary" onclick="exitBatchSelect()">Cancel Select</button>`
+        : `<button class="btn secondary" onclick="enterBatchSelect()">Select</button>`}
+      <button class="btn brass" onclick="openTaskModal('${tab}')">+ New ${tab==='oneTime'?'One-Time':'Recurring'} Task</button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="chip-select">
+        <button class="${tab==='oneTime'?'active':''}" onclick="setTasksTab('oneTime')">One-Time (${state.tasks.oneTime.length})</button>
+        <button class="${tab==='recurring'?'active':''}" onclick="setTasksTab('recurring')">Recurring (${state.tasks.recurring.length})</button>
+      </div>
+      <div class="toggle-switch-row" style="margin-left:auto;">
+        <span>Group by location</span>
+        <div class="toggle-switch ${state.tasksGroupByLocation?'on':''}" onclick="toggleTasksGroupByLocation()"><div class="knob"></div></div>
+      </div>
+    </div>
+
+    ${state.batchSelectMode ? renderBatchBar(tab, selCount) : ''}
+
+    ${state.tasksGroupByLocation ? renderGroupedTickets(rows) : renderTicketList(rows)}
+  `;
+}
+function setTasksTab(t){ state.tasksTab = t; state.searchQuery=''; exitBatchSelect(); renderMain(); }
+function toggleTasksGroupByLocation(){ state.tasksGroupByLocation = !state.tasksGroupByLocation; renderMain(); }
+
+/* ---------- Batch edit ---------- */
+function enterBatchSelect(){ state.batchSelectMode = true; state.selectedTaskIds = new Set(); renderMain(); }
+function exitBatchSelect(){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); renderMain(); }
+function toggleTaskSelected(taskId){
+  if(state.selectedTaskIds.has(taskId)) state.selectedTaskIds.delete(taskId);
+  else state.selectedTaskIds.add(taskId);
+  renderMain();
+}
+function renderBatchBar(tab, selCount){
+  return `
+    <div class="card batch-bar">
+      <div class="batch-bar-count">${selCount} selected</div>
+      <select id="batch_location"><option value="">Location: no change</option>${state.settings.locations.map(l=>`<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('')}</select>
+      <select id="batch_silo"><option value="">Silo: no change</option>${state.settings.silos.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}</select>
+      <select id="batch_priority"><option value="">Priority: no change</option>${PRIORITIES.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
+      ${tab==='oneTime' ? `
+        <label class="batch-date-toggle"><input type="checkbox" id="batch_due_enable" onchange="document.getElementById('batch_due').disabled=!this.checked;"> Set due date:</label>
+        <input type="date" id="batch_due" disabled>
+      ` : ''}
+      <button class="btn brass sm" ${selCount===0?'disabled':''} onclick="applyBatchEdit('${tab}')">Apply to ${selCount}</button>
+    </div>
+  `;
+}
+async function applyBatchEdit(tab){
+  const location = document.getElementById('batch_location').value;
+  const silo = document.getElementById('batch_silo').value;
+  const priority = document.getElementById('batch_priority').value;
+  const dueEnabled = tab==='oneTime' && document.getElementById('batch_due_enable').checked;
+  const due = dueEnabled ? document.getElementById('batch_due').value : null;
+
+  if(!location && !silo && !priority && !dueEnabled){ showToast('Pick at least one field to change'); return; }
+
+  const list = tab==='oneTime' ? state.tasks.oneTime : state.tasks.recurring;
+  let count = 0;
+  list.forEach(t=>{
+    if(!state.selectedTaskIds.has(t.id)) return;
+    if(location) t.location = location;
+    if(silo) t.silo = silo;
+    if(priority) t.priority = priority;
+    if(dueEnabled && due){
+      if(!t.dueHistory) t.dueHistory = [];
+      if(t.due && t.due !== due) t.dueHistory.push(t.due);
+      t.due = due;
+    }
+    count++;
+  });
+  await saveTasks();
+  exitBatchSelect();
+  renderMain();
+  showToast(`Updated ${count} task${count===1?'':'s'}`);
+}
+
+/* =========================================================
+   RENDER: CALENDAR VIEW
+   ========================================================= */
+function densityForDate(dateStr){
+  let count = 0, overdueCount = 0;
+  state.tasks.oneTime.forEach(t=>{
+    if(t.due === dateStr){
+      count++;
+      if(!t.done && dateStr < todayStr()) overdueCount++;
+    }
+  });
+  if(state.calDensityMode === 'all'){
+    state.tasks.recurring.forEach(t=>{ if(isDueOn(t, dateStr)) count++; });
+  }
+  return { count, overdueCount };
+}
+function setCalDensityMode(mode){
+  state.calDensityMode = mode;
+  renderMain();
+}
+async function toggleWeekendDay(day){
+  const arr = state.settings.weekendDays;
+  const idx = arr.indexOf(day);
+  if(idx === -1) arr.push(day); else arr.splice(idx,1);
+  await saveSettings();
+  renderMain();
+}
+
+function renderCalendarView(){
+  if(!state.calMonthCursor){
+    const t = parseDate(todayStr());
+    state.calMonthCursor = { year: t.getFullYear(), month: t.getMonth() };
+  }
+  const { year, month } = state.calMonthCursor;
+  const firstOfMonth = new Date(year, month, 1);
+  const startDow = firstOfMonth.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const weekendDays = state.settings.weekendDays || [];
+
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-cell empty"></div>`;
+  for(let day=1; day<=daysInMonth; day++){
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const { count, overdueCount } = densityForDate(dateStr);
+    const isToday = dateStr === todayStr();
+    const dow = new Date(year, month, day).getDay();
+    const isWeekend = weekendDays.includes(DOW_ABBR[dow]);
+    const dots = Array.from({length: Math.min(count,6)}).map((_,i)=>
+      `<span class="dot ${i < overdueCount ? 'over':''}"></span>`
+    ).join('');
+    cells += `
+      <div class="cal-cell ${isToday?'today':''} ${isWeekend?'weekend':''}" onclick="jumpToDate('${dateStr}')">
+        <span class="date-num">${day}</span>
+        <div>
+          <div class="dot-row">${dots}</div>
+          ${count>0 ? `<span class="density-count">${count}</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Calendar</h1>
+        <div class="page-sub">Task density by day — click a day to jump to Dashboard</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="chip-select">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<button class="weekend-day-pill ${weekendDays.includes(d)?'active':''}" onclick="toggleWeekendDay('${d}')">${d}</button>`).join('')}
+      </div>
+      <span class="page-sub">Weekend days</span>
+    </div>
+
+    <div class="filter-bar">
+      <div class="chip-select">
+        <button class="${state.calDensityMode==='all'?'active':''}" onclick="setCalDensityMode('all')">All Tasks</button>
+        <button class="${state.calDensityMode==='oneTime'?'active':''}" onclick="setCalDensityMode('oneTime')">One-Time Only</button>
+      </div>
+      <div class="sync-status" style="margin-left:auto;">
+        <span class="dot" style="background:var(--brass);"></span> Due that day
+        &nbsp;&nbsp;<span class="dot over" style="background:var(--flag);"></span> Overdue &amp; incomplete
+        &nbsp;&nbsp;<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:color-mix(in srgb, var(--brass) 8%, var(--paper-raised));border:1px solid var(--line);"></span> Weekend
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px;">
+      <div class="cal-header">
+        <button class="btn secondary sm" onclick="shiftMonth(-1)">← Prev</button>
+        <h2>${MONTH_NAMES[month]} ${year}</h2>
+        <button class="btn secondary sm" onclick="shiftMonth(1)">Next →</button>
+        <button class="btn ghost sm" onclick="goToCurrentMonth()">Today</button>
+      </div>
+      <div class="cal-grid">
+        ${DOW_ABBR.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+  `;
+}
+function shiftMonth(delta){
+  let { year, month } = state.calMonthCursor;
+  month += delta;
+  if(month < 0){ month = 11; year--; }
+  if(month > 11){ month = 0; year++; }
+  state.calMonthCursor = { year, month };
+  renderMain();
+}
+function goToCurrentMonth(){
+  const t = parseDate(todayStr());
+  state.calMonthCursor = { year: t.getFullYear(), month: t.getMonth() };
+  renderMain();
+}
+function jumpToDate(dateStr){
+  state.selectedDate = dateStr;
+  state.dashboardFilter = 'Today';
+  state.view = 'dashboard';
+  render();
+}
+
+/* =========================================================
+   RENDER: LISTS VIEW
+   ========================================================= */
+function renderListsView(){
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Lists</h1>
+        <div class="page-sub">${state.lists.length} checklists — packing, shopping, gifts &amp; more</div>
+      </div>
+      <button class="btn brass" onclick="addNewList()">+ New List</button>
+    </div>
+    <div class="lists-grid">
+      ${state.lists.map(l=>renderListCard(l)).join('')}
+    </div>
+  `;
+}
+
+function renderListCard(list){
+  const doneCount = list.items.filter(i=>i.done).length;
+  return `
+    <div class="card list-card">
+      <h4>
+        <span>${escapeHtml(list.title)}</span>
+        <button class="icon-btn" title="Delete list" onclick="deleteList('${list.id}')">✕</button>
+      </h4>
+      <div class="page-sub" style="margin-bottom:8px;">${doneCount}/${list.items.length} done</div>
+      <div class="list-items">
+        ${list.items.map(item=>`
+          <div class="list-item ${item.done?'done':''}">
+            <button class="li-check ${item.done?'checked':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>
+            <span class="li-text">${escapeHtml(item.text)}</span>
+            ${item.category ? `<span class="li-cat">${escapeHtml(item.category)}</span>` : ''}
+            <button class="icon-btn" style="width:18px;height:18px;font-size:11px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
+          </div>
+        `).join('') || `<div class="page-sub">No items yet.</div>`}
+      </div>
+      <div class="add-item-row">
+        <input type="text" id="addItemInput_${list.id}" placeholder="Add item…" onkeydown="if(event.key==='Enter'){addListItem('${list.id}', this.value); this.value='';}">
+        <button class="btn secondary sm" onclick="const inp=this.previousElementSibling; addListItem('${list.id}', inp.value); inp.value='';">Add</button>
+      </div>
+    </div>
+  `;
+}
+
+async function toggleListItem(listId, itemId){
+  const list = state.lists.find(l=>l.id===listId);
+  const item = list?.items.find(i=>i.id===itemId);
+  if(!item) return;
+  item.done = !item.done;
+  await saveLists();
+  renderMain();
+}
+async function deleteListItem(listId, itemId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  list.items = list.items.filter(i=>i.id!==itemId);
+  await saveLists();
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(itemId)}`),
+    ]));
+  }
+  renderMain();
+}
+async function addListItem(listId, text){
+  text = (text||'').trim();
+  if(!text) return;
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  list.items.push({ id: newId('item'), text, done:false });
+  await saveLists();
+  renderMain();
+  // keep the person typing without needing to re-click the box
+  const inp = document.getElementById(`addItemInput_${listId}`);
+  if(inp){ inp.focus(); }
+}
+async function deleteList(listId){
+  if(!confirm('Delete this entire list?')) return;
+  state.lists = state.lists.filter(l=>l.id!==listId);
+  await saveLists();
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps([
+      ()=> supaDeleteMatch('lists', `id=eq.${encodeURIComponent(listId)}`),
+      ()=> supaDeleteMatch('list_items', `list_id=eq.${encodeURIComponent(listId)}`),
+    ]));
+  }
+  renderMain();
+}
+async function addNewList(){
+  const title = prompt('Name this list:');
+  if(!title || !title.trim()) return;
+  state.lists.push({ id: newId('list'), title: title.trim(), items: [] });
+  await saveLists();
+  renderMain();
+}
+
+/* =========================================================
+   RENDER: HEALTH LOG VIEW
+   ========================================================= */
+function getTodayHealth(){
+  let entry = state.health.find(h=>h.date === todayStr());
+  if(!entry){
+    entry = { date: todayStr(), water: null, no2: null, calDeficit: null };
+    state.health.push(entry);
+  }
+  return entry;
+}
+
+function renderHealthView(){
+  const today = getTodayHealth();
+  const history = [...state.health].sort((a,b)=> a.date < b.date ? 1 : -1).slice(0,30);
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Health Log</h1>
+        <div class="page-sub">Daily wellness tracking</div>
+      </div>
+    </div>
+
+    <div class="health-grid">
+      <div class="card health-input-card">
+        <label>Water Intake</label>
+        <div class="big-input">
+          <input type="number" value="${today.water??''}" placeholder="0" onchange="updateHealth('water', this.value)">
+          <span class="unit">ml</span>
+        </div>
+      </div>
+      <div class="card health-input-card">
+        <label>Calorie Deficit</label>
+        <div class="big-input">
+          <input type="number" value="${today.calDeficit??''}" placeholder="0" onchange="updateHealth('calDeficit', this.value)">
+          <span class="unit">kcal</span>
+        </div>
+      </div>
+      <div class="card health-input-card">
+        <label>No. 2</label>
+        <div class="toggle-yn">
+          <button class="${today.no2===true?'active':''}" onclick="updateHealth('no2', true)">Yes</button>
+          <button class="${today.no2===false?'active':''}" onclick="updateHealth('no2', false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>History</h2></div>
+      <div class="card" style="padding:6px 16px;">
+        <table class="log-table">
+          <thead><tr><th>Date</th><th>Water (ml)</th><th>No. 2</th><th>Cal Deficit</th></tr></thead>
+          <tbody>
+            ${history.map(h=>`
+              <tr>
+                <td>${humanDate(h.date)}</td>
+                <td>${h.water ?? '—'}</td>
+                <td>${h.no2===true?'Yes':h.no2===false?'No':'—'}</td>
+                <td>${h.calDeficit ?? '—'}</td>
+              </tr>`).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--slate);padding:20px;">No entries yet.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+async function updateHealth(field, value){
+  const entry = getTodayHealth();
+  if(field === 'no2') entry.no2 = value;
+  else entry[field] = value === '' ? null : Number(value);
+  await saveHealth();
+  renderMain();
+}
+
+/* =========================================================
+   RENDER: SETTINGS VIEW
+   ========================================================= */
+function renderSettingsView(){
+  const syncOn = syncConfigured();
+  const s = state.settings.sync || {};
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <div class="page-sub">Manage locations, silos, and cross-device sync</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Locations</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="tag-editor">
+          ${state.settings.locations.map(l=>`
+            <span class="tag-editable">${escapeHtml(l)}
+              <button onclick="renameTag('locations','${escapeHtml(l)}')" title="Rename">✎</button>
+              <button onclick="removeTag('locations','${escapeHtml(l)}')" title="Remove">✕</button>
+            </span>
+          `).join('')}
+        </div>
+        <div class="add-item-row" style="max-width:320px;">
+          <input type="text" placeholder="New location…" id="newLocationInput" onkeydown="if(event.key==='Enter'){addTag('locations', this.value); this.value='';}">
+          <button class="btn secondary sm" onclick="const i=document.getElementById('newLocationInput'); addTag('locations', i.value); i.value='';">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Location Order</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Drag to set the order locations appear in when "Group by location" is on.</div>
+        <div class="reorder-list" id="locationReorderList">
+          ${state.settings.locations.map((l,i)=>`
+            <div class="reorder-item" draggable="true" data-index="${i}"
+                 ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDragDrop(event)" ondragend="onDragEnd(event)">
+              <span class="drag-handle">⠿</span>
+              <span>${escapeHtml(l)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Silos</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="tag-editor">
+          ${state.settings.silos.map(sVal=>`
+            <span class="tag-editable">${escapeHtml(sVal)}
+              <button onclick="renameTag('silos','${escapeHtml(sVal)}')" title="Rename">✎</button>
+              <button onclick="removeTag('silos','${escapeHtml(sVal)}')" title="Remove">✕</button>
+            </span>
+          `).join('')}
+        </div>
+        <div class="add-item-row" style="max-width:320px;">
+          <input type="text" placeholder="New silo…" id="newSiloInput" onkeydown="if(event.key==='Enter'){addTag('silos', this.value); this.value='';}">
+          <button class="btn secondary sm" onclick="const i=document.getElementById('newSiloInput'); addTag('silos', i.value); i.value='';">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Security</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">
+          The passcode screen uses your Supabase PIN (or, if sync isn't set up, a local passcode). This deters casual viewing of a shared link — it's not real security against someone who deliberately inspects the page source.
+        </div>
+        <div class="toggle-switch-row" style="margin-bottom:12px;">
+          <div class="toggle-switch ${state.settings.rememberUnlock!==false?'on':''}" onclick="toggleRememberUnlock()"><div class="knob"></div></div>
+          <span>${state.settings.rememberUnlock!==false ? 'Stay unlocked on this device' : 'Ask for passcode every time'}</span>
+        </div>
+        <button class="btn secondary sm" onclick="lockNow()">Lock Now</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Cross-Device Sync</h2>
+        <span class="sync-status ${syncOn?'on':''}"><span class="sync-dot"></span>${syncOn?'Connected':'Local only'}</span>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:14px;">
+          Powered by Supabase. Set this up once per device using the same URL, key, and PIN to keep everything in sync.
+        </div>
+        ${syncOn ? `
+          <div class="${state.syncMeta.status==='error'?'sync-warning':'newday-summary'}" style="margin-bottom:14px;">
+            <div class="row"><span>Status</span><b>${state.syncMeta.status==='syncing'?`Syncing${state.syncMeta.progress&&state.syncMeta.progress.total?` ${Math.round((state.syncMeta.progress.current/state.syncMeta.progress.total)*100)}%`:'…'}`:state.syncMeta.status==='error'||state.syncMeta.dirty?'Pending':'Synced'}</b></div>
+            <div class="row"><span>Last confirmed sync</span><b>${state.syncMeta.lastSyncedAt ? new Date(state.syncMeta.lastSyncedAt).toLocaleString() : 'never'}</b></div>
+            ${state.syncMeta.lastError ? `<div class="row"><span>Last error</span><b>${escapeHtml(state.syncMeta.lastError)}</b></div>` : ''}
+          </div>
+          <button class="btn secondary sm" style="margin-bottom:14px;" onclick="retrySync()">Force Sync Now</button>
+        ` : ''}
+
+        <div class="field">
+          <label>1. Run this once in your Supabase project's SQL Editor</label>
+          <div class="sql-block" id="sqlBlock">-- Run this if you're setting up a brand new Supabase project:
+create table if not exists one_time_tasks (
+  id text primary key, pin text not null, name text not null,
+  location text, silo text, priority text default 'Medium',
+  due date, done boolean default false, done_date date,
+  due_history jsonb default '[]',
+  notes text, meta jsonb default '{}', updated_at timestamptz default now()
+);
+create table if not exists recurring_tasks (
+  id text primary key, pin text not null, name text not null,
+  location text, silo text, priority text default 'Medium',
+  type text, detail text, start_date date, end_date date,
+  notes text, meta jsonb default '{}', updated_at timestamptz default now()
+);
+create table if not exists task_completions (
+  pin text not null, task_id text not null, completed_date date not null,
+  status text default 'done', logged_at timestamptz,
+  primary key (pin, task_id, completed_date)
+);
+create table if not exists lists (
+  id text primary key, pin text not null, title text not null,
+  sort_order int default 0, updated_at timestamptz default now()
+);
+create table if not exists list_items (
+  id text primary key, pin text not null, list_id text not null,
+  text text not null, category text, done boolean default false, sort_order int default 0
+);
+create table if not exists health_logs (
+  pin text not null, log_date date not null,
+  water int, no2 boolean, cal_deficit int,
+  primary key (pin, log_date)
+);
+create table if not exists app_settings (
+  pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
+  last_active_date date
+);
+
+-- Already had these tables from an earlier version? Run these two lines
+-- instead — they only ADD the new columns, nothing existing is touched:
+alter table one_time_tasks add column if not exists due_history jsonb default '[]';
+alter table task_completions add column if not exists status text default 'done';
+alter table task_completions add column if not exists logged_at timestamptz;
+
+do $$
+declare t text;
+begin
+  for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','app_settings'])
+  loop
+    execute format('alter table %I enable row level security;', t);
+    execute format('drop policy if exists "allow anon all" on %I;', t);
+    execute format('create policy "allow anon all" on %I for all using (true) with check (true);', t);
+  end loop;
+end $$;</div>
+          <button class="btn secondary sm" style="margin-top:8px;" onclick="copySql()">Copy SQL</button>
+          <div class="page-sub" style="margin-top:8px;">
+            Already had the old single-table version connected? This SQL only adds the new tables — safe to run again. Hit Connect below and your current data will populate them.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>2. Project URL</label>
+          <input type="text" id="syncUrl" placeholder="https://xxxxx.supabase.co" value="${escapeHtml(s.url||'')}">
+        </div>
+        <div class="field">
+          <label>3. Anon / Public API Key</label>
+          <input type="text" id="syncKey" placeholder="eyJhbGciOi..." value="${escapeHtml(s.anonKey||'')}">
+        </div>
+        <div class="field">
+          <label>4. Your PIN (same on every device)</label>
+          <input type="text" id="syncPin" placeholder="e.g. 4 digit or short code" value="${escapeHtml(s.pin||'')}">
+        </div>
+
+        <div class="sync-warning">
+          These tables are reachable by anyone holding your project's anon key and PIN — the PIN isn't enforced by the database, only by the app. Don't reuse a PIN you use for anything sensitive elsewhere.
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-start; margin-top:16px;">
+          <button class="btn brass" onclick="connectSync()">Connect &amp; Sync</button>
+          ${syncOn ? `<button class="btn secondary" onclick="disconnectSync()">Disconnect</button>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Appearance</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="field">
+          <label>Accent Color</label>
+          <div class="swatch-row">
+            ${ACCENT_PRESETS.map(c=>`<div class="swatch ${state.settings.accentColor===c?'selected':''}" style="background:${c};" onclick="setAccentColor('${c}')"></div>`).join('')}
+          </div>
+          <div class="color-row">
+            <label>Custom</label>
+            <input type="color" value="${state.settings.accentColor || '#B9862F'}" onchange="setAccentColor(this.value)">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Completed Task Color</label>
+          <div class="swatch-row">
+            ${COMPLETED_PRESETS.map(c=>`<div class="swatch ${state.settings.completedColor===c?'selected':''}" style="background:${c};" onclick="setCompletedColor('${c}')"></div>`).join('')}
+          </div>
+          <div class="color-row">
+            <label>Custom</label>
+            <input type="color" value="${state.settings.completedColor || '#3C7A73'}" onchange="setCompletedColor(this.value)">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Dark Mode</label>
+          <div class="toggle-switch-row">
+            <div class="toggle-switch ${state.settings.darkMode?'on':''}" onclick="toggleDarkMode()"><div class="knob"></div></div>
+            <span>${state.settings.darkMode?'On':'Off'} — also toggleable anytime from the ${state.settings.darkMode?'☀':'☾'} icon in the sidebar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Recurring Task Colors</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Each recurrence type gets its own tag color on task cards.</div>
+        ${RECUR_TYPES.map(type=>`
+          <div class="color-row">
+            <label>${type}</label>
+            <input type="color" value="${recurTypeColor(type).startsWith('#')?recurTypeColor(type):'#3C7A73'}" onchange="setRecurTypeColor('${type}', this.value)">
+            <span class="tag recur" style="background:${recurTypeColor(type)}22; color:${recurTypeColor(type)};">${type} ↻</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Silo Colors</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Each silo gets its own tag color. New silos get a stable auto-color until you set one here.</div>
+        ${state.settings.silos.map(silo=>`
+          <div class="color-row">
+            <label>${escapeHtml(silo)}</label>
+            <input type="color" value="${siloColor(silo)}" onchange="setSiloColor('${escapeHtml(silo)}', this.value)">
+            <span class="tag" style="background:${siloColor(silo)}22; color:${siloColor(silo)};">${escapeHtml(silo)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Sidebar Pages &amp; Order</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Drag to reorder the sidebar. Dashboard and Settings can be moved but not hidden.</div>
+        <div class="reorder-list" id="pageReorderList" style="max-width:100%;">
+          ${state.settings.pageOrder.map((key,i)=>{
+            const meta = { dashboard:'Dashboard', overdue:'Overdue', tasks:'All Tasks', calendar:'Calendar', lists:'Lists', health:'Health Log', settings:'Settings' };
+            const locked = key==='dashboard' || key==='settings';
+            const hiddenNow = (state.settings.hiddenPages||[]).includes(key);
+            return `
+            <div class="reorder-item page-reorder-item" draggable="true" data-index="${i}"
+                 ondragstart="onPageDragStart(event)" ondragover="onDragOver(event)" ondrop="onPageDragDrop(event)" ondragend="onDragEnd(event)">
+              <span class="drag-handle">⠿</span>
+              <span style="flex:1;">${meta[key]||key}</span>
+              ${locked
+                ? `<span class="ptr-locked">Always visible</span>`
+                : `<div class="toggle-switch ${!hiddenNow?'on':''}" onclick="event.stopPropagation(); togglePageVisible('${key}')"><div class="knob"></div></div>`}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>About</h2></div>
+      <div class="card" style="padding:16px; font-size:13px; color:var(--slate); line-height:1.6;">
+        ${APP_NAME} was converted from your Personal To-Do List spreadsheet.
+        Data is stored privately via ${usingNativeAppStorage ? "Claude's app storage" : "this browser's local storage (standalone mode — Claude's storage wasn't available)"}${syncOn ? ', and mirrored to your connected Supabase project for cross-device sync' : ' — only you can see it'}.
+        <div style="margin-top:8px; font-family:var(--font-mono); font-size:11px;">Version ${APP_VERSION} · Storage: ${usingNativeAppStorage ? 'Claude' : 'Browser (standalone)'}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Drag-and-drop location reorder ---------- */
+let dragFromIndex = null;
+function onDragStart(e){
+  dragFromIndex = Number(e.currentTarget.dataset.index);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+async function onDragDrop(e){
+  e.preventDefault();
+  const toIndex = Number(e.currentTarget.dataset.index);
+  if(dragFromIndex === null || dragFromIndex === toIndex) return;
+  const arr = state.settings.locations;
+  const [moved] = arr.splice(dragFromIndex, 1);
+  arr.splice(toIndex, 0, moved);
+  await saveSettings();
+  renderMain();
+}
+function onDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  dragFromIndex = null;
+}
+
+/* ---------- Drag-and-drop page/sidebar reorder ---------- */
+let pageDragFromIndex = null;
+function onPageDragStart(e){
+  pageDragFromIndex = Number(e.currentTarget.dataset.index);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+async function onPageDragDrop(e){
+  e.preventDefault();
+  const toIndex = Number(e.currentTarget.dataset.index);
+  if(pageDragFromIndex === null || pageDragFromIndex === toIndex) return;
+  const arr = state.settings.pageOrder;
+  const [moved] = arr.splice(pageDragFromIndex, 1);
+  arr.splice(toIndex, 0, moved);
+  pageDragFromIndex = null;
+  await saveSettings();
+  render(); // sidebar order changed, needs a full shell re-render
+}
+
+async function setAccentColor(color){
+  state.settings.accentColor = color;
+  await saveSettings();
+  renderMain();
+}
+async function setCompletedColor(color){
+  state.settings.completedColor = color;
+  await saveSettings();
+  renderMain();
+}
+async function setRecurTypeColor(type, color){
+  state.settings.recurTypeColors[type] = color;
+  await saveSettings();
+  renderMain();
+}
+async function setSiloColor(silo, color){
+  if(!state.settings.siloColors) state.settings.siloColors = {};
+  state.settings.siloColors[silo] = color;
+  await saveSettings();
+  renderMain();
+}
+async function togglePageVisible(key){
+  const hidden = state.settings.hiddenPages;
+  const idx = hidden.indexOf(key);
+  if(idx === -1) hidden.push(key); else hidden.splice(idx,1);
+  await saveSettings();
+  render();
+}
+
+async function addTag(field, value){
+  value = (value||'').trim();
+  if(!value) return;
+  if(state.settings[field].includes(value)){ showToast('Already exists'); return; }
+  state.settings[field].push(value);
+  await saveSettings();
+  renderMain();
+}
+async function removeTag(field, value){
+  state.settings[field] = state.settings[field].filter(v=>v!==value);
+  await saveSettings();
+  renderMain();
+}
+async function renameTag(field, oldValue){
+  const newValue = prompt(`Rename "${oldValue}" to:`, oldValue);
+  if(!newValue || !newValue.trim() || newValue.trim() === oldValue) return;
+  const trimmed = newValue.trim();
+  const idx = state.settings[field].indexOf(oldValue);
+  if(idx === -1) return;
+  state.settings[field][idx] = trimmed;
+
+  // cascade the rename across every task that referenced the old value
+  const taskField = field === 'locations' ? 'location' : 'silo';
+  state.tasks.oneTime.forEach(t=>{ if(t[taskField] === oldValue) t[taskField] = trimmed; });
+  state.tasks.recurring.forEach(t=>{ if(t[taskField] === oldValue) t[taskField] = trimmed; });
+
+  await saveSettings();
+  await saveTasks();
+  renderMain();
+  showToast(`Renamed to "${trimmed}" — updated on all matching tasks`);
+}
+
+function copySql(){
+  const text = document.getElementById('sqlBlock').textContent;
+  navigator.clipboard.writeText(text).then(()=> showToast('SQL copied')).catch(()=> showToast('Could not copy — select manually'));
+}
+
+async function connectSync(){
+  const url = document.getElementById('syncUrl').value.trim();
+  const anonKey = document.getElementById('syncKey').value.trim();
+  const pin = document.getElementById('syncPin').value.trim();
+  if(!url || !anonKey || !pin){ showToast('Fill in URL, key, and PIN'); return; }
+  try{
+    await testSupabaseConnection(url, anonKey, pin);
+  } catch(e){
+    console.error(e);
+    showToast('Could not connect — check URL/key and that you ran the SQL');
+    return;
+  }
+  state.settings.sync = { url, anonKey, pin };
+  await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false);
+  state.syncMeta.status = 'syncing';
+  updateSyncBadge();
+
+  // reconcile: remote wins if it already has rows, otherwise push what we have now
+  try{
+    await pullFromSupabase((cur,total)=>{
+      state.syncMeta.progress = { current: cur, total };
+      updateSyncBadge();
+      renderMain();
+    });
+    await markSyncSuccess();
+  } catch(e){
+    console.error(e);
+    await markSyncError(e.message||String(e));
+    updateSyncBadge();
+    showToast('Connected, but initial sync failed — check the console');
+    renderMain();
+    return;
+  }
+  updateSyncBadge();
+  renderMain();
+  showToast('Connected — synced across devices');
+}
+
+async function disconnectSync(){
+  if(!confirm('Disconnect sync? This device will keep its local copy of your data, but will stop mirroring to Supabase.')) return;
+  state.settings.sync = null;
+  await saveSettings();
+  state.syncMeta = { status: 'off', dirty: false, lastSyncedAt: null, lastError: null };
+  try{ await window.storage.set(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta), false); } catch(e){}
+  renderMain();
+  showToast('Sync disconnected');
+}
+
+/* =========================================================
+   TASK MODAL (create / edit)
+   ========================================================= */
+let modalEditingId = null;
+let modalKind = 'oneTime';
+let modalRecurType = 'Daily';
+
+function openTaskModal(kind, taskId){
+  modalKind = kind;
+  modalEditingId = taskId || null;
+  let t = null;
+  if(taskId){
+    t = (kind==='oneTime' ? state.tasks.oneTime : state.tasks.recurring).find(x=>x.id===taskId);
+  }
+  modalRecurType = t?.type || 'Daily';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modalOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) closeModal(); };
+  overlay.innerHTML = buildTaskModalHtml(kind, t);
+  document.body.appendChild(overlay);
+}
+
+function buildTaskModalHtml(kind, t){
+  const isEdit = !!t;
+  const name = t?.name || '';
+  const location = t?.location || state.settings.locations[0];
+  const silo = t?.silo || state.settings.silos[0];
+  const priority = t?.priority || 'Medium';
+  const notes = t?.notes || '';
+
+  const locOptions = state.settings.locations.map(l=>`<option value="${escapeHtml(l)}" ${l===location?'selected':''}>${escapeHtml(l)}</option>`).join('');
+  const siloOptions = state.settings.silos.map(s=>`<option value="${escapeHtml(s)}" ${s===silo?'selected':''}>${escapeHtml(s)}</option>`).join('');
+  const priOptions = PRIORITIES.map(p=>`<option value="${p}" ${p===priority?'selected':''}>${p}</option>`).join('');
+
+  let typeSpecificFields = '';
+  if(kind === 'oneTime'){
+    const due = t?.due || todayStr();
+    typeSpecificFields = `
+      <div class="field">
+        <label>Due Date</label>
+        <input type="date" id="f_due" value="${due}">
+      </div>
+    `;
+  } else {
+    const type = t?.type || 'Daily';
+    const detail = t?.detail || '';
+    const start = t?.start || todayStr();
+    const end = t?.end || '';
+    typeSpecificFields = `
+      <div class="field">
+        <label>Recurrence Type</label>
+        <div class="radio-pills" id="recurTypePills">
+          ${RECUR_TYPES.map(rt=>`<button type="button" class="radio-pill ${rt===type?'active':''}" onclick="pickRecurType('${rt}')">${rt}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field" id="recurDetailField">
+        ${recurDetailInputHtml(type, detail)}
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" id="f_start" value="${start}">
+        </div>
+        <div class="field">
+          <label>End Date (optional)</label>
+          <input type="date" id="f_end" value="${end}">
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="modal">
+      <h3>${isEdit ? 'Edit Task' : 'New ' + (kind==='oneTime'?'One-Time':'Recurring') + ' Task'}</h3>
+      <div class="modal-sub">${kind==='oneTime' ? 'A single task with a due date.' : 'Repeats on a schedule.'}</div>
+
+      <div class="field">
+        <label>Task Name</label>
+        <input type="text" id="f_name" value="${escapeHtml(name)}" placeholder="What needs to happen?">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Location</label>
+          <select id="f_location">${locOptions}</select>
+        </div>
+        <div class="field">
+          <label>Silo</label>
+          <select id="f_silo">${siloOptions}</select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Priority</label>
+        <select id="f_priority">${priOptions}</select>
+      </div>
+      ${typeSpecificFields}
+      <div class="field">
+        <label>Notes (optional)</label>
+        <textarea id="f_notes">${escapeHtml(notes)}</textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn brass" onclick="saveTaskModal()">${isEdit?'Save Changes':'Create Task'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function recurDetailInputHtml(type, detail){
+  if(type === 'Daily'){
+    return `<label>Detail</label><input type="text" id="f_detail" value="" disabled placeholder="No detail needed for Daily">`;
+  }
+  if(type === 'Days of Week'){
+    const selected = (detail||'').split(',').map(s=>s.trim());
+    return `<label>Days (select all that apply)</label>
+      <div class="radio-pills">
+        ${DOW_ABBR.map(d=>`<button type="button" class="radio-pill dow-pill ${selected.includes(d)?'active':''}" data-day="${d}" onclick="this.classList.toggle('active')">${d}</button>`).join('')}
+      </div>`;
+  }
+  if(type === 'Weekly' || type === 'Bi-Weekly'){
+    return `<label>${type === 'Bi-Weekly' ? 'Occurs every 2 weeks on' : 'Day of week'}</label>
+      <select id="f_detail">${DOW_FULL.map(d=>`<option value="${d}" ${d===detail?'selected':''}>${d}</option>`).join('')}</select>`;
+  }
+  if(type === 'Monthly'){
+    return `<label>Day of Month (1–31)</label><input type="number" id="f_detail" min="1" max="31" value="${detail||1}">`;
+  }
+  if(type === 'Yearly'){
+    const [mm,dd] = (detail||'01-01').split('-');
+    return `<label>Month-Day (MM-DD)</label>
+      <div class="field-row">
+        <input type="number" id="f_detail_mm" min="1" max="12" value="${mm||1}" placeholder="MM">
+        <input type="number" id="f_detail_dd" min="1" max="31" value="${dd||1}" placeholder="DD">
+      </div>`;
+  }
+  if(type === 'Every X Days'){
+    return `<label>Every N Days</label><input type="number" id="f_detail" min="1" value="${detail||5}">`;
+  }
+  return '';
+}
+
+function pickRecurType(type){
+  modalRecurType = type;
+  document.querySelectorAll('#recurTypePills .radio-pill').forEach(b=>{
+    b.classList.toggle('active', b.textContent === type);
+  });
+  document.getElementById('recurDetailField').innerHTML = recurDetailInputHtml(type, '');
+}
+
+function readRecurDetail(){
+  const type = modalRecurType;
+  if(type === 'Daily') return '';
+  if(type === 'Days of Week'){
+    const picked = Array.from(document.querySelectorAll('.dow-pill.active')).map(b=>b.dataset.day);
+    return picked.join(',');
+  }
+  if(type === 'Yearly'){
+    const mm = String(document.getElementById('f_detail_mm').value).padStart(2,'0');
+    const dd = String(document.getElementById('f_detail_dd').value).padStart(2,'0');
+    return `${mm}-${dd}`;
+  }
+  const el = document.getElementById('f_detail');
+  return el ? el.value : '';
+}
+
+function closeModal(){
+  const overlay = document.getElementById('modalOverlay');
+  if(overlay) overlay.remove();
+}
+
+function showRescheduleHistory(taskId){
+  const t = state.tasks.oneTime.find(x=>x.id===taskId);
+  if(!t || !t.dueHistory || !t.dueHistory.length) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'rescheduleOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Reschedule History</h3>
+      <div class="modal-sub">${escapeHtml(t.name)}</div>
+      <div class="newday-summary">
+        ${t.dueHistory.map((d,i)=>`<div class="row"><span>Originally due (${i===0?'created':'change '+i})</span><b>${humanDate(d)}</b></div>`).join('')}
+        <div class="row"><span>Currently due</span><b>${humanDate(t.due)}</b></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('rescheduleOverlay').remove();">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+async function saveTaskModal(){
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){ showToast('Task name is required'); return; }
+  const location = document.getElementById('f_location').value;
+  const silo = document.getElementById('f_silo').value;
+  const priority = document.getElementById('f_priority').value;
+  const notes = document.getElementById('f_notes').value;
+
+  if(modalKind === 'oneTime'){
+    const due = document.getElementById('f_due').value;
+    if(modalEditingId){
+      const t = state.tasks.oneTime.find(x=>x.id===modalEditingId);
+      if(!t.dueHistory) t.dueHistory = [];
+      if(t.due && due && t.due !== due){
+        t.dueHistory.push(t.due);
+      }
+      Object.assign(t, { name, location, silo, priority, notes, due });
+    } else {
+      state.tasks.oneTime.push({ id:newId('ot'), name, location, silo, priority, notes, due, done:false, dueHistory:[] });
+    }
+  } else {
+    const type = modalRecurType;
+    const detail = readRecurDetail();
+    const start = document.getElementById('f_start').value || todayStr();
+    const end = document.getElementById('f_end').value || null;
+    if(modalEditingId){
+      const t = state.tasks.recurring.find(x=>x.id===modalEditingId);
+      Object.assign(t, { name, location, silo, priority, notes, type, detail, start, end });
+    } else {
+      state.tasks.recurring.push({ id:newId('rt'), name, location, silo, priority, notes, type, detail, start, end });
+    }
+  }
+  await saveTasks();
+  closeModal();
+  renderMain();
+  showToast(modalEditingId ? 'Task updated' : 'Task created');
+}
+
+/* =========================================================
+   NEW DAY CONFIRMATION
+   ========================================================= */
+function maybeShowNewDayModal(){
+  const last = state.settings.lastActiveDate;
+  const today = todayStr();
+  if(!last || last === today) return;
+
+  // gather summary for the last active date
+  const dueOneTime = state.tasks.oneTime.filter(t=>t.due === last);
+  const doneOneTime = dueOneTime.filter(t=>t.done).length;
+
+  const dueRecurring = state.tasks.recurring.filter(t=>isDueOn(t, last));
+  const doneRecurring = dueRecurring.filter(t=>isCompletedOn(t.id, last)).length;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'newDayOverlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Good morning 👋</h3>
+      <div class="modal-sub">Here's how ${humanDate(last)} wrapped up. Confirm to move ${APP_NAME} forward to ${humanDate(today)}.</div>
+      <div class="newday-summary">
+        <div class="row"><span>One-time tasks completed</span><b>${doneOneTime} / ${dueOneTime.length}</b></div>
+        <div class="row"><span>Recurring tasks completed</span><b>${doneRecurring} / ${dueRecurring.length}</b></div>
+      </div>
+      <div class="modal-sub">Nothing is deleted — past days stay in your history and streaks. This just moves "Today" forward.</div>
+      <div class="modal-actions">
+        <button class="btn brass" onclick="confirmNewDay()">Start ${humanDate(today)} →</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+async function confirmNewDay(){
+  state.settings.lastActiveDate = todayStr();
+  state.selectedDate = todayStr();
+  await saveSettings();
+  const overlay = document.getElementById('newDayOverlay');
+  if(overlay) overlay.remove();
+  render();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function setLoadingText(text){
+  const el = document.querySelector('#loadingScreen div:last-child');
+  if(el) el.textContent = text;
+}
+
+/* =========================================================
+   PASSCODE GATE
+   Blocks all app content — including Settings, seed data, everything —
+   until the right passcode is entered. Re-asked on every load; nothing is
+   ever remembered as "unlocked" between sessions.
+
+   IMPORTANT (told to the person, not hidden): this is a static file with no
+   server behind it. This gate deters casual viewing of a shared link; it is
+   not real security against someone who deliberately inspects the page
+   source. Real protection means controlling who can reach the URL at all.
+   ========================================================= */
+function gateEl(){ return document.getElementById('gateScreen'); }
+
+// If "stay unlocked on this device" is on and the last successful unlock
+// matches the CURRENT correct value, skip the gate entirely. If the PIN/
+// passcode has since changed, this naturally stops matching and the gate
+// reappears — no separate invalidation logic needed.
+async function checkRememberedUnlock(stored){
+  if(!stored || stored.rememberUnlock === false) return false;
+  const correctValue = (stored.sync && stored.sync.pin) ? stored.sync.pin : (stored.localPasscode || null);
+  if(!correctValue) return false;
+  const unlockRes = await safeGet(STORAGE_KEYS.UNLOCK);
+  if(!unlockRes) return false;
+  try{
+    const saved = JSON.parse(unlockRes.value);
+    return saved && saved.value === correctValue;
+  } catch(e){ return false; }
+}
+async function rememberThisUnlock(stored, correctValue){
+  if(stored.rememberUnlock === false) return;
+  try{ await window.storage.set(STORAGE_KEYS.UNLOCK, JSON.stringify({ value: correctValue }), false); } catch(e){}
+}
+async function forgetRememberedUnlock(){
+  try{ await window.storage.delete(STORAGE_KEYS.UNLOCK, false); } catch(e){}
+}
+
+// The gate needs to write partial settings (just a pin, or just localPasscode)
+// before the rest of the app has ever initialized full defaults. This
+// guarantees whatever gets written is always a COMPLETE settings object —
+// otherwise a fresh device's first write would omit locations/silos/etc,
+// and every view that reads them would crash on next load.
+function completeSettingsObject(partial){
+  const base = Object.assign({
+    locations: ['1.Office','2.Errand','3.Home','4.Madinah','5.Last'],
+    silos: ['Financial','Work','Personal Tasks','Self Development','Career Development','Home Maintenance','Lamees'],
+    lastActiveDate: todayStr(),
+    sync: null,
+  }, DEFAULT_SETTINGS_EXTRAS, partial||{});
+  return base;
+}
+
+async function runPasscodeGate(){
+  const settingsRes = await safeGet(STORAGE_KEYS.SETTINGS);
+  const stored = settingsRes ? JSON.parse(settingsRes.value) : null;
+  const knownPin = stored && stored.sync && stored.sync.pin ? stored.sync.pin : null;
+  const knownLocalPasscode = stored && stored.localPasscode ? stored.localPasscode : null;
+
+  if(await checkRememberedUnlock(stored)) return; // skip the gate entirely
+
+  return new Promise(resolve=>{
+    if(knownPin){
+      renderPinGate(knownPin, resolve, stored);
+    } else if(knownLocalPasscode){
+      renderPinGate(knownLocalPasscode, resolve, stored);
+    } else {
+      renderSetupGate(resolve);
+    }
+  });
+}
+
+function renderPinGate(correctValue, resolve, stored){
+  gateEl().innerHTML = `
+    <div class="gate-screen">
+      <div class="gate-card">
+        <div class="gate-brand"><span class="brand-mark"></span>${APP_NAME}</div>
+        <div class="gate-sub">Enter your passcode to continue.</div>
+        <div class="gate-error" id="gateError">Incorrect passcode.</div>
+        <div class="field">
+          <input type="password" id="gatePasscodeInput" inputmode="numeric" placeholder="Passcode" autofocus>
+        </div>
+        <button class="btn brass" style="width:100%; justify-content:center;" onclick="submitPinGate()">Unlock</button>
+        <button class="gate-link" onclick="forgotGatePasscode()">Forgot passcode?</button>
+      </div>
+    </div>
+  `;
+  window.__gateResolve = resolve;
+  window.__gateCorrectValue = correctValue;
+  window.__gateStored = stored;
+  const input = document.getElementById('gatePasscodeInput');
+  input.focus();
+  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitPinGate(); });
+}
+async function forgotGatePasscode(){
+  const ok = confirm(
+    "This clears this device's saved connection info (not your actual tasks) and returns you to setup.\n\n" +
+    "If you were syncing with Supabase: your data is safe there — just reconnect with your URL, key, and PIN.\n" +
+    "If you were in local-only mode: your local tasks stay on this device — you'll set a new passcode to get back in.\n\n" +
+    "Continue?"
+  );
+  if(!ok) return;
+  const settingsRes = await safeGet(STORAGE_KEYS.SETTINGS);
+  const stored = completeSettingsObject(settingsRes ? JSON.parse(settingsRes.value) : {});
+  stored.sync = null;
+  stored.localPasscode = null;
+  await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(stored), false);
+  await forgetRememberedUnlock();
+  renderSetupGate(window.__gateResolve);
+}
+async function submitPinGate(){
+  const val = document.getElementById('gatePasscodeInput').value;
+  if(val === window.__gateCorrectValue){
+    await rememberThisUnlock(window.__gateStored || {}, val);
+    gateEl().innerHTML = '';
+    window.__gateResolve();
+  } else {
+    document.getElementById('gateError').classList.add('show');
+    const input = document.getElementById('gatePasscodeInput');
+    input.value = '';
+    input.focus();
+  }
+}
+
+function renderSetupGate(resolve){
+  gateEl().innerHTML = `
+    <div class="gate-screen">
+      <div class="gate-card wide">
+        <div class="gate-brand"><span class="brand-mark"></span>${APP_NAME}</div>
+        <div class="gate-sub">First time on this device. Connect to your existing Supabase sync to pull your data and set this device's passcode.</div>
+        <div class="gate-error" id="gateError"></div>
+        <div class="field"><label>Project URL</label><input type="text" id="gateUrl" placeholder="https://xxxxx.supabase.co"></div>
+        <div class="field"><label>Anon / Public API Key</label><input type="text" id="gateKey" placeholder="eyJhbGciOi..."></div>
+        <div class="field"><label>PIN</label><input type="password" id="gatePin" inputmode="numeric" placeholder="Your sync PIN"></div>
+        <button class="btn brass" style="width:100%; justify-content:center;" onclick="submitSetupGate()">Connect &amp; Unlock</button>
+        <div class="gate-divider">or</div>
+        <button class="gate-link" onclick="showLocalOnlyGate()">Use this device without sync — set a local passcode instead</button>
+      </div>
+    </div>
+  `;
+  window.__gateResolve = resolve;
+}
+async function submitSetupGate(){
+  const url = document.getElementById('gateUrl').value.trim();
+  const anonKey = document.getElementById('gateKey').value.trim();
+  const pin = document.getElementById('gatePin').value.trim();
+  const errEl = document.getElementById('gateError');
+  if(!url || !anonKey || !pin){ errEl.textContent = 'Fill in all three fields.'; errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  try{
+    await testSupabaseConnection(url, anonKey, pin);
+  } catch(e){
+    errEl.textContent = 'Could not connect — check the URL and key.';
+    errEl.classList.add('show');
+    return;
+  }
+  // save just enough for loadAll() to pick up normally right after this
+  const settingsRes = await safeGet(STORAGE_KEYS.SETTINGS);
+  const stored = completeSettingsObject(settingsRes ? JSON.parse(settingsRes.value) : {});
+  stored.sync = { url, anonKey, pin };
+  await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(stored), false);
+  await rememberThisUnlock(stored, pin);
+  gateEl().innerHTML = '';
+  window.__gateResolve();
+}
+function showLocalOnlyGate(){
+  gateEl().innerHTML = `
+    <div class="gate-screen">
+      <div class="gate-card">
+        <div class="gate-brand"><span class="brand-mark"></span>${APP_NAME}</div>
+        <div class="gate-sub">Set a passcode for this device. There's no recovery for this — if you forget it, the only way back in is resetting this device's local data.</div>
+        <div class="gate-error" id="gateError">Enter at least 4 characters.</div>
+        <div class="field"><label>New Passcode</label><input type="password" id="gateNewPasscode" inputmode="numeric" placeholder="Choose a passcode"></div>
+        <button class="btn brass" style="width:100%; justify-content:center;" onclick="submitLocalPasscodeSetup()">Set Passcode &amp; Continue</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('gateNewPasscode').focus();
+}
+async function submitLocalPasscodeSetup(){
+  const val = document.getElementById('gateNewPasscode').value;
+  if(!val || val.length < 4){ document.getElementById('gateError').classList.add('show'); return; }
+  const settingsRes = await safeGet(STORAGE_KEYS.SETTINGS);
+  const stored = completeSettingsObject(settingsRes ? JSON.parse(settingsRes.value) : {});
+  stored.localPasscode = val;
+  await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(stored), false);
+  await rememberThisUnlock(stored, val);
+  gateEl().innerHTML = '';
+  window.__gateResolve();
+}
+
+async function init(){
+  await runPasscodeGate();
+  await loadSettingsOnly(); // pick up anything the gate just wrote (pin/passcode), fully
+  document.getElementById('loadingScreen').classList.remove('hidden');
+  await loadAll();
+  document.getElementById('loadingScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  render();
+  maybeShowNewDayModal();
+  // keep the "Synced Xm ago" label fresh without requiring an interaction
+  setInterval(updateSyncBadge, 30000);
+  if(!usingNativeAppStorage){
+    setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
+  }
+}
+
+init();
+
+</script>
+</body>
+</html>
