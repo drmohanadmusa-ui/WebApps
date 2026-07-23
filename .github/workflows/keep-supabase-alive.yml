@@ -1,0 +1,22 @@
+name: Keep Supabase Alive
+
+# Pings your Supabase project twice a week so the free tier never hits its
+# 7-day inactivity pause. Costs nothing, runs on GitHub's infrastructure.
+
+on:
+  schedule:
+    # Runs at 03:00 UTC every Sunday and Wednesday — comfortably under the
+    # 7-day window even if one run gets skipped.
+    - cron: '0 3 * * 0,3'
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab to test
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/app_settings?select=pin&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
