@@ -1,22 +1,81 @@
-name: Keep Supabase Alive
+# Supabase Keep-Alive Workflow — LedgerOS + CalendarOS
+#
+# WHAT THIS DOES
+# Supabase's free tier pauses a project after 7 days with no real API/database
+# activity. This workflow sends one lightweight, harmless read-only request to
+# EACH of your two Supabase projects on a schedule, so neither ever hits the
+# inactivity pause. The two pings run as separate jobs, in parallel — if one
+# app's ping fails (e.g. a typo'd secret), it has no effect on the other.
+#
+# SETUP (one-time, ~3 minutes)
+# Since both apps live in the same repo, each project needs its own secret
+# names (a repo can't have two secrets both called SUPABASE_URL).
+#
+# 1. In this repo: Settings -> Secrets and variables -> Actions -> New repository secret
+#    Add FOUR secrets:
+#      LEDGEROS_SUPABASE_URL       = https://xxxxx.supabase.co   (LedgerOS project URL)
+#      LEDGEROS_SUPABASE_ANON_KEY  = eyJ...                        (LedgerOS anon public key)
+#      CALENDAROS_SUPABASE_URL     = https://yyyyy.supabase.co   (CalendarOS project URL)
+#      CALENDAROS_SUPABASE_ANON_KEY= eyJ...                        (CalendarOS anon public key)
+# 2. Create the folder .github/workflows/ in this repo if it doesn't exist,
+#    and save this file there as: .github/workflows/supabase-keepalive.yml
+# 3. Commit it. GitHub runs it automatically on the schedule below.
+#
+# You can trigger it manually any time from the repo's "Actions" tab -> this
+# workflow -> "Run workflow", to confirm both pings succeed without waiting
+# for the schedule.
+#
+# SCHEDULE
+# Runs every Monday and Thursday at 06:00 UTC — twice a week, well inside the
+# 7-day window, so a single missed/delayed run is never a problem.
 
-# Pings your Supabase project twice a week so the free tier never hits its
-# 7-day inactivity pause. Costs nothing, runs on GitHub's infrastructure.
+name: Supabase Keep-Alive
 
 on:
   schedule:
-    # Runs at 03:00 UTC every Sunday and Wednesday — comfortably under the
-    # 7-day window even if one run gets skipped.
-    - cron: '0 3 * * 0,3'
-  workflow_dispatch: {} # lets you trigger it manually from the Actions tab to test
+    - cron: '0 6 * * 1,4'   # Monday & Thursday, 06:00 UTC
+  workflow_dispatch: {}       # lets you click "Run workflow" manually in the Actions tab
 
 jobs:
-  ping:
+  ping-ledgeros:
+    name: Ping LedgerOS
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping LedgerOS Supabase (lightweight read-only request)
+        env:
+          SUPABASE_URL: ${{ secrets.LEDGEROS_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.LEDGEROS_SUPABASE_ANON_KEY }}
         run: |
-          curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/app_settings?select=pin&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Missing LEDGEROS_SUPABASE_URL or LEDGEROS_SUPABASE_ANON_KEY secret."
+            exit 1
+          fi
+          curl -sS -o /dev/null -w "HTTP status: %{http_code}\n" \
+            -X GET \
+            "${SUPABASE_URL}/rest/v1/pd_accounts?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Prefer: count=exact" \
+            --fail
+          echo "LedgerOS ping sent successfully."
+
+  ping-calendaros:
+    name: Ping CalendarOS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping CalendarOS Supabase (lightweight read-only request)
+        env:
+          SUPABASE_URL: ${{ secrets.CALENDAROS_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.CALENDAROS_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Missing CALENDAROS_SUPABASE_URL or CALENDAROS_SUPABASE_ANON_KEY secret."
+            exit 1
+          fi
+          curl -sS -o /dev/null -w "HTTP status: %{http_code}\n" \
+            -X GET \
+            "${SUPABASE_URL}/rest/v1/app_settings?select=pin&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            --fail
+          echo "CalendarOS ping sent successfully."
