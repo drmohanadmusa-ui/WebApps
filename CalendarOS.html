@@ -313,7 +313,7 @@ a{color:inherit;}
 .tick-btn.checked{background:var(--completed-color, var(--teal)); border-color:var(--completed-color, var(--teal)); color:#fff;}
 .tick-btn.missed-tick{background:#C98A3E; border-color:#C98A3E; color:#fff; font-weight:700;}
 
-.ticket-body{flex:1; min-width:0;}
+.ticket-body{flex:1; min-width:0; cursor:pointer;}
 .ticket-title-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
 .ticket-title{
   font-size:14px; font-weight:600; color:var(--ink);
@@ -322,6 +322,7 @@ a{color:inherit;}
 .ticket.done .ticket-title{text-decoration:line-through; color:var(--completed-deep, var(--slate));}
 .ticket.missed .ticket-title{text-decoration:line-through; color:#A87B3F;}
 body.dark-mode .ticket.missed .ticket-title{color:#D8B078;}
+.note-flag{font-size:11px; opacity:.65; vertical-align:middle;}
 .ticket-meta{
   display:flex; align-items:center; gap:10px; flex-wrap:wrap;
   margin-top:5px;
@@ -459,6 +460,7 @@ select.filter-select, input.filter-date{
   padding:26px;
 }
 .modal.wide{max-width:640px;}
+.newday-review-list{max-height:340px; overflow-y:auto; padding-right:4px;}
 .modal h3{
   font-family:var(--font-display); font-size:20px; margin:0 0 4px;
 }
@@ -502,20 +504,31 @@ select.filter-select, input.filter-date{
   text-align:center; padding-bottom:4px; letter-spacing:0.05em;
 }
 .cal-cell{
-  aspect-ratio:1/0.82;
+  aspect-ratio:1/0.9;
   border:1px solid var(--line); border-radius:8px; background:var(--paper-raised);
   padding:6px; position:relative; cursor:pointer;
-  display:flex; flex-direction:column; justify-content:space-between;
+  display:flex; flex-direction:column; gap:3px; overflow:hidden;
 }
 .cal-cell:hover{border-color:var(--brass);}
 .cal-cell.empty{background:transparent; border:none; cursor:default;}
 .cal-cell.today{border-color:var(--brass); border-width:2px;}
+.cal-cell-top{display:flex; align-items:center; justify-content:space-between;}
 .cal-cell .date-num{font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
 .cal-cell .hijri-num{font-family:var(--font-mono); font-size:8.5px; color:var(--slate-light);}
-.dot-row{display:flex; gap:3px; flex-wrap:wrap;}
-.dot{width:6px; height:6px; border-radius:50%; background:var(--brass);}
+.cal-cell-tasks{display:flex; flex-direction:column; gap:3px; flex:1; min-height:0; justify-content:center;}
+.cal-cell-sep{height:1px; background:var(--line); margin:1px 0;}
+.dot-row{display:flex; gap:3px; flex-wrap:wrap; align-items:center;}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--brass); flex-shrink:0;}
 .dot.over{background:var(--flag);}
-.density-count{font-family:var(--font-mono); font-size:9.5px; color:var(--slate); align-self:flex-end;}
+.dot-extra{font-family:var(--font-mono); font-size:8px; color:var(--slate-light);}
+.density-count{font-family:var(--font-mono); font-size:9.5px; color:var(--slate);}
+
+.cal-legend{
+  display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
+  margin-bottom:14px; padding:10px 14px; background:var(--paper-dim); border-radius:8px;
+}
+.cal-legend-item{display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
+.cal-legend-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
 
 /* ============ LISTS VIEW ============ */
 .lists-grid{
@@ -557,6 +570,25 @@ table.log-table th{
   padding:8px 10px; border-bottom:1px solid var(--line);
 }
 table.log-table td{padding:9px 10px; border-bottom:1px solid var(--paper-dim);}
+table.log-table tr:hover td{background:var(--paper-dim);}
+table.log-table tr.log-row-active td{background:var(--teal-soft);}
+
+.metric-manage-row{
+  display:flex; align-items:center; gap:14px;
+  padding:10px 0; border-bottom:1px solid var(--paper-dim);
+}
+.metric-manage-row:last-child{border-bottom:none;}
+.metric-manage-name{flex:1; font-size:13px; font-weight:500;}
+
+.diag-log-preview{
+  max-height:280px; overflow-y:auto; background:var(--paper-dim); border-radius:8px; padding:8px 12px;
+  font-family:var(--font-mono); font-size:11px;
+}
+.diag-log-row{display:flex; gap:8px; padding:4px 0; border-bottom:1px solid var(--paper-raised); align-items:baseline;}
+.diag-log-row:last-child{border-bottom:none;}
+.diag-log-time{color:var(--slate-light); flex-shrink:0;}
+.diag-log-cat{color:var(--brass-deep); flex-shrink:0; min-width:90px;}
+.diag-log-msg{color:var(--ink-soft); word-break:break-word;}
 
 /* ============ SETTINGS ============ */
 .tag-editor{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
@@ -704,6 +736,8 @@ body.dark-mode .loading-screen{background:#0F1216;}
 
 
 .newday-summary{background:var(--paper-dim); border-radius:10px; padding:14px; margin:14px 0; font-size:13px;}
+.newday-rating-row{border-top:1px solid var(--line); margin-top:6px; padding-top:10px;}
+.newday-rating-row b{font-family:var(--font-display); font-size:18px; color:var(--brass-deep);}
 .newday-summary .row{display:flex; justify-content:space-between; padding:4px 0;}
 
 /* ============ MISC ============ */
@@ -715,6 +749,39 @@ body.dark-mode .loading-screen{background:#0F1216;}
 }
 .loading-screen .brand-mark{width:14px;height:14px;background:var(--brass); transform:rotate(45deg); animation:spin 1.1s linear infinite;}
 @keyframes spin{to{transform:rotate(405deg);}}
+
+#syncBlockOverlay{
+  position:fixed; inset:0; z-index:500; cursor:not-allowed;
+  background:rgba(24,28,34,0.04);
+}
+.sync-block-banner{
+  position:fixed; top:16px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#EDE9DD; padding:10px 20px; border-radius:999px;
+  display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:12.5px;
+  box-shadow:var(--shadow-pop); z-index:501;
+}
+.sync-block-banner .brand-mark{width:11px;height:11px;background:var(--brass); transform:rotate(45deg); flex-shrink:0;}
+
+.settings-layout{display:flex; gap:24px; align-items:flex-start;}
+.settings-nav{
+  width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:2px;
+  position:sticky; top:28px;
+}
+.settings-nav-item{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:8px; border:1px solid transparent;
+  background:transparent; color:var(--slate); font-size:13.5px; font-weight:500; text-align:left;
+}
+.settings-nav-item:hover{background:var(--paper-dim);}
+.settings-nav-item.active{background:var(--paper-raised); border-color:var(--line); color:var(--ink); box-shadow:var(--shadow-card);}
+.settings-nav-icon{font-size:14px; width:18px; text-align:center; flex-shrink:0;}
+.settings-panel{flex:1; min-width:0;}
+
+@media (max-width: 860px){
+  .settings-layout{flex-direction:column;}
+  .settings-nav{width:100%; flex-direction:row; overflow-x:auto; position:static; padding-bottom:4px;}
+  .settings-nav-item{white-space:nowrap;}
+}
 
 .toast{
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
@@ -829,7 +896,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '2.6.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Constants ---------- */
@@ -870,9 +937,17 @@ const DEFAULT_SETTINGS_EXTRAS = {
     'Home Maintenance': '#8E661F',
     'Lamees': '#C1443D',
   },
+  locationColors: {
+    '1.Office': '#5C7999',
+    '2.Errand': '#B9862F',
+    '3.Home': '#4C7A3D',
+    '4.Madinah': '#A0527A',
+    '5.Last': '#3A3F47',
+  },
   hiddenPages: [],
   pageOrder: ['dashboard','overdue','tasks','calendar','lists','health','settings'],
   rememberUnlock: true,
+  healthCoreMetricsSeeded: false,
   darkMode: false,
   localPasscode: null, // used only when no Supabase sync is configured on this device
 };
@@ -892,6 +967,7 @@ function backfillSettingsDefaults(){
     }
   });
   if(!state.settings.siloColors) state.settings.siloColors = {};
+  if(!state.settings.locationColors) state.settings.locationColors = {};
   // any locations/pages added since pageOrder was created should still show up
   const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','lists','health','settings'];
   if(!state.settings.pageOrder) state.settings.pageOrder = ALL_PAGE_KEYS.slice();
@@ -907,6 +983,8 @@ const STORAGE_KEYS = {
   SETTINGS: 'dispatch:settings',  // { locations, silos, lastActiveDate, sync }
   SYNC_META: 'dispatch:syncmeta', // { dirty, lastSyncedAt, lastError }
   UNLOCK: 'dispatch:unlock',      // { pin: '<last successfully entered pin>' } — only set if "remember" is on
+  RATINGS: 'dispatch:ratings',    // [ {date, rating, doneCount, totalCount, overdueCleared, loggedAt} ]
+  HEALTH_METRIC_DEFS: 'dispatch:healthmetricdefs', // [ {id, name, type, unit, sortOrder} ]
 };
 
 /* ---------- App State ---------- */
@@ -921,10 +999,14 @@ const state = {
   locationFilter: 'All',
   searchQuery: '',
   groupByLocation: true, // always defaults on each load, per user preference — not persisted
+  hideCompleted: false,
   calMonthCursor: null, // {year, month}
-  calDensityMode: 'all', // 'all' | 'oneTime'
+  calColorMode: 'location', // 'location' | 'silo' | 'recurType'
   loaded: false,
   undoStack: [], // [{kind, taskId, dateStr, prevValue}]
+  dailyRatings: [], // [{date, rating, doneCount, totalCount, overdueCleared, loggedAt}]
+  initialSyncBlocking: false, // true while the background reconciliation sync is in flight
+  healthMetricDefs: [], // [{id, name, type:'number'|'yesno'|'text', unit, sortOrder}]
   // status: 'off' | 'syncing' | 'synced' | 'pending' | 'error'
   syncMeta: { status: 'off', dirty: false, lastSyncedAt: null, lastError: null, progress: null },
 };
@@ -1023,6 +1105,61 @@ function isDueOn(task, dateStr){
     default:
       return false;
   }
+}
+
+/* ---------- Reschedule exceptions (move a single occurrence) ----------
+   task.rescheduleExceptions = [{ from:'YYYY-MM-DD', to:'YYYY-MM-DD' }]
+   The original date keeps its normal isDueOn() match (it just gets marked
+   'missed' there); the new date needs this extra check since it usually
+   isn't a date the recurrence pattern would naturally land on. */
+function rescheduleExceptionFor(task, dateStr){
+  return (task.rescheduleExceptions||[]).find(e=>e.to===dateStr) || null;
+}
+function isEffectivelyDueOn(task, dateStr){
+  return isDueOn(task, dateStr) || !!rescheduleExceptionFor(task, dateStr);
+}
+async function rescheduleOccurrence(taskId, fromDate, toDate){
+  const t = state.tasks.recurring.find(x=>x.id===taskId);
+  if(!t) return;
+  if(!t.rescheduleExceptions) t.rescheduleExceptions = [];
+  // replace any existing exception for this same original date
+  t.rescheduleExceptions = t.rescheduleExceptions.filter(e=>e.from!==fromDate);
+  t.rescheduleExceptions.push({ from: fromDate, to: toDate });
+  setOccurrenceStatus(taskId, fromDate, 'missed');
+  await saveTasks();
+}
+
+/* ---------- Recurring "overdue" (mirrors one-time overdue) ----------
+   Looks at the single most recent date (before today) this task was due —
+   whether that landed there naturally or via a reschedule exception — and
+   if it was never resolved (checked done or flagged missed), it counts as
+   overdue and keeps showing until you deal with it. Deliberately does NOT
+   dig further back than that one date, so a task ignored for months doesn't
+   suddenly resurface a pile of ancient reminders.
+   Daily tasks are deliberately excluded — a fresh occurrence shows up every
+   single day regardless, so pinning yesterday's unresolved one too would
+   just be permanent duplicate clutter. Instead, an unresolved Daily
+   occurrence gets auto-recorded as missed at day rollover (see confirmNewDay). */
+function getOverdueRecurring(){
+  const today = todayStr();
+  const results = [];
+  state.tasks.recurring.forEach(t=>{
+    if(t.type === 'Daily') return;
+    let cursor = addDays(today, -1);
+    let guard = 0;
+    while(guard < 400){
+      if(cursor < t.start) break;
+      if(isEffectivelyDueOn(t, cursor)){
+        if(!getOccurrence(t.id, cursor)){
+          results.push({ task: t, date: cursor });
+        }
+        break; // only the single most recent due date matters
+      }
+      cursor = addDays(cursor, -1);
+      guard++;
+    }
+  });
+  return results;
 }
 
 /* ---------- Occurrence completion tracking ----------
@@ -1189,22 +1326,32 @@ async function loadSettingsOnly(){
 
 async function loadAll(){
   try{
-    const [tasksRes, listsRes, healthRes] = await Promise.all([
+    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes] = await Promise.all([
       safeGet(STORAGE_KEYS.TASKS),
       safeGet(STORAGE_KEYS.LISTS),
       safeGet(STORAGE_KEYS.HEALTH),
+      safeGet(STORAGE_KEYS.RATINGS),
+      safeGet(STORAGE_KEYS.HEALTH_METRIC_DEFS),
     ]);
 
     if(tasksRes){
-      state.tasks = JSON.parse(tasksRes.value);
+      const parsed = JSON.parse(tasksRes.value);
+      // Old-format local caches may still have a real `completions` blob —
+      // honor it once on load (better than discarding real data), but going
+      // forward saveTasks() only writes the slim {oneTime, recurring} shape
+      // whenever sync is configured, since Supabase is the source of truth
+      // for history once that's the case.
+      state.tasks = { oneTime: parsed.oneTime||[], recurring: parsed.recurring||[], completions: parsed.completions || {} };
       migrateCompletionsFormat();
       state.tasks.oneTime.forEach(t=>{ if(!t.dueHistory) t.dueHistory = []; });
+      diagLogEvent('load', 'tasks loaded from local cache', { oneTime: state.tasks.oneTime.length, recurring: state.tasks.recurring.length, completionTasks: Object.keys(state.tasks.completions).length });
     } else {
       // seed from the original spreadsheet
       const seed = JSON.parse(document.getElementById('seed-data').textContent);
       seed.oneTime.forEach(t=>{ t.dueHistory = []; });
       state.tasks = { oneTime: seed.oneTime, recurring: seed.recurring, completions: {} };
       await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), false);
+      diagLogEvent('load', 'tasks seeded fresh (no local cache found)');
     }
 
     if(listsRes){
@@ -1219,11 +1366,28 @@ async function loadAll(){
     } else {
       state.health = [];
     }
+    state.health.forEach(h=>{ if(!h.custom) h.custom = {}; });
+
+    state.healthMetricDefs = metricDefsRes ? JSON.parse(metricDefsRes.value) : [];
+    ensureCoreMetricDefs();
+
+    state.dailyRatings = ratingsRes ? JSON.parse(ratingsRes.value) : [];
 
     // settings were already loaded by loadSettingsOnly() before the gate;
     // if for some reason this runs standalone, make sure they're present.
     if(!state.settings || !state.settings.locations) await loadSettingsOnly();
     if(!state.settings.sync) state.settings.sync = null;
+
+    // Once sync is on, Supabase is the durable copy of everything historical
+    // (completions, health entries, ratings) — reclaim whatever local space
+    // an older version of the app was using for that, right away rather than
+    // leaving it to sit stale forever.
+    if(syncConfigured()){
+      try{ await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), false); } catch(e){}
+      try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
+      try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
+      diagLogEvent('load', 'sync configured — reclaimed local space for completions/health/ratings history');
+    }
 
     const syncMetaRes = await safeGet(STORAGE_KEYS.SYNC_META);
     if(syncMetaRes){
@@ -1232,37 +1396,44 @@ async function loadAll(){
     }
   } catch(e){
     console.error('Load error', e);
+    diagLogEvent('load', 'loadAll threw', { error: e.message||String(e) });
   }
-
-  // If cross-device sync is configured, get to the freshest possible state
-  // before the app becomes usable.
-  //   - If the last session ended with unconfirmed local changes (dirty),
-  //     push local first so it can never be silently overwritten by a stale
-  //     remote copy — local always wins over an incomplete sync.
-  //   - Otherwise, pull from Supabase since remote is trusted authoritative
-  //     (e.g. changes made from another device).
-  if(syncConfigured()){
-    state.syncMeta.status = 'syncing';
-    const verb = state.syncMeta.dirty ? 'SENDING UNSAVED CHANGES' : 'PULLING LATEST FROM SUPABASE';
-    setLoadingText(verb + '…');
-    const onProgress = (cur, total)=> setLoadingText(`${verb}… ${Math.round((cur/total)*100)}%`);
-    try{
-      if(state.syncMeta.dirty){
-        await pushFullStateToSupabase(onProgress);
-        await markSyncSuccess();
-      } else {
-        await pullFromSupabase(onProgress);
-        await markSyncSuccess();
-      }
-    } catch(e){
-      console.error('Supabase sync on load failed', e);
-      await markSyncError(e.message || String(e));
-      setLoadingText('SYNC UNAVAILABLE — CONTINUING OFFLINE…');
-      await new Promise(r=>setTimeout(r, 900));
-    }
-  }
-
   state.loaded = true;
+}
+
+// Runs the Supabase reconciliation in the BACKGROUND, after the app is
+// already visible with local data — no more waiting on a network round-trip
+// just to see your own cached tasks. While this runs, a full-screen overlay
+// blocks every change (per your choice) since local-vs-remote reconciliation
+// is exactly the moment a stray edit could get lost or cause a conflict.
+async function runBackgroundSync(){
+  if(!syncConfigured()) return;
+  state.initialSyncBlocking = true;
+  state.syncMeta.status = 'syncing';
+  renderSyncBlockOverlay();
+  const verb = state.syncMeta.dirty ? 'Sending unsaved changes' : 'Pulling latest from Supabase';
+  diagLogEvent('startup-sync', `Starting: ${verb}`, { dirty: state.syncMeta.dirty });
+  setSyncBlockText(verb + '…');
+  const onProgress = (cur, total)=> setSyncBlockText(`${verb}… ${Math.round((cur/total)*100)}%`);
+  const startedAt = performance.now();
+  try{
+    if(state.syncMeta.dirty){
+      await pushFullStateToSupabase(onProgress);
+    } else {
+      await pullFromSupabase(onProgress);
+    }
+    await markSyncSuccess();
+    diagLogEvent('startup-sync', 'Completed OK', { ms: Math.round(performance.now()-startedAt) });
+  } catch(e){
+    console.error('Background sync failed', e);
+    diagLogEvent('startup-sync', 'FAILED', { error: e.message||String(e), ms: Math.round(performance.now()-startedAt) });
+    await markSyncError(e.message || String(e));
+    showToast('Sync unavailable — continuing with your local data');
+  }
+  state.initialSyncBlocking = false;
+  renderSyncBlockOverlay();
+  updateSyncBadge();
+  render(); // refresh with whatever came from the sync
 }
 
 function markSyncDirty(){
@@ -1323,25 +1494,46 @@ async function supaUpsert(table, rows, conflictCols){
   if(!rows.length) return;
   const s = state.settings.sync;
   const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?on_conflict=${conflictCols}`;
-  const res = await fetchWithTimeout(url, {
-    method: 'POST',
-    headers: supaHeaders({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-    body: JSON.stringify(rows)
-  });
-  if(!res.ok) throw new Error(`${table} upsert failed: ${res.status} ${await res.text()}`);
+  try{
+    const res = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers: supaHeaders({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(rows)
+    });
+    if(!res.ok){
+      const errText = await res.text();
+      diagLogEvent('supabase', `upsert ${table} FAILED`, { status: res.status, rows: rows.length, error: errText.slice(0,300) });
+      throw new Error(`${table} upsert failed: ${res.status} ${errText}`);
+    }
+    diagLogEvent('supabase', `upsert ${table} OK`, { rows: rows.length });
+  } catch(e){
+    if(!e.message || !e.message.includes('upsert failed')){
+      diagLogEvent('supabase', `upsert ${table} THREW`, { rows: rows.length, error: e.message||String(e) });
+    }
+    throw e;
+  }
 }
 async function supaDeleteMatch(table, matchQuery){
   const s = state.settings.sync;
   const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?${matchQuery}`;
   const res = await fetchWithTimeout(url, { method:'DELETE', headers: supaHeaders() });
-  if(!res.ok) throw new Error(`${table} delete failed: ${res.status}`);
+  if(!res.ok){
+    diagLogEvent('supabase', `delete ${table} FAILED`, { status: res.status, matchQuery });
+    throw new Error(`${table} delete failed: ${res.status}`);
+  }
+  diagLogEvent('supabase', `delete ${table} OK`, { matchQuery });
 }
 async function supaSelectAll(table){
   const s = state.settings.sync;
   const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?pin=eq.${encodeURIComponent(s.pin)}&select=*`;
   const res = await fetchWithTimeout(url, { headers: supaHeaders() });
-  if(!res.ok) throw new Error(`${table} select failed: ${res.status}`);
-  return await res.json();
+  if(!res.ok){
+    diagLogEvent('supabase', `select ${table} FAILED`, { status: res.status });
+    throw new Error(`${table} select failed: ${res.status}`);
+  }
+  const rows = await res.json();
+  diagLogEvent('supabase', `select ${table} OK`, { rows: rows.length });
+  return rows;
 }
 
 /* ---- row <-> app-object mapping ---- */
@@ -1358,11 +1550,13 @@ function rowToOneTime(r){
 function recurringToRow(t){
   const s = state.settings.sync;
   return { id:t.id, pin:s.pin, name:t.name, location:t.location, silo:t.silo, priority:t.priority,
-           type:t.type, detail:t.detail||'', start_date:t.start||null, end_date:t.end||null, notes:t.notes||'', meta:{}, updated_at:new Date().toISOString() };
+           type:t.type, detail:t.detail||'', start_date:t.start||null, end_date:t.end||null, notes:t.notes||'',
+           reschedule_exceptions: t.rescheduleExceptions||[], meta:{}, updated_at:new Date().toISOString() };
 }
 function rowToRecurring(r){
   return { id:r.id, name:r.name, location:r.location, silo:r.silo, priority:r.priority||'Medium',
-           type:r.type, detail:r.detail, start:r.start_date, end:r.end_date, notes:r.notes||'' };
+           type:r.type, detail:r.detail, start:r.start_date, end:r.end_date, notes:r.notes||'',
+           rescheduleExceptions: r.reschedule_exceptions||[] };
 }
 function listToRow(l, idx){
   const s = state.settings.sync;
@@ -1374,7 +1568,25 @@ function listItemToRow(item, listId, idx){
 }
 function healthToRow(h){
   const s = state.settings.sync;
-  return { pin:s.pin, log_date:h.date, water:h.water, no2:h.no2===null||h.no2===undefined?null:h.no2, cal_deficit:h.calDeficit };
+  return { pin:s.pin, log_date:h.date, water:h.water, no2:h.no2===null||h.no2===undefined?null:h.no2,
+           cal_deficit:h.calDeficit, weight:h.weight===undefined?null:h.weight, custom_metrics:h.custom||{} };
+}
+function rowToHealth(r){
+  return { date:r.log_date, water:r.water, no2:r.no2, calDeficit:r.cal_deficit, weight:r.weight, custom:r.custom_metrics||{} };
+}
+function metricDefToRow(m){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:m.id, name:m.name, type:m.type, unit:m.unit||null, sort_order:m.sortOrder||0, core:!!m.core, visible:m.visible!==false };
+}
+function rowToMetricDef(r){
+  return { id:r.id, name:r.name, type:r.type, unit:r.unit, sortOrder:r.sort_order||0, core:!!r.core, visible:r.visible!==false };
+}
+function ratingToRow(r){
+  const s = state.settings.sync;
+  return { pin:s.pin, rating_date:r.date, rating:r.rating, done_count:r.doneCount, total_count:r.totalCount, overdue_cleared:r.overdueCleared, logged_at:r.loggedAt };
+}
+function rowToRating(row){
+  return { date:row.rating_date, rating:row.rating, doneCount:row.done_count, totalCount:row.total_count, overdueCleared:row.overdue_cleared, loggedAt:row.logged_at };
 }
 function buildCompletionRows(){
   const s = state.settings.sync;
@@ -1411,6 +1623,8 @@ async function pushFullStateToSupabase(onProgress){
       return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
     },
     ()=> { const rows = state.health.map(healthToRow); return rows.length ? supaUpsert('health_logs', rows, 'pin,log_date') : null; },
+    ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
+    ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
     ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
   for(let i=0;i<steps.length;i++){
@@ -1420,14 +1634,14 @@ async function pushFullStateToSupabase(onProgress){
 }
 
 async function pullFromSupabase(onProgress){
-  const tables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','app_settings'];
+  const tables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'];
   const results = {};
   for(let i=0;i<tables.length;i++){
     results[tables[i]] = await supaSelectAll(tables[i]);
     if(onProgress) onProgress(i+1, tables.length);
   }
   const { one_time_tasks:oneTimeRows, recurring_tasks:recurringRows, task_completions:completionRows,
-          lists:listRows, list_items:itemRows, health_logs:healthRows, app_settings:settingsRows } = results;
+          lists:listRows, list_items:itemRows, health_logs:healthRows, daily_ratings:ratingRows, health_metric_defs:metricDefRows, app_settings:settingsRows } = results;
 
   const hasAnyRemoteData = oneTimeRows.length || recurringRows.length || listRows.length;
 
@@ -1449,18 +1663,35 @@ async function pullFromSupabase(onProgress){
     });
     state.lists = listRows.map(l=>({ id:l.id, title:l.title, items: itemsByList[l.id] || [] }));
 
-    state.health = healthRows.map(r=>({ date:r.log_date, water:r.water, no2:r.no2, calDeficit:r.cal_deficit }));
+    state.health = healthRows.map(rowToHealth);
+    state.dailyRatings = ratingRows.map(rowToRating);
+    state.healthMetricDefs = metricDefRows.map(rowToMetricDef);
+    ensureCoreMetricDefs();
 
     if(settingsRows.length){
       state.settings.locations = settingsRows[0].locations || state.settings.locations;
       state.settings.silos = settingsRows[0].silos || state.settings.silos;
+      // Whichever device confirmed a later day wins — this is what makes
+      // "start a new day on one device" actually show up on the others,
+      // instead of each device only ever trusting its own local record.
+      const remoteLastActive = settingsRows[0].last_active_date;
+      if(remoteLastActive && (!state.settings.lastActiveDate || remoteLastActive > state.settings.lastActiveDate)){
+        state.settings.lastActiveDate = remoteLastActive;
+      }
     }
     pendingCompletionDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
 
-    await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), false);
-    await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false);
-    await window.storage.set(STORAGE_KEYS.HEALTH, JSON.stringify(state.health), false);
-    await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false);
+    // Local writes here are just refreshing the offline cache. This code
+    // path only ever runs when sync is configured (pullFromSupabase is only
+    // called in that case), so only the small, bounded task/list structure
+    // gets cached locally — completion/health/ratings history stays in
+    // memory and in Supabase only, never written to local storage here.
+    try{ await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), false); } catch(e){ console.error('local cache write failed (tasks)', e); }
+    try{ await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false); } catch(e){ console.error('local cache write failed (lists)', e); }
+    try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
+    try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
+    try{ await window.storage.set(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), false); } catch(e){ console.error('local cache write failed (metric defs)', e); }
+    try{ await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false); } catch(e){ console.error('local cache write failed (settings)', e); }
   } else {
     // nothing remote yet — seed it from what we have locally
     await pushFullStateToSupabase(onProgress);
@@ -1486,20 +1717,99 @@ async function safeGet(key){
 // a transient rejection (e.g. two writes landing in the same instant) shouldn't
 // mean a lost change. Returns true/false instead of throwing, and surfaces the
 // real error message so a genuine failure is diagnosable without dev tools.
-async function safeStorageSet(key, value, label){
+function isQuotaError(e){
+  if(!e) return false;
+  const msg = (e.message || String(e)).toLowerCase();
+  return e.name === 'QuotaExceededError' || msg.includes('quota') || msg.includes('exceeded');
+}
+
+async function safeStorageSet(key, value, label, opts){
+  opts = opts || {};
   const delays = [0, 300, 900];
   let lastErr = null;
   for(let i=0;i<delays.length;i++){
     if(delays[i]) await new Promise(r=>setTimeout(r, delays[i]));
     try{
       await window.storage.set(key, value, false);
+      diagLogEvent('local-save', `OK "${label||key}"`, { bytes: value.length });
       return true;
     } catch(e){
       lastErr = e;
+      // a full local cache won't fix itself by waiting and retrying the same payload
+      if(isQuotaError(e)) break;
     }
   }
   console.error(`Local save failed for "${label||key}" after retries:`, lastErr);
-  showToast(`⚠ Save failed: ${lastErr && lastErr.message ? lastErr.message : 'storage unavailable'}`);
+  diagLogEvent('local-save', `FAILED "${label||key}"`, { bytes: value.length, error: lastErr&&lastErr.message, isQuota: isQuotaError(lastErr) });
+  if(!opts.silent){
+    showToast(`⚠ Save failed: ${lastErr && lastErr.message ? lastErr.message : 'storage unavailable'}`);
+  }
+  return { ok:false, err:lastErr };
+}
+
+// Only trims the copy written to the browser's local cache — Supabase always
+// gets the full, untrimmed history via the normal sync steps. This is purely
+// about staying under the browser's local storage size limit, which only
+// applies when running outside claude.ai (Supabase has no such limit).
+function pruneCompletionsForCache(tasks, maxDays){
+  const cutoff = addDays(todayStr(), -maxDays);
+  const trimmedCompletions = {};
+  Object.entries(tasks.completions).forEach(([taskId, byDate])=>{
+    const kept = {};
+    Object.entries(byDate).forEach(([dateStr, o])=>{ if(dateStr >= cutoff) kept[dateStr] = o; });
+    if(Object.keys(kept).length) trimmedCompletions[taskId] = kept;
+  });
+  return { oneTime: tasks.oneTime, recurring: tasks.recurring, completions: trimmedCompletions };
+}
+
+// Remembers the last trim level that actually worked for each local cache,
+// so once a device settles into "trimmed mode" it stays quiet instead of
+// re-attempting (and re-failing) the full untrimmed payload — and showing
+// the same warning toast — on every single save. This resets on reload, so
+// if more room frees up, the next fresh session will notice and recover.
+const localTrimState = { tasks: null, health: null, ratings: null };
+
+// Saves the tasks blob locally, automatically trimming old completion
+// history if the browser's local storage quota is hit — rather than just
+// failing outright. Full history is never lost: it stays in memory for this
+// session and in Supabase if sync is on; only the local offline cache shrinks.
+async function saveTasksLocalWithFallback(){
+  // Already known this session to need trimming — go straight to the last
+  // working level instead of re-probing (and re-failing) the full payload.
+  if(localTrimState.tasks){
+    const trimmed = pruneCompletionsForCache(state.tasks, localTrimState.tasks);
+    const res = await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify(trimmed), 'tasks', {silent:true});
+    if(res === true) return true;
+    // even the known-good level stopped fitting (data grew) — fall through and re-probe from scratch
+  }
+
+  const fullResult = await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), 'tasks', {silent:true});
+  if(fullResult === true){
+    if(localTrimState.tasks !== null){
+      showToast('Local cache has room again — back to keeping full history');
+      localTrimState.tasks = null;
+    }
+    return true;
+  }
+  if(!isQuotaError(fullResult.err)){
+    showToast(`⚠ Save failed: ${fullResult.err && fullResult.err.message ? fullResult.err.message : 'storage unavailable'}`);
+    return false;
+  }
+  for(const days of [365, 180, 90, 30, 14, 7, 3]){
+    const trimmed = pruneCompletionsForCache(state.tasks, days);
+    const res = await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify(trimmed), 'tasks', {silent:true});
+    if(res === true){
+      const changed = localTrimState.tasks !== days;
+      localTrimState.tasks = days;
+      if(changed){
+        showToast(syncConfigured()
+          ? `Local cache trimmed to fit (kept last ${days} days) — full history will still sync to Supabase`
+          : `⚠ Local cache trimmed to fit (kept last ${days} days) — set up Supabase sync to keep full history safe`);
+      }
+      return true;
+    }
+  }
+  showToast('⚠ Local cache is full even after trimming — this change may not survive a browser restart. Consider setting up Supabase sync.');
   return false;
 }
 
@@ -1522,6 +1832,7 @@ function enqueueSync(taskFn){
 }
 
 async function runSyncSteps(steps){
+  const startedAt = performance.now();
   markSyncDirty();
   state.syncMeta.progress = { current: 0, total: steps.length };
   updateSyncBadge();
@@ -1532,51 +1843,175 @@ async function runSyncSteps(steps){
       updateSyncBadge();
     }
     await markSyncSuccess();
+    diagLogEvent('sync', `runSyncSteps OK (${steps.length} steps)`, { ms: Math.round(performance.now()-startedAt) });
   } catch(e){
     console.error('sync step failed', e);
+    diagLogEvent('sync', `runSyncSteps FAILED`, { error: e.message||String(e), ms: Math.round(performance.now()-startedAt) });
     await markSyncError(e.message||String(e));
   }
   updateSyncBadge();
 }
 
+// Collapses rapid-fire saves (e.g. checking off several tasks in a row)
+// into a single queued sync job instead of one job per action. Without this,
+// each queued job just wastefully re-pushes the same growing snapshot, and
+// worse — a big backlog of queued-but-not-yet-run jobs is exactly what's at
+// risk of being lost if the tab closes before the queue finishes draining.
+// Since each job reads state fresh when it actually runs (see the lazy
+// closures below), piggybacking on an already-scheduled job is always safe:
+// it'll pick up whatever the latest state is by the time its turn comes.
+const syncScheduled = { tasks:false, lists:false, health:false, ratings:false, metricDefs:false, settings:false };
+const syncDirtyDuringRun = { tasks:false, lists:false, health:false, ratings:false, metricDefs:false, settings:false };
+function scheduleSync(key, buildSteps){
+  if(syncScheduled[key]){
+    // a job for this data is already in flight — don't stack another one,
+    // just flag that there's more to catch once it's done.
+    syncDirtyDuringRun[key] = true;
+    diagLogEvent('sync-queue', `${key}: piggybacked on in-flight job`);
+    return;
+  }
+  syncScheduled[key] = true;
+  syncDirtyDuringRun[key] = false;
+  diagLogEvent('sync-queue', `${key}: new job scheduled`);
+  enqueueSync(async ()=>{
+    await runSyncSteps(buildSteps());
+    // anything that arrived while that run was in flight gets exactly one
+    // guaranteed follow-up pass (reading fresh state), instead of being lost
+    if(syncDirtyDuringRun[key]){
+      syncDirtyDuringRun[key] = false;
+      diagLogEvent('sync-queue', `${key}: running guaranteed follow-up pass`);
+      await runSyncSteps(buildSteps());
+    }
+    syncScheduled[key] = false;
+  });
+}
+// True whenever ANYTHING is queued-but-not-yet-synced — drives the
+// close-tab warning below.
+function hasUnsyncedWork(){
+  return Object.values(syncScheduled).some(Boolean) || state.syncMeta.dirty;
+}
+window.addEventListener('beforeunload', (e)=>{
+  if(syncConfigured() && hasUnsyncedWork()){
+    e.preventDefault();
+    e.returnValue = ''; // triggers the browser's native "leave site? changes may not be saved" prompt
+  }
+});
+
 async function saveTasks(){
-  await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks), 'tasks');
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps([
+    // Supabase is the durable copy of completion history — only cache the
+    // small, bounded task/list definitions locally, so the app still opens
+    // instantly and works offline for editing, without local storage ever
+    // growing unbounded with years of check-off history.
+    await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks', {silent:true});
+  } else {
+    // No sync configured — local storage is the ONLY copy, so it needs the
+    // full trim-fallback safety net to avoid ever losing data outright.
+    await saveTasksLocalWithFallback();
+  }
+  if(syncConfigured()){
+    scheduleSync('tasks', ()=>[
       ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
       ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
       ()=> flushPendingCompletionDeletes(),
       ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
-    ]));
+    ]);
   }
 }
 async function saveLists(){
   await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps([
+    scheduleSync('lists', ()=>[
       ()=> supaUpsert('lists', state.lists.map((l,i)=>listToRow(l,i)), 'id'),
       ()=> {
         const itemRows = [];
         state.lists.forEach(l=> l.items.forEach((it,i)=> itemRows.push(listItemToRow(it, l.id, i))));
         return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
       },
-    ]));
+    ]);
   }
 }
+// Generic version of the tasks fallback for simple date-array logs (health,
+// ratings) — same idea: trim what's cached locally, never what's in memory
+// or pushed to Supabase, and stay quiet once settled at a stable trim level.
+// Only used when sync ISN'T configured — see saveHealth/saveRatings below.
+async function saveDatedArrayLocalWithFallback(key, arr, label, stateKey){
+  if(localTrimState[stateKey]){
+    const cutoff = addDays(todayStr(), -localTrimState[stateKey]);
+    const trimmed = arr.filter(e=> e.date >= cutoff);
+    const res = await safeStorageSet(key, JSON.stringify(trimmed), label, {silent:true});
+    if(res === true) return true;
+  }
+
+  const full = await safeStorageSet(key, JSON.stringify(arr), label, {silent:true});
+  if(full === true){
+    if(localTrimState[stateKey] !== null){
+      showToast(`Local ${label} cache has room again — back to keeping full history`);
+      localTrimState[stateKey] = null;
+    }
+    return true;
+  }
+  if(!isQuotaError(full.err)){
+    showToast(`⚠ Save failed: ${full.err && full.err.message ? full.err.message : 'storage unavailable'}`);
+    return false;
+  }
+  for(const days of [365, 180, 90, 30, 14, 7, 3]){
+    const cutoff = addDays(todayStr(), -days);
+    const trimmed = arr.filter(e=> e.date >= cutoff);
+    const res = await safeStorageSet(key, JSON.stringify(trimmed), label, {silent:true});
+    if(res === true){
+      const changed = localTrimState[stateKey] !== days;
+      localTrimState[stateKey] = days;
+      if(changed){
+        showToast(`⚠ Local ${label} cache trimmed to fit (kept last ${days} days). Consider setting up Supabase sync to stop needing this.`);
+      }
+      return true;
+    }
+  }
+  showToast(`⚠ Local ${label} cache is full even after trimming.`);
+  return false;
+}
+
 async function saveHealth(){
-  await safeStorageSet(STORAGE_KEYS.HEALTH, JSON.stringify(state.health), 'health log');
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps([
+    // no local copy of the actual entries at all once sync is on — Supabase
+    // is the durable copy, and this is exactly the kind of unboundedly-
+    // growing daily data that caused the original quota problem.
+  } else {
+    await saveDatedArrayLocalWithFallback(STORAGE_KEYS.HEALTH, state.health, 'health log', 'health');
+  }
+  if(syncConfigured()){
+    scheduleSync('health', ()=>[
       ()=> supaUpsert('health_logs', state.health.map(healthToRow), 'pin,log_date'),
-    ]));
+    ]);
+  }
+}
+async function saveRatings(){
+  if(syncConfigured()){
+    // same as health — no local copy once Supabase is the durable source.
+  } else {
+    await saveDatedArrayLocalWithFallback(STORAGE_KEYS.RATINGS, state.dailyRatings, 'ratings', 'ratings');
+  }
+  if(syncConfigured()){
+    scheduleSync('ratings', ()=>[
+      ()=> supaUpsert('daily_ratings', state.dailyRatings.map(ratingToRow), 'pin,rating_date'),
+    ]);
+  }
+}
+async function saveHealthMetricDefs(){
+  await safeStorageSet(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), 'health metrics');
+  if(syncConfigured()){
+    scheduleSync('metricDefs', ()=>[
+      ()=> supaUpsert('health_metric_defs', state.healthMetricDefs.map(metricDefToRow), 'pin,id'),
+    ]);
   }
 }
 async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps([
+    scheduleSync('settings', ()=>[
       ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
-    ]));
+    ]);
   }
 }
 
@@ -1630,6 +2065,41 @@ function siloColor(silo){
   return SILO_FALLBACK_PALETTE[hash % SILO_FALLBACK_PALETTE.length];
 }
 
+const LOCATION_FALLBACK_PALETTE = ['#5C7999','#B9862F','#4C7A3D','#A0527A','#7C5CBF','#C1443D','#3A3F47','#3C7A73'];
+function locationColor(loc){
+  if(!state.settings.locationColors) state.settings.locationColors = {};
+  if(state.settings.locationColors[loc]) return state.settings.locationColors[loc];
+  let hash = 0;
+  for(let i=0;i<loc.length;i++) hash = (hash*31 + loc.charCodeAt(i)) >>> 0;
+  return LOCATION_FALLBACK_PALETTE[hash % LOCATION_FALLBACK_PALETTE.length];
+}
+
+/* ---------- Diagnostics log ----------
+   In-memory only (never written to local storage — that would just recreate
+   the same quota problem). A bounded circular buffer covering the current
+   session: every sync attempt, every local storage write, every load/pull,
+   with real timestamps and error details. Exportable from Settings so a
+   sync issue can be diagnosed from the actual log instead of a description
+   after the fact. */
+const diagLog = [];
+const MAX_DIAG_LOG = 400;
+function diagLogEvent(category, message, data){
+  diagLog.push({ t: new Date().toISOString(), category, message, data: data!==undefined ? data : null });
+  if(diagLog.length > MAX_DIAG_LOG) diagLog.shift();
+}
+function formatDiagLog(){
+  const lines = [
+    `CalendarOS Diagnostic Log — generated ${new Date().toISOString()}`,
+    `App version: ${APP_VERSION} | Storage: ${usingNativeAppStorage?'Claude':'Browser (standalone)'} | Sync configured: ${syncConfigured()}`,
+    `Sync status: ${state.syncMeta.status} | dirty: ${state.syncMeta.dirty} | last synced: ${state.syncMeta.lastSyncedAt||'never'} | last error: ${state.syncMeta.lastError||'none'}`,
+    '='.repeat(70),
+  ];
+  diagLog.forEach(e=>{
+    lines.push(`[${e.t}] [${e.category}] ${e.message}${e.data ? ' — ' + JSON.stringify(e.data) : ''}`);
+  });
+  return lines.join('\n');
+}
+
 /* ---------- Toast ---------- */
 let toastTimer = null;
 function showToast(msg){
@@ -1664,7 +2134,7 @@ function matchesFilters(item){
   if(state.locationFilter !== 'All' && item.location !== state.locationFilter) return false;
   if(state.searchQuery){
     const q = state.searchQuery.toLowerCase();
-    const hay = `${item.name} ${item.location} ${item.silo}`.toLowerCase();
+    const hay = `${item.name} ${item.location} ${item.silo} ${item.notes||''}`.toLowerCase();
     if(!hay.includes(q)) return false;
   }
   return true;
@@ -1709,16 +2179,24 @@ function getDashboardTasks(){
     });
   }
 
-  // recurring tasks — earliest occurrence within window
+  // recurring tasks — earliest occurrence within window (exception-aware,
+  // so a rescheduled-to date shows up even if the pattern wouldn't naturally land there)
   state.tasks.recurring.forEach(t=>{
     for(let i=0;i<=windowDays;i++){
       const d = addDays(sel, i);
-      if(isDueOn(t, d)){
-        rows.push({ kind:'recurring', task:t, dueOn:d, overdue:false });
+      if(isEffectivelyDueOn(t, d)){
+        rows.push({ kind:'recurring', task:t, dueOn:d, overdue:false, rescheduled: !!rescheduleExceptionFor(t,d) });
         break;
       }
     }
   });
+
+  // overdue recurring — mirrors overdue one-time, only pinned on "Today"
+  if(sel === todayStr()){
+    getOverdueRecurring().forEach(({task,date})=>{
+      rows.push({ kind:'recurring', task, dueOn:date, overdue:true });
+    });
+  }
 
   // dedupe overdue duplicates (a one-time task could theoretically be both overdue+in-window; overdue wins already separate list)
   const seen = new Set();
@@ -1746,7 +2224,7 @@ function countDueToday(){
   const sel = todayStr();
   let count = 0;
   state.tasks.oneTime.forEach(t=>{ if(!t.done && t.due === sel) count++; });
-  state.tasks.recurring.forEach(t=>{ if(isDueOn(t, sel) && !isCompletedOn(t.id, sel)) count++; });
+  state.tasks.recurring.forEach(t=>{ if(isEffectivelyDueOn(t, sel) && !isCompletedOn(t.id, sel)) count++; });
   return count;
 }
 
@@ -1833,11 +2311,14 @@ function timeAgo(isoStr){
 async function retrySync(){
   if(!syncConfigured()) return;
   state.syncMeta.status = 'syncing';
+  state.initialSyncBlocking = true;
+  renderSyncBlockOverlay();
   updateSyncBadge();
   await enqueueSync(async ()=>{
     try{
       await pushFullStateToSupabase((cur,total)=>{
         state.syncMeta.progress = { current: cur, total };
+        setSyncBlockText(`Syncing… ${Math.round((cur/total)*100)}%`);
         updateSyncBadge();
         renderMain(); // keeps the Settings-page progress line live too
       });
@@ -1849,6 +2330,8 @@ async function retrySync(){
       showToast('Sync retry failed — still saved locally');
     }
   });
+  state.initialSyncBlocking = false;
+  renderSyncBlockOverlay();
   updateSyncBadge();
 }
 
@@ -1869,6 +2352,22 @@ async function lockNow(){
   showToast('Locked — reload the app to see the passcode screen');
 }
 
+async function clearLocalCacheNow(){
+  const syncOn = syncConfigured();
+  const warning = syncOn
+    ? "Clear this device's local cache? Nothing is lost — Supabase has everything, and the app will pull it fresh on your next reload."
+    : "Clear this device's local cache? Sync isn't connected, so anything not backed up elsewhere will be PERMANENTLY LOST. This cannot be undone.";
+  if(!confirm(warning)) return;
+  const keysToClear = [
+    STORAGE_KEYS.TASKS, STORAGE_KEYS.LISTS, STORAGE_KEYS.HEALTH, STORAGE_KEYS.RATINGS, STORAGE_KEYS.HEALTH_METRIC_DEFS,
+  ];
+  for(const key of keysToClear){
+    try{ await window.storage.delete(key, false); } catch(e){ console.error('clear cache failed for', key, e); }
+  }
+  showToast('Local cache cleared — reloading…');
+  setTimeout(()=> window.location.reload(), 900);
+}
+
 function navItem(view, icon, label, count){
   const active = state.view === view ? 'active' : '';
   const countHtml = (count !== undefined) ? `<span class="nav-count">${count}</span>` : '';
@@ -1879,6 +2378,7 @@ function navItem(view, icon, label, count){
 
 function setView(v){
   state.view = v;
+  state.searchQuery = '';
   if(v !== 'tasks'){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); }
   render();
 }
@@ -1922,11 +2422,12 @@ async function repairSettingsAndRetry(){
    RENDER: DASHBOARD
    ========================================================= */
 function renderDashboard(){
-  const rows = getDashboardTasks();
+  let rows = getDashboardTasks();
+  if(state.hideCompleted) rows = rows.filter(r=>!isRowCompleted(r));
   const overdueN = getOverdueOneTime().length;
   const doneToday = state.tasks.oneTime.filter(t=>t.done && t.due===todayStr()).length +
-    state.tasks.recurring.filter(t=> isDueOn(t, todayStr()) && isCompletedOn(t.id, todayStr())).length;
-  const missedToday = state.tasks.recurring.filter(t=> isDueOn(t, todayStr()) && isMissedOn(t.id, todayStr())).length;
+    state.tasks.recurring.filter(t=> isEffectivelyDueOn(t, todayStr()) && isCompletedOn(t.id, todayStr())).length;
+  const missedToday = state.tasks.recurring.filter(t=> isEffectivelyDueOn(t, todayStr()) && isMissedOn(t.id, todayStr())).length;
   const totalToday = countDueToday() + doneToday;
   const weeklyOnTime = computeWeeklyOnTimeRate();
 
@@ -1968,6 +2469,10 @@ function renderDashboard(){
       </div>
       <input type="date" class="filter-date" value="${state.selectedDate}" onchange="setSelectedDate(this.value)">
       ${state.selectedDate!==todayStr() ? `<button class="btn ghost sm" onclick="setSelectedDate('${todayStr()}')">↺ Jump to Today</button>` : ''}
+      <div class="toggle-switch-row">
+        <span>Hide completed</span>
+        <div class="toggle-switch ${state.hideCompleted?'on':''}" onclick="toggleHideCompleted()"><div class="knob"></div></div>
+      </div>
       <div class="toggle-switch-row" style="margin-left:auto;">
         <span>Group by location</span>
         <div class="toggle-switch ${state.groupByLocation?'on':''}" onclick="toggleGroupByLocation()"><div class="knob"></div></div>
@@ -1982,6 +2487,11 @@ function renderDashboard(){
       ${state.groupByLocation ? renderGroupedTickets(rows) : renderTicketList(rows)}
     </div>
   `;
+}
+
+function toggleHideCompleted(){
+  state.hideCompleted = !state.hideCompleted;
+  renderMain();
 }
 
 function toggleGroupByLocation(){
@@ -2114,6 +2624,9 @@ function renderTicket(row, opts){
     stamp = `<div class="stamp overdue">Overdue</div>`;
   } else if(!isRecurring && t.dueHistory && t.dueHistory.length){
     stamp = `<div class="stamp reschedule" onclick="event.stopPropagation(); showRescheduleHistory('${t.id}')" title="Click to see previous dates">Rescheduled ${t.dueHistory.length}×</div>`;
+  } else if(row.rescheduled){
+    const exc = rescheduleExceptionFor(t, dateForCompletion);
+    stamp = `<div class="stamp reschedule" title="Moved from ${exc?humanDate(exc.from):'another day'}">Rescheduled</div>`;
   } else if(isRecurring && streak >= 2){
     stamp = `<div class="stamp streak">${streak} day streak</div>`;
   }
@@ -2135,9 +2648,10 @@ function renderTicket(row, opts){
       ${stamp}
       ${selectBox}
       ${tickBtn}
-      <div class="ticket-body">
+      <div class="ticket-body" onclick="openTaskModal('${row.kind}','${t.id}'${isRecurring?`,'${dateForCompletion}'`:''})" title="Click to edit">
         <div class="ticket-title-row">
           <span class="ticket-title">${escapeHtml(t.name)}</span>
+          ${t.notes && t.notes.trim() ? `<span class="note-flag" title="Has a note">📝</span>` : ''}
         </div>
         <div class="ticket-meta">
           ${locTag}
@@ -2151,7 +2665,6 @@ function renderTicket(row, opts){
       </div>
       <div class="ticket-actions">
         ${missedBtn}
-        <button class="icon-btn" title="Edit" onclick="openTaskModal('${row.kind}','${t.id}')">✎</button>
         <button class="icon-btn" title="Delete" onclick="deleteTask('${row.kind}','${t.id}')">✕</button>
       </div>
     </div>
@@ -2169,28 +2682,38 @@ function setDashboardFilter(f){ state.dashboardFilter = f; renderMain(); }
 function setSelectedDate(v){ state.selectedDate = v; renderMain(); }
 function setLocationFilter(v){ state.locationFilter = v; renderMain(); }
 
+// Set while the New Day review modal is open — a task checked off there was
+// actually done back on that previous day, not "now", so we backdate the
+// completion to keep history/stats accurate rather than crediting today.
+let newDayReviewDate = null;
+
 async function toggleComplete(kind, taskId, dateStr, isUndo){
   if(kind === 'oneTime'){
     const t = state.tasks.oneTime.find(x=>x.id===taskId);
     if(!t) return;
     const prevDone = t.done;
     t.done = !t.done;
-    t.doneDate = t.done ? todayStr() : null;
+    t.doneDate = t.done ? (newDayReviewDate || todayStr()) : null;
     saveTasks(); // fire-and-forget: UI updates now, sync (local+remote) happens in the background
-    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: prevDone, name: t.name });
+    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: prevDone, name: t.name, action:'done' });
   } else {
     const t = state.tasks.recurring.find(x=>x.id===taskId);
     if(!t) return;
     const cur = isCompletedOn(taskId, dateStr);
     toggleDone(taskId, dateStr);
-    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: cur, name: t.name });
+    if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: cur, name: t.name, action:'done' });
   }
   renderMain();
+  if(newDayReviewDate) refreshNewDayModal();
 }
 
-async function toggleMissedTask(taskId, dateStr){
+async function toggleMissedTask(taskId, dateStr, isUndo){
+  const t = state.tasks.recurring.find(x=>x.id===taskId);
+  const prevMissed = isMissedOn(taskId, dateStr);
   toggleMissed(taskId, dateStr);
+  if(!isUndo && t) pushUndo({ kind:'recurring', taskId, dateStr, prevValue: prevMissed, name: t.name, action:'missed' });
   renderMain();
+  if(newDayReviewDate) refreshNewDayModal();
 }
 
 /* ---------- Undo (Ctrl+Z / Cmd+Z) ---------- */
@@ -2204,6 +2727,8 @@ async function undoLast(){
   if(entry.kind === 'oneTime'){
     const t = state.tasks.oneTime.find(x=>x.id===entry.taskId);
     if(t){ t.done = entry.prevValue; t.doneDate = t.done ? todayStr() : null; saveTasks(); }
+  } else if(entry.action === 'missed'){
+    setOccurrenceStatus(entry.taskId, entry.dateStr, entry.prevValue ? 'missed' : null);
   } else {
     setOccurrenceStatus(entry.taskId, entry.dateStr, entry.prevValue ? 'done' : null);
   }
@@ -2223,6 +2748,10 @@ document.addEventListener('keydown', (e)=>{
   if(isSaveCombo && document.getElementById('modalOverlay')){
     e.preventDefault();
     saveTaskModal();
+  }
+  if(e.key === 'Escape' && document.getElementById('modalOverlay')){
+    e.preventDefault();
+    closeModal();
   }
 });
 
@@ -2382,30 +2911,41 @@ async function applyBatchEdit(tab){
 /* =========================================================
    RENDER: CALENDAR VIEW
    ========================================================= */
-function densityForDate(dateStr){
-  let count = 0, overdueCount = 0;
+// Returns the actual task objects due on a date, split into recurring vs
+// one-time (overdue one-time tasks still pile onto today's box instead of
+// their original date, matching the Dashboard/Overdue behavior).
+function getTasksForDateSplit(dateStr){
   const today = todayStr();
+  const oneTime = [];
   state.tasks.oneTime.forEach(t=>{
     if(t.due === dateStr){
-      // an incomplete overdue task no longer counts on its original date —
-      // it piles up on today's box instead, so today shows what actually
-      // needs attention and rescheduling
       if(!t.done && dateStr < today) return;
-      count++;
+      oneTime.push(t);
     }
   });
   if(dateStr === today){
-    const overdue = getOverdueOneTime().length;
-    count += overdue;
-    overdueCount += overdue;
+    getOverdueOneTime().forEach(t=> oneTime.push(t));
   }
-  if(state.calDensityMode === 'all'){
-    state.tasks.recurring.forEach(t=>{ if(isDueOn(t, dateStr)) count++; });
-  }
-  return { count, overdueCount };
+  const recurring = [];
+  state.tasks.recurring.forEach(t=>{ if(isEffectivelyDueOn(t, dateStr)) recurring.push(t); });
+  return { recurring, oneTime };
 }
-function setCalDensityMode(mode){
-  state.calDensityMode = mode;
+
+function calDotColor(task, kind){
+  const mode = state.calColorMode || 'location';
+  if(mode === 'location') return locationColor(task.location);
+  if(mode === 'silo') return siloColor(task.silo);
+  // 'recurType': only meaningful for recurring tasks; one-time tasks get a
+  // fixed neutral marker matching the deep-red One-Time pill used elsewhere
+  return kind === 'recurring' ? recurTypeColor(task.type) : 'var(--flag)';
+}
+function calDotLabel(task, kind){
+  const mode = state.calColorMode || 'location';
+  const attr = mode === 'location' ? task.location : mode === 'silo' ? task.silo : (kind==='recurring' ? task.type : 'One-Time');
+  return `${task.name} — ${attr}`;
+}
+function setCalColorMode(mode){
+  state.calColorMode = mode;
   renderMain();
 }
 async function toggleWeekendDay(day){
@@ -2416,34 +2956,55 @@ async function toggleWeekendDay(day){
   renderMain();
 }
 
+function calLegendItems(){
+  const mode = state.calColorMode || 'location';
+  if(mode === 'location') return state.settings.locations.map(l=>[l, locationColor(l)]);
+  if(mode === 'silo') return state.settings.silos.map(s=>[s, siloColor(s)]);
+  return RECUR_TYPES.map(t=>[t, recurTypeColor(t)]).concat([['One-Time', 'var(--flag)']]);
+}
+
 function renderCalendarView(){
   if(!state.calMonthCursor){
     const t = parseDate(todayStr());
     state.calMonthCursor = { year: t.getFullYear(), month: t.getMonth() };
   }
+  if(!state.calColorMode) state.calColorMode = 'location';
   const { year, month } = state.calMonthCursor;
   const firstOfMonth = new Date(year, month, 1);
   const startDow = firstOfMonth.getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const weekendDays = state.settings.weekendDays || [];
+  const MAX_DOTS_PER_ROW = 8;
+
+  const dotsRowHtml = (tasks, kind)=>{
+    if(!tasks.length) return '';
+    const shown = tasks.slice(0, MAX_DOTS_PER_ROW);
+    const extra = tasks.length - shown.length;
+    return `<div class="dot-row">
+      ${shown.map(t=>`<span class="dot" style="background:${calDotColor(t,kind)};" title="${escapeHtml(calDotLabel(t,kind))}"></span>`).join('')}
+      ${extra>0 ? `<span class="dot-extra">+${extra}</span>` : ''}
+    </div>`;
+  };
 
   let cells = '';
   for(let i=0;i<startDow;i++) cells += `<div class="cal-cell empty"></div>`;
   for(let day=1; day<=daysInMonth; day++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const { count, overdueCount } = densityForDate(dateStr);
+    const { recurring, oneTime } = getTasksForDateSplit(dateStr);
     const isToday = dateStr === todayStr();
     const dow = new Date(year, month, day).getDay();
     const isWeekend = weekendDays.includes(DOW_ABBR[dow]);
-    const dots = Array.from({length: Math.min(count,6)}).map((_,i)=>
-      `<span class="dot ${i < overdueCount ? 'over':''}"></span>`
-    ).join('');
+    const total = recurring.length + oneTime.length;
     cells += `
       <div class="cal-cell ${isToday?'today':''} ${isWeekend?'weekend':''}" onclick="jumpToDate('${dateStr}')">
-        <span class="date-num">${day}</span>
-        <div>
-          <div class="dot-row">${dots}</div>
-          ${count>0 ? `<span class="density-count">${count}</span>` : ''}
+        <div class="cal-cell-top">
+          <span class="date-num">${day}</span>
+          ${total>0 ? `<span class="density-count">${total}</span>` : ''}
+        </div>
+        <div class="cal-cell-tasks">
+          ${dotsRowHtml(recurring, 'recurring')}
+          ${recurring.length && oneTime.length ? `<div class="cal-cell-sep"></div>` : ''}
+          ${dotsRowHtml(oneTime, 'oneTime')}
         </div>
       </div>`;
   }
@@ -2452,20 +3013,21 @@ function renderCalendarView(){
     <div class="topbar">
       <div>
         <h1 class="page-title">Calendar</h1>
-        <div class="page-sub">Task density by day — click a day to jump to Dashboard. Weekend days are set in Settings.</div>
+        <div class="page-sub">Recurring tasks on top, one-time below — click a day to jump to Dashboard. Weekend days are set in Settings.</div>
       </div>
     </div>
 
     <div class="filter-bar">
       <div class="chip-select">
-        <button class="${state.calDensityMode==='all'?'active':''}" onclick="setCalDensityMode('all')">All Tasks</button>
-        <button class="${state.calDensityMode==='oneTime'?'active':''}" onclick="setCalDensityMode('oneTime')">One-Time Only</button>
+        <button class="${state.calColorMode==='location'?'active':''}" onclick="setCalColorMode('location')">By Location</button>
+        <button class="${state.calColorMode==='silo'?'active':''}" onclick="setCalColorMode('silo')">By Silo</button>
+        <button class="${state.calColorMode==='recurType'?'active':''}" onclick="setCalColorMode('recurType')">By Recurrence Type</button>
       </div>
-      <div class="sync-status" style="margin-left:auto;">
-        <span class="dot" style="background:var(--brass);"></span> Due that day
-        &nbsp;&nbsp;<span class="dot over" style="background:var(--flag);"></span> Overdue &amp; incomplete
-        &nbsp;&nbsp;<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:color-mix(in srgb, var(--brass) 8%, var(--paper-raised));border:1px solid var(--line);"></span> Weekend
-      </div>
+    </div>
+
+    <div class="cal-legend">
+      ${calLegendItems().map(([label,color])=>`<span class="cal-legend-item"><span class="cal-legend-dot" style="background:${color};"></span>${escapeHtml(label)}</span>`).join('')}
+      <span class="cal-legend-item" style="margin-left:auto;"><span class="cal-legend-dot" style="background:color-mix(in srgb, var(--brass) 8%, var(--paper-raised)); border:1px solid var(--line);"></span>Weekend</span>
     </div>
 
     <div class="card" style="padding:20px;">
@@ -2536,7 +3098,7 @@ function renderListCard(list){
         ${list.items.map(item=>`
           <div class="list-item ${item.done?'done':''}">
             <button class="li-check ${item.done?'checked':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>
-            <span class="li-text">${escapeHtml(item.text)}</span>
+            <span class="li-text" onclick="editListItemText('${list.id}','${item.id}')" title="Click to edit" style="cursor:pointer;">${escapeHtml(item.text)}</span>
             ${item.category ? `<span class="li-cat">${escapeHtml(item.category)}</span>` : ''}
             <button class="icon-btn" style="width:18px;height:18px;font-size:11px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
           </div>
@@ -2555,6 +3117,18 @@ async function toggleListItem(listId, itemId){
   const item = list?.items.find(i=>i.id===itemId);
   if(!item) return;
   item.done = !item.done;
+  await saveLists();
+  renderMain();
+}
+async function editListItemText(listId, itemId){
+  const list = state.lists.find(l=>l.id===listId);
+  const item = list?.items.find(i=>i.id===itemId);
+  if(!item) return;
+  const newText = prompt('Edit item:', item.text);
+  if(newText === null) return; // cancelled
+  const trimmed = newText.trim();
+  if(!trimmed) return;
+  item.text = trimmed;
   await saveLists();
   renderMain();
 }
@@ -2613,64 +3187,121 @@ async function addNewList(){
 /* =========================================================
    RENDER: HEALTH LOG VIEW
    ========================================================= */
-function getTodayHealth(){
-  let entry = state.health.find(h=>h.date === todayStr());
+const CORE_METRIC_DEFAULTS = [
+  { id:'core_weight', name:'Weight', type:'number', unit:'kg', field:'weight' },
+  { id:'core_water', name:'Water Intake', type:'number', unit:'ml', field:'water' },
+  { id:'core_caldeficit', name:'Calorie Deficit', type:'number', unit:'kcal', field:'calDeficit' },
+  { id:'core_no2', name:'No. 2', type:'yesno', unit:null, field:'no2' },
+];
+function coreFieldFor(metricId){
+  const d = CORE_METRIC_DEFAULTS.find(x=>x.id===metricId);
+  return d ? d.field : null;
+}
+// Seeds the 4 original fields as regular metric definitions — but only ONCE,
+// ever, tracked by a persisted flag. Without this guard, deleting a core
+// metric would just get it silently re-added the next time this runs (e.g.
+// on the next page render), since it'd still look "missing".
+function ensureCoreMetricDefs(){
+  if(!state.settings.healthCoreMetricsSeeded){
+    CORE_METRIC_DEFAULTS.forEach((def, i)=>{
+      if(!state.healthMetricDefs.find(m=>m.id===def.id)){
+        state.healthMetricDefs.unshift({ id:def.id, name:def.name, type:def.type, unit:def.unit, core:true, visible:true, sortOrder:i-100 });
+      }
+    });
+    state.settings.healthCoreMetricsSeeded = true;
+    saveSettings();
+  }
+  state.healthMetricDefs.forEach(m=>{
+    if(m.visible === undefined) m.visible = true;
+    if(m.core === undefined) m.core = false;
+    if(m.sortOrder === undefined) m.sortOrder = 0;
+  });
+}
+function getMetricValue(entry, m){
+  if(m.core) return entry[coreFieldFor(m.id)];
+  return entry.custom ? entry.custom[m.id] : undefined;
+}
+function setMetricValueOnEntry(entry, m, value){
+  if(m.core){ entry[coreFieldFor(m.id)] = value; }
+  else { if(!entry.custom) entry.custom = {}; entry.custom[m.id] = value; }
+}
+
+function getHealthEntry(dateStr){
+  let entry = state.health.find(h=>h.date === dateStr);
   if(!entry){
-    entry = { date: todayStr(), water: null, no2: null, calDeficit: null };
+    entry = { date: dateStr, water:null, no2:null, calDeficit:null, weight:null, custom:{} };
     state.health.push(entry);
   }
+  if(!entry.custom) entry.custom = {};
   return entry;
 }
 
+if(!state.healthViewDate) state.healthViewDate = todayStr();
+
 function renderHealthView(){
-  const today = getTodayHealth();
+  ensureCoreMetricDefs();
+  const viewDate = state.healthViewDate;
+  const entry = getHealthEntry(viewDate);
   const history = [...state.health].sort((a,b)=> a.date < b.date ? 1 : -1).slice(0,30);
+  const sortedMetrics = [...state.healthMetricDefs].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const visibleMetrics = sortedMetrics.filter(m=>m.visible!==false);
 
   return `
     <div class="topbar">
       <div>
         <h1 class="page-title">Health Log</h1>
-        <div class="page-sub">Daily wellness tracking</div>
+        <div class="page-sub">Daily wellness tracking — no due dates, just log and go</div>
       </div>
+      <button class="btn secondary" onclick="openMetricModal()">+ Add Metric</button>
+    </div>
+
+    <div class="filter-bar">
+      <button class="btn ghost sm" onclick="shiftHealthDate(-1)">← Prev Day</button>
+      <input type="date" class="filter-date" value="${viewDate}" max="${todayStr()}" onchange="setHealthViewDate(this.value)">
+      <button class="btn ghost sm" onclick="shiftHealthDate(1)" ${viewDate>=todayStr()?'disabled':''}>Next Day →</button>
+      ${viewDate!==todayStr() ? `<button class="btn ghost sm" onclick="setHealthViewDate(todayStr())">↺ Jump to Today</button>` : ''}
+      <span class="page-sub" style="margin-left:auto;">${fullDate(viewDate)}</span>
     </div>
 
     <div class="health-grid">
-      <div class="card health-input-card">
-        <label>Water Intake</label>
-        <div class="big-input">
-          <input type="number" value="${today.water??''}" placeholder="0" onchange="updateHealth('water', this.value)">
-          <span class="unit">ml</span>
-        </div>
-      </div>
-      <div class="card health-input-card">
-        <label>Calorie Deficit</label>
-        <div class="big-input">
-          <input type="number" value="${today.calDeficit??''}" placeholder="0" onchange="updateHealth('calDeficit', this.value)">
-          <span class="unit">kcal</span>
-        </div>
-      </div>
-      <div class="card health-input-card">
-        <label>No. 2</label>
-        <div class="toggle-yn">
-          <button class="${today.no2===true?'active':''}" onclick="updateHealth('no2', true)">Yes</button>
-          <button class="${today.no2===false?'active':''}" onclick="updateHealth('no2', false)">No</button>
-        </div>
+      ${visibleMetrics.map(m=>renderMetricCard(m, entry)).join('')}
+    </div>
+    ${visibleMetrics.length===0 ? `<div class="card empty-state" style="margin-bottom:20px;"><span class="glyph">☺</span>All metrics are hidden — manage them below to bring some back.</div>` : ''}
+
+    <div class="section">
+      <div class="section-head"><h2>Manage Metrics</h2></div>
+      <div class="card" style="padding:4px 16px;">
+        ${sortedMetrics.map(m=>`
+          <div class="metric-manage-row">
+            <span class="metric-manage-name">${escapeHtml(m.name)}${m.core?' <span class="ptr-locked">built-in</span>':''}</span>
+            <div class="toggle-switch-row">
+              <span class="page-sub">Show</span>
+              <div class="toggle-switch ${m.visible!==false?'on':''}" onclick="toggleMetricVisible('${m.id}')"><div class="knob"></div></div>
+            </div>
+            <button class="icon-btn" title="Edit" onclick="openMetricModal('${m.id}')">✎</button>
+            <button class="icon-btn" title="Delete" onclick="deleteMetricDef('${m.id}')">✕</button>
+          </div>
+        `).join('')}
       </div>
     </div>
 
     <div class="section">
       <div class="section-head"><h2>History</h2></div>
-      <div class="card" style="padding:6px 16px;">
+      <div class="page-sub" style="margin-bottom:8px;">Click a row to edit that day above.</div>
+      <div class="card" style="padding:6px 16px; overflow-x:auto;">
         <table class="log-table">
-          <thead><tr><th>Date</th><th>Water (ml)</th><th>No. 2</th><th>Cal Deficit</th></tr></thead>
+          <thead><tr>
+            <th>Date</th>
+            ${sortedMetrics.map(m=>`<th>${escapeHtml(m.name)}${m.unit?` (${escapeHtml(m.unit)})`:''}</th>`).join('')}
+            <th></th>
+          </tr></thead>
           <tbody>
             ${history.map(h=>`
-              <tr>
-                <td>${humanDate(h.date)}</td>
-                <td>${h.water ?? '—'}</td>
-                <td>${h.no2===true?'Yes':h.no2===false?'No':'—'}</td>
-                <td>${h.calDeficit ?? '—'}</td>
-              </tr>`).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--slate);padding:20px;">No entries yet.</td></tr>`}
+              <tr class="${h.date===viewDate?'log-row-active':''}">
+                <td onclick="setHealthViewDate('${h.date}')" style="cursor:pointer;">${humanDate(h.date)}</td>
+                ${sortedMetrics.map(m=>`<td onclick="setHealthViewDate('${h.date}')" style="cursor:pointer;">${formatMetricValue(m, getMetricValue(h,m))}</td>`).join('')}
+                <td><button class="icon-btn" title="Delete this day's entry" onclick="event.stopPropagation(); deleteHealthDay('${h.date}')">✕</button></td>
+              </tr>`).join('') || `<tr><td colspan="${2+sortedMetrics.length}" style="text-align:center;color:var(--slate);padding:20px;">No entries yet.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -2678,28 +3309,207 @@ function renderHealthView(){
   `;
 }
 
-async function updateHealth(field, value){
-  const entry = getTodayHealth();
-  if(field === 'no2') entry.no2 = value;
-  else entry[field] = value === '' ? null : Number(value);
+function renderMetricCard(m, entry){
+  const val = getMetricValue(entry, m);
+  let inputHtml = '';
+  if(m.type === 'number'){
+    inputHtml = `
+      <div class="big-input">
+        <input type="number" step="any" value="${val??''}" placeholder="0" onchange="setMetricValue('${m.id}', this.value)">
+        ${m.unit ? `<span class="unit">${escapeHtml(m.unit)}</span>` : ''}
+      </div>`;
+  } else if(m.type === 'yesno'){
+    inputHtml = `
+      <div class="toggle-yn">
+        <button class="${val===true?'active':''}" onclick="setMetricValue('${m.id}', true)">Yes</button>
+        <button class="${val===false?'active':''}" onclick="setMetricValue('${m.id}', false)">No</button>
+      </div>`;
+  } else {
+    inputHtml = `<input type="text" value="${escapeHtml(val||'')}" placeholder="—" onchange="setMetricValue('${m.id}', this.value)">`;
+  }
+  return `
+    <div class="card health-input-card">
+      <label>${escapeHtml(m.name)}</label>
+      ${inputHtml}
+    </div>
+  `;
+}
+
+function formatMetricValue(m, val){
+  if(val === undefined || val === null || val === '') return '—';
+  if(m.type === 'yesno') return val === true ? 'Yes' : val === false ? 'No' : '—';
+  return escapeHtml(String(val));
+}
+
+function shiftHealthDate(delta){
+  let d = addDays(state.healthViewDate, delta);
+  if(d > todayStr()) d = todayStr();
+  state.healthViewDate = d;
+  renderMain();
+}
+function setHealthViewDate(d){
+  state.healthViewDate = d;
+  renderMain();
+}
+async function deleteHealthDay(dateStr){
+  if(!confirm(`Delete the entire entry for ${humanDate(dateStr)}? This can't be undone.`)) return;
+  state.health = state.health.filter(h=>h.date!==dateStr);
   await saveHealth();
+  if(state.healthViewDate === dateStr) state.healthViewDate = todayStr();
+  renderMain();
+  showToast(`Deleted ${humanDate(dateStr)}`);
+}
+
+async function setMetricValue(metricId, value){
+  const entry = getHealthEntry(state.healthViewDate);
+  const m = state.healthMetricDefs.find(x=>x.id===metricId);
+  if(!m) return;
+  let v;
+  if(m.type === 'yesno') v = value;
+  else if(m.type === 'number') v = value === '' ? null : Number(value);
+  else v = value;
+  setMetricValueOnEntry(entry, m, v);
+  await saveHealth();
+  renderMain();
+}
+async function toggleMetricVisible(metricId){
+  const m = state.healthMetricDefs.find(x=>x.id===metricId);
+  if(!m) return;
+  m.visible = m.visible === false ? true : false;
+  await saveHealthMetricDefs();
+  renderMain();
+}
+
+/* ---------- Metric management modal (add + edit, unified for core and custom) ---------- */
+function openMetricModal(metricId){
+  const editing = metricId ? state.healthMetricDefs.find(m=>m.id===metricId) : null;
+  window.__editingMetricId = metricId || null;
+  window.__newMetricType = editing ? editing.type : 'number';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'addMetricOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${editing ? 'Edit Metric' : 'New Health Metric'}</h3>
+      <div class="modal-sub">${editing ? (editing.core ? "Core metrics can be renamed and hidden, but not deleted or changed in type." : "Rename it, change its unit, or hide it from the daily log.") : "Add anything you want to track daily — no code changes needed, ever."}</div>
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="metricName" value="${editing?escapeHtml(editing.name):''}" placeholder="e.g. Sleep Hours, Mood, Steps">
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <div class="radio-pills">
+          <button type="button" class="radio-pill ${(!editing||editing.type==='number')?'active':''}" data-type="number" ${editing?'disabled':''} onclick="pickMetricType('number')">Number</button>
+          <button type="button" class="radio-pill ${editing&&editing.type==='yesno'?'active':''}" data-type="yesno" ${editing?'disabled':''} onclick="pickMetricType('yesno')">Yes / No</button>
+          <button type="button" class="radio-pill ${editing&&editing.type==='text'?'active':''}" data-type="text" ${editing?'disabled':''} onclick="pickMetricType('text')">Text</button>
+        </div>
+        ${editing ? `<div class="page-sub" style="margin-top:6px;">Type can't be changed after creation, to avoid corrupting already-logged values.</div>` : ''}
+      </div>
+      <div class="field" id="metricUnitField" style="display:${(editing?editing.type:'number')==='number'?'':'none'};">
+        <label>Unit (optional)</label>
+        <input type="text" id="metricUnit" value="${editing&&editing.unit?escapeHtml(editing.unit):''}" placeholder="e.g. hrs, steps, kg">
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('addMetricOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitMetricModal()">${editing?'Save Changes':'Add Metric'}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function pickMetricType(type){
+  if(window.__editingMetricId) return; // locked while editing an existing metric
+  window.__newMetricType = type;
+  document.querySelectorAll('#addMetricOverlay .radio-pill').forEach(b=> b.classList.toggle('active', b.dataset.type===type));
+  document.getElementById('metricUnitField').style.display = type==='number' ? '' : 'none';
+}
+async function submitMetricModal(){
+  const name = document.getElementById('metricName').value.trim();
+  if(!name){ showToast('Give it a name'); return; }
+  const unit = document.getElementById('metricUnit').value.trim();
+  if(window.__editingMetricId){
+    const m = state.healthMetricDefs.find(x=>x.id===window.__editingMetricId);
+    if(m){ m.name = name; if(m.type==='number') m.unit = unit||null; }
+    await saveHealthMetricDefs();
+    showToast(`Updated "${name}"`);
+  } else {
+    const def = { id: newId('metric'), name, type: window.__newMetricType, unit: unit||null, core:false, visible:true, sortOrder: state.healthMetricDefs.length };
+    state.healthMetricDefs.push(def);
+    await saveHealthMetricDefs();
+    showToast(`Added "${name}"`);
+  }
+  document.getElementById('addMetricOverlay').remove();
+  renderMain();
+}
+async function deleteMetricDef(metricId){
+  const def = state.healthMetricDefs.find(m=>m.id===metricId);
+  if(!def) return;
+  const msg = def.core
+    ? `Remove the built-in "${def.name}" metric? Its logged history stays in your data, but it won't be recreated automatically — you'd need to add it back manually as a new metric later.`
+    : `Remove "${def.name}"? Past logged values stay in your history, you just won't see an input for it going forward.`;
+  if(!confirm(msg)) return;
+  state.healthMetricDefs = state.healthMetricDefs.filter(m=>m.id!==metricId);
+  await saveHealthMetricDefs();
   renderMain();
 }
 
 /* =========================================================
    RENDER: SETTINGS VIEW
    ========================================================= */
+if(!state.settingsSection) state.settingsSection = 'general';
+
 function renderSettingsView(){
-  const syncOn = syncConfigured();
-  const s = state.settings.sync || {};
+  const SETTINGS_NAV = [
+    ['general','⚙','General'],
+    ['appearance','🎨','Appearance'],
+    ['pages','⧉','Page Visibility'],
+    ['sync','☁','Cloud Sync'],
+    ['backup','⇅','Backup'],
+    ['diagnostics','🩺','Diagnostics'],
+    ['security','🔒','Security'],
+    ['about','ℹ','About'],
+  ];
+  const sectionRenderers = {
+    general: renderSettingsGeneral,
+    appearance: renderSettingsAppearance,
+    pages: renderSettingsPages,
+    sync: renderSettingsSync,
+    backup: renderSettingsBackup,
+    diagnostics: renderSettingsDiagnostics,
+    security: renderSettingsSecurity,
+    about: renderSettingsAbout,
+  };
+  const active = sectionRenderers[state.settingsSection] ? state.settingsSection : 'general';
+
   return `
     <div class="topbar">
       <div>
         <h1 class="page-title">Settings</h1>
-        <div class="page-sub">Manage locations, silos, and cross-device sync</div>
+        <div class="page-sub">Manage locations, silos, appearance, and cross-device sync</div>
       </div>
     </div>
+    <div class="settings-layout">
+      <div class="settings-nav">
+        ${SETTINGS_NAV.map(([key,icon,label])=>`
+          <button class="settings-nav-item ${active===key?'active':''}" onclick="setSettingsSection('${key}')">
+            <span class="settings-nav-icon">${icon}</span>${label}
+          </button>
+        `).join('')}
+      </div>
+      <div class="settings-panel">
+        ${sectionRenderers[active]()}
+      </div>
+    </div>
+  `;
+}
+function setSettingsSection(key){
+  state.settingsSection = key;
+  renderMain();
+}
 
+function renderSettingsGeneral(){
+  return `
     <div class="section">
       <div class="section-head"><h2>Locations</h2></div>
       <div class="card" style="padding:16px;">
@@ -2751,7 +3561,12 @@ function renderSettingsView(){
         </div>
       </div>
     </div>
+  `;
+}
 
+function renderSettingsSecurity(){
+  const syncOn = syncConfigured();
+  return `
     <div class="section">
       <div class="section-head"><h2>Security</h2></div>
       <div class="card" style="padding:16px;">
@@ -2766,6 +3581,25 @@ function renderSettingsView(){
       </div>
     </div>
 
+    <div class="section">
+      <div class="section-head"><h2>Local Storage</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">
+          ${usingNativeAppStorage
+            ? "Data is cached via Claude's storage, which has plenty of room — this shouldn't come up."
+            : "Running standalone, this device caches data in the browser's local storage, which has a much smaller limit than Claude's storage. The app automatically trims old completion history to stay under it, but if you ever see a storage-full warning, you can clear the local cache immediately here."}
+          ${syncOn ? " Since Supabase is connected, nothing is lost — clearing just forces a fresh pull on next load." : " Since sync isn't connected, clearing this will erase data that hasn't been backed up anywhere else — use with caution."}
+        </div>
+        <button class="btn secondary sm" onclick="clearLocalCacheNow()">Clear Local Cache</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSettingsSync(){
+  const syncOn = syncConfigured();
+  const s = state.settings.sync || {};
+  return `
     <div class="section">
       <div class="section-head">
         <h2>Cross-Device Sync</h2>
@@ -2786,7 +3620,17 @@ function renderSettingsView(){
 
         <div class="field">
           <label>1. Run this once in your Supabase project's SQL Editor</label>
-          <div class="sql-block" id="sqlBlock">-- Run this if you're setting up a brand new Supabase project:
+          <div class="sql-block" id="sqlBlock">-- SAFETY CHECK — leave this at the top. If this script is ever accidentally
+-- pasted into the LedgerOS Supabase project instead of CalendarOS's, this
+-- aborts immediately before anything else runs, so nothing gets touched.
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema='public' and table_name='pd_ledger') then
+    raise exception 'STOP: this looks like the LedgerOS project (found table "pd_ledger"), not CalendarOS. Aborting — nothing was changed. Re-run this in the correct Supabase project.';
+  end if;
+end $$;
+
+-- Run this if you're setting up a brand new Supabase project:
 create table if not exists one_time_tasks (
   id text primary key, pin text not null, name text not null,
   location text, silo text, priority text default 'Medium',
@@ -2798,6 +3642,7 @@ create table if not exists recurring_tasks (
   id text primary key, pin text not null, name text not null,
   location text, silo text, priority text default 'Medium',
   type text, detail text, start_date date, end_date date,
+  reschedule_exceptions jsonb default '[]',
   notes text, meta jsonb default '{}', updated_at timestamptz default now()
 );
 create table if not exists task_completions (
@@ -2815,24 +3660,40 @@ create table if not exists list_items (
 );
 create table if not exists health_logs (
   pin text not null, log_date date not null,
-  water int, no2 boolean, cal_deficit int,
+  water int, no2 boolean, cal_deficit int, weight numeric, custom_metrics jsonb default '{}',
   primary key (pin, log_date)
+);
+create table if not exists daily_ratings (
+  pin text not null, rating_date date not null, rating int,
+  done_count int, total_count int, overdue_cleared int, logged_at timestamptz,
+  primary key (pin, rating_date)
+);
+create table if not exists health_metric_defs (
+  pin text not null, id text not null, name text not null,
+  type text not null, unit text, sort_order int default 0,
+  core boolean default false, visible boolean default true,
+  primary key (pin, id)
 );
 create table if not exists app_settings (
   pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
   last_active_date date
 );
 
--- Already had these tables from an earlier version? Run these two lines
--- instead — they only ADD the new columns, nothing existing is touched:
+-- Already had these tables from an earlier version? Run these lines instead —
+-- they only ADD new tables/columns, nothing existing is touched or deleted:
 alter table one_time_tasks add column if not exists due_history jsonb default '[]';
 alter table task_completions add column if not exists status text default 'done';
 alter table task_completions add column if not exists logged_at timestamptz;
+alter table recurring_tasks add column if not exists reschedule_exceptions jsonb default '[]';
+alter table health_logs add column if not exists weight numeric;
+alter table health_logs add column if not exists custom_metrics jsonb default '{}';
+alter table health_metric_defs add column if not exists core boolean default false;
+alter table health_metric_defs add column if not exists visible boolean default true;
 
 do $$
 declare t text;
 begin
-  for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','app_settings'])
+  for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'])
   loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists "allow anon all" on %I;', t);
@@ -2868,7 +3729,11 @@ end $$;</div>
         </div>
       </div>
     </div>
+  `;
+}
 
+function renderSettingsAppearance(){
+  return `
     <div class="section">
       <div class="section-head"><h2>Weekend Days</h2></div>
       <div class="card" style="padding:16px;">
@@ -2929,6 +3794,20 @@ end $$;</div>
     </div>
 
     <div class="section">
+      <div class="section-head"><h2>Location Colors</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Each location gets its own color too — used on the Calendar page.</div>
+        ${state.settings.locations.map(loc=>`
+          <div class="color-row">
+            <label>${escapeHtml(loc)}</label>
+            <input type="color" value="${locationColor(loc)}" onchange="setLocationColor('${escapeHtml(loc)}', this.value)">
+            <span class="tag" style="background:${locationColor(loc)}22; color:${locationColor(loc)};">${escapeHtml(loc)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="section">
       <div class="section-head"><h2>Silo Colors</h2></div>
       <div class="card" style="padding:16px;">
         <div class="page-sub" style="margin-bottom:10px;">Each silo gets its own tag color. New silos get a stable auto-color until you set one here.</div>
@@ -2941,7 +3820,11 @@ end $$;</div>
         `).join('')}
       </div>
     </div>
+  `;
+}
 
+function renderSettingsPages(){
+  return `
     <div class="section">
       <div class="section-head"><h2>Sidebar Pages &amp; Order</h2></div>
       <div class="card" style="padding:16px;">
@@ -2964,7 +3847,165 @@ end $$;</div>
         </div>
       </div>
     </div>
+  `;
+}
 
+function renderSettingsDiagnostics(){
+  const recent = diagLog.slice(-15).reverse();
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Sync &amp; Storage Diagnostics</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:12px;">
+          A running log of every sync attempt, local save, and Supabase call this session — timestamps and real error messages included. If something goes wrong, copy this and share it directly instead of describing what happened; it's much faster to diagnose from the actual log.
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button class="btn brass sm" onclick="copyDiagLog()">Copy Log</button>
+          <button class="btn secondary sm" onclick="downloadDiagLog()">Download Log (.txt)</button>
+        </div>
+        <div class="newday-summary" style="margin-bottom:14px;">
+          <div class="row"><span>Sync status</span><b>${state.syncMeta.status}</b></div>
+          <div class="row"><span>Unsynced changes pending</span><b>${hasUnsyncedWork() ? 'Yes' : 'No'}</b></div>
+          <div class="row"><span>Last confirmed sync</span><b>${state.syncMeta.lastSyncedAt ? new Date(state.syncMeta.lastSyncedAt).toLocaleString() : 'never'}</b></div>
+          <div class="row"><span>Last error</span><b>${state.syncMeta.lastError ? escapeHtml(state.syncMeta.lastError) : 'none'}</b></div>
+          <div class="row"><span>Log entries this session</span><b>${diagLog.length}</b></div>
+        </div>
+        <div class="page-sub" style="margin-bottom:6px;">Most recent 15 events:</div>
+        <div class="diag-log-preview">
+          ${recent.length ? recent.map(e=>`
+            <div class="diag-log-row">
+              <span class="diag-log-time">${e.t.slice(11,19)}</span>
+              <span class="diag-log-cat">${escapeHtml(e.category)}</span>
+              <span class="diag-log-msg">${escapeHtml(e.message)}</span>
+            </div>
+          `).join('') : `<div class="page-sub">Nothing logged yet this session.</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+function copyDiagLog(){
+  navigator.clipboard.writeText(formatDiagLog()).then(
+    ()=> showToast('Diagnostic log copied'),
+    ()=> showToast('⚠ Could not copy — try Download instead')
+  );
+}
+function downloadDiagLog(){
+  const blob = new Blob([formatDiagLog()], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calendaros-diagnostics-${todayStr()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Diagnostic log downloaded');
+}
+
+function renderSettingsBackup(){
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Export Backup</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:12px;">
+          Downloads everything — tasks, lists, health log, ratings, custom metrics, and your general settings — as one JSON file. Your Supabase URL/key/PIN are deliberately left out for safety; reconnect sync manually after importing if needed.
+        </div>
+        <button class="btn brass sm" onclick="exportBackup()">Download Backup (.json)</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Import Backup</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="sync-warning" style="margin-bottom:12px;">
+          Importing REPLACES everything currently in the app with the contents of the file. This can't be undone — if sync is connected, the replacement also gets pushed to Supabase.
+        </div>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;" onchange="handleImportFile(event)">
+        <button class="btn secondary sm" onclick="document.getElementById('importFileInput').click()">Choose Backup File…</button>
+      </div>
+    </div>
+  `;
+}
+
+function exportBackup(){
+  const backup = {
+    exportedAt: new Date().toISOString(),
+    appVersion: APP_VERSION,
+    tasks: state.tasks,
+    lists: state.lists,
+    health: state.health,
+    dailyRatings: state.dailyRatings,
+    healthMetricDefs: state.healthMetricDefs,
+    settings: Object.assign({}, state.settings, { sync: null }), // never export credentials
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calendaros-backup-${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+}
+
+function handleImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    let backup;
+    try{
+      backup = JSON.parse(e.target.result);
+    } catch(err){
+      showToast('⚠ That file is not valid JSON');
+      event.target.value = '';
+      return;
+    }
+    if(!backup.tasks || !backup.lists){
+      showToast('⚠ That file doesn\'t look like a CalendarOS backup');
+      event.target.value = '';
+      return;
+    }
+    const ok = confirm(
+      `Import this backup from ${backup.exportedAt ? new Date(backup.exportedAt).toLocaleString() : 'an unknown date'}?\n\n` +
+      `This REPLACES everything currently in the app. This cannot be undone.`
+    );
+    event.target.value = '';
+    if(!ok) return;
+
+    state.tasks = backup.tasks;
+    migrateCompletionsFormat();
+    state.tasks.oneTime.forEach(t=>{ if(!t.dueHistory) t.dueHistory = []; });
+    state.lists = backup.lists || [];
+    state.health = backup.health || [];
+    state.health.forEach(h=>{ if(!h.custom) h.custom = {}; });
+    state.dailyRatings = backup.dailyRatings || [];
+    state.healthMetricDefs = backup.healthMetricDefs || [];
+    if(backup.settings){
+      const keepSync = state.settings.sync; // never overwrite live credentials from an import
+      state.settings = Object.assign({}, state.settings, backup.settings, { sync: keepSync });
+      backfillSettingsDefaults();
+    }
+
+    await saveTasks();
+    await saveLists();
+    await saveHealth();
+    await saveRatings();
+    await saveHealthMetricDefs();
+    await saveSettings();
+
+    showToast('Backup imported');
+    render();
+  };
+  reader.readAsText(file);
+}
+
+function renderSettingsAbout(){
+  const syncOn = syncConfigured();
+  return `
     <div class="section">
       <div class="section-head"><h2>About</h2></div>
       <div class="card" style="padding:16px; font-size:13px; color:var(--slate); line-height:1.6;">
@@ -3042,6 +4083,12 @@ async function setSiloColor(silo, color){
   await saveSettings();
   renderMain();
 }
+async function setLocationColor(loc, color){
+  if(!state.settings.locationColors) state.settings.locationColors = {};
+  state.settings.locationColors[loc] = color;
+  await saveSettings();
+  renderMain();
+}
 async function togglePageVisible(key){
   const hidden = state.settings.hiddenPages;
   const idx = hidden.indexOf(key);
@@ -3102,12 +4149,15 @@ async function connectSync(){
   state.settings.sync = { url, anonKey, pin };
   await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false);
   state.syncMeta.status = 'syncing';
+  state.initialSyncBlocking = true;
+  renderSyncBlockOverlay();
   updateSyncBadge();
 
   // reconcile: remote wins if it already has rows, otherwise push what we have now
   try{
     await pullFromSupabase((cur,total)=>{
       state.syncMeta.progress = { current: cur, total };
+      setSyncBlockText(`Syncing… ${Math.round((cur/total)*100)}%`);
       updateSyncBadge();
       renderMain();
     });
@@ -3115,11 +4165,15 @@ async function connectSync(){
   } catch(e){
     console.error(e);
     await markSyncError(e.message||String(e));
+    state.initialSyncBlocking = false;
+    renderSyncBlockOverlay();
     updateSyncBadge();
     showToast('Connected, but initial sync failed — check the console');
     renderMain();
     return;
   }
+  state.initialSyncBlocking = false;
+  renderSyncBlockOverlay();
   updateSyncBadge();
   renderMain();
   showToast('Connected — synced across devices');
@@ -3142,9 +4196,11 @@ let modalEditingId = null;
 let modalKind = 'oneTime';
 let modalRecurType = 'Daily';
 
-function openTaskModal(kind, taskId){
+let modalOccurrenceDate = null;
+function openTaskModal(kind, taskId, occurrenceDate){
   modalKind = kind;
   modalEditingId = taskId || null;
+  modalOccurrenceDate = occurrenceDate || null;
   let t = null;
   if(taskId){
     t = (kind==='oneTime' ? state.tasks.oneTime : state.tasks.recurring).find(x=>x.id===taskId);
@@ -3237,6 +4293,15 @@ function buildTaskModalHtml(kind, t){
         <label>Notes (optional)</label>
         <textarea id="f_notes">${escapeHtml(notes)}</textarea>
       </div>
+      ${(kind==='recurring' && isEdit && modalOccurrenceDate) ? `
+        <div class="field">
+          <label>Move This Occurrence (${humanDate(modalOccurrenceDate)}) To</label>
+          <input type="date" id="f_reschedule_to" value="${addDays(modalOccurrenceDate,1)}">
+          ${quickDateButtonsHtml('f_reschedule_to')}
+          <button type="button" class="btn secondary sm" style="margin-top:8px;" onclick="submitRescheduleOccurrence()">Move It</button>
+          <div class="page-sub" style="margin-top:6px;">${humanDate(modalOccurrenceDate)} will be marked missed. The recurring pattern is unaffected.</div>
+        </div>
+      ` : ''}
 
       <div class="modal-actions">
         <button class="btn secondary" onclick="closeModal()">Cancel</button>
@@ -3244,6 +4309,14 @@ function buildTaskModalHtml(kind, t){
       </div>
     </div>
   `;
+}
+async function submitRescheduleOccurrence(){
+  const toDate = document.getElementById('f_reschedule_to').value;
+  if(!toDate){ showToast('Pick a date'); return; }
+  await rescheduleOccurrence(modalEditingId, modalOccurrenceDate, toDate);
+  closeModal();
+  renderMain();
+  showToast(`Moved to ${humanDate(toDate)} — ${humanDate(modalOccurrenceDate)} marked missed`);
 }
 
 function quickDateButtonsHtml(inputId){
@@ -3337,6 +4410,7 @@ function readRecurDetail(){
 function closeModal(){
   const overlay = document.getElementById('modalOverlay');
   if(overlay) overlay.remove();
+  if(newDayReviewDate) refreshNewDayModal();
 }
 
 function showRescheduleHistory(taskId){
@@ -3403,39 +4477,114 @@ async function saveTaskModal(){
 /* =========================================================
    NEW DAY CONFIRMATION
    ========================================================= */
+function computeNewDaySummary(last){
+  const dueOneTime = state.tasks.oneTime.filter(t=>t.due === last);
+  const doneOneTime = dueOneTime.filter(t=>t.done).length;
+
+  const dueRecurring = state.tasks.recurring.filter(t=>isEffectivelyDueOn(t, last));
+  const doneRecurring = dueRecurring.filter(t=>isCompletedOn(t.id, last)).length;
+  const missedRecurring = dueRecurring.filter(t=>isMissedOn(t.id, last)).length;
+
+  // one-time tasks that were ALREADY overdue before `last`, but got cleared on that specific day
+  const overdueCleared = state.tasks.oneTime.filter(t=> t.done && t.doneDate === last && t.due && t.due < last).length;
+
+  const done = doneOneTime + doneRecurring;
+  const total = dueOneTime.length + (dueRecurring.length - missedRecurring);
+  const rating = total > 0 ? Math.round((done/total)*100) : null;
+
+  return { dueOneTime: dueOneTime.length, doneOneTime, dueRecurring: dueRecurring.length, doneRecurring, overdueCleared, done, total, rating };
+}
+
+// Review list for the New Day screen: everything currently overdue (one-time),
+// plus recurring tasks that were due specifically on the previous day and
+// still haven't been resolved either way.
+function getNewDayReviewRows(last){
+  const rows = [];
+  getOverdueOneTime().forEach(t=> rows.push({ kind:'oneTime', task:t, dueOn:t.due, overdue:true }));
+  state.tasks.recurring.forEach(t=>{
+    if(isEffectivelyDueOn(t, last) && !getOccurrence(t.id, last)){
+      rows.push({ kind:'recurring', task:t, dueOn:last, overdue:false });
+    }
+  });
+  return rows;
+}
+
 function maybeShowNewDayModal(){
   const last = state.settings.lastActiveDate;
   const today = todayStr();
   if(!last || last === today) return;
-
-  // gather summary for the last active date
-  const dueOneTime = state.tasks.oneTime.filter(t=>t.due === last);
-  const doneOneTime = dueOneTime.filter(t=>t.done).length;
-
-  const dueRecurring = state.tasks.recurring.filter(t=>isDueOn(t, last));
-  const doneRecurring = dueRecurring.filter(t=>isCompletedOn(t.id, last)).length;
+  newDayReviewDate = last;
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'newDayOverlay';
-  overlay.innerHTML = `
-    <div class="modal">
-      <h3>Good morning 👋</h3>
-      <div class="modal-sub">Here's how ${humanDate(last)} wrapped up. Confirm to move ${APP_NAME} forward to ${humanDate(today)}.</div>
-      <div class="newday-summary">
-        <div class="row"><span>One-time tasks completed</span><b>${doneOneTime} / ${dueOneTime.length}</b></div>
-        <div class="row"><span>Recurring tasks completed</span><b>${doneRecurring} / ${dueRecurring.length}</b></div>
-      </div>
-      <div class="modal-sub">Nothing is deleted — past days stay in your history and streaks. This just moves "Today" forward.</div>
-      <div class="modal-actions">
-        <button class="btn brass" onclick="confirmNewDay()">Start ${humanDate(today)} →</button>
-      </div>
-    </div>
-  `;
+  overlay.innerHTML = newDayModalHtml(last, today);
   document.body.appendChild(overlay);
 }
 
-async function confirmNewDay(){
+function newDayModalHtml(last, today){
+  const s = computeNewDaySummary(last);
+  const rows = getNewDayReviewRows(last);
+  return `
+    <div class="modal wide">
+      <h3>Good morning 👋</h3>
+      <div class="modal-sub">Here's how ${humanDate(last)} wrapped up. Check off anything you actually finished but forgot to mark, then confirm to move ${APP_NAME} forward to ${humanDate(today)}.</div>
+      <div class="newday-summary" id="newDaySummaryBlock">
+        ${newDaySummaryRowsHtml(s)}
+      </div>
+      ${rows.length ? `
+        <div class="page-sub" style="margin:14px 0 8px;">${rows.length} item${rows.length===1?'':'s'} to review — from ${humanDate(last)} and earlier</div>
+        <div class="newday-review-list" id="newDayReviewList">
+          ${renderTicketList(rows)}
+        </div>
+      ` : `<div class="page-sub" style="margin-top:14px;">Nothing outstanding to review — nice.</div>`}
+      <div class="modal-sub" style="margin-top:12px;">Nothing is deleted — past days stay in your history and streaks. This just moves "Today" forward.</div>
+      <div class="modal-actions">
+        <button class="btn brass" onclick="confirmNewDay('${last}')">Start ${humanDate(today)} →</button>
+      </div>
+    </div>
+  `;
+}
+function newDaySummaryRowsHtml(s){
+  return `
+    <div class="row"><span>One-time tasks completed</span><b>${s.doneOneTime} / ${s.dueOneTime}</b></div>
+    <div class="row"><span>Recurring tasks completed</span><b>${s.doneRecurring} / ${s.dueRecurring}</b></div>
+    <div class="row"><span>Overdue tasks cleared that day</span><b>${s.overdueCleared}</b></div>
+    <div class="row newday-rating-row"><span>Day rating</span><b>${s.rating===null?'—':s.rating+'%'}</b></div>
+  `;
+}
+// Called after any checkbox/missed toggle while this modal is open, so the
+// counts and the remaining list both stay live instead of going stale.
+function refreshNewDayModal(){
+  const overlay = document.getElementById('newDayOverlay');
+  if(!overlay || !newDayReviewDate) return;
+  const last = newDayReviewDate;
+  const summaryEl = document.getElementById('newDaySummaryBlock');
+  if(summaryEl) summaryEl.innerHTML = newDaySummaryRowsHtml(computeNewDaySummary(last));
+  const listEl = document.getElementById('newDayReviewList');
+  const rows = getNewDayReviewRows(last);
+  if(listEl) listEl.innerHTML = renderTicketList(rows);
+}
+
+async function confirmNewDay(forDate){
+  // Daily tasks left unresolved for the day that's ending get silently
+  // recorded as missed (Daily deliberately never pins as a persistent
+  // "Overdue" row — see getOverdueRecurring). Done before the rating is
+  // computed so it's correctly excluded from that day's denominator instead
+  // of counting as "not done".
+  state.tasks.recurring.forEach(t=>{
+    if(t.type === 'Daily' && isEffectivelyDueOn(t, forDate) && !getOccurrence(t.id, forDate)){
+      setOccurrenceStatus(t.id, forDate, 'missed');
+    }
+  });
+
+  const s = computeNewDaySummary(forDate);
+  if(s.rating !== null){
+    state.dailyRatings = state.dailyRatings.filter(r=>r.date!==forDate);
+    state.dailyRatings.push({ date: forDate, rating: s.rating, doneCount: s.done, totalCount: s.total, overdueCleared: s.overdueCleared, loggedAt: new Date().toISOString() });
+    await saveRatings();
+  }
+  newDayReviewDate = null;
   state.settings.lastActiveDate = todayStr();
   state.selectedDate = todayStr();
   await saveSettings();
@@ -3449,6 +4598,33 @@ async function confirmNewDay(){
    ========================================================= */
 function setLoadingText(text){
   const el = document.querySelector('#loadingScreen div:last-child');
+  if(el) el.textContent = text;
+}
+
+// Full-screen overlay shown while the background sync reconciles local vs
+// remote data. Intercepts every click (so nothing can be changed mid-sync)
+// and shows a short "still syncing" toast if someone tries.
+function renderSyncBlockOverlay(){
+  let el = document.getElementById('syncBlockOverlay');
+  if(state.initialSyncBlocking){
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'syncBlockOverlay';
+      el.onclick = ()=> showToast('Still syncing — one moment…');
+      el.innerHTML = `
+        <div class="sync-block-banner">
+          <span class="brand-mark" style="animation:spin 1.1s linear infinite;"></span>
+          <span id="syncBlockText">Syncing…</span>
+        </div>
+      `;
+      document.body.appendChild(el);
+    }
+  } else if(el){
+    el.remove();
+  }
+}
+function setSyncBlockText(text){
+  const el = document.getElementById('syncBlockText');
   if(el) el.textContent = text;
 }
 
@@ -3642,19 +4818,24 @@ async function submitLocalPasscodeSetup(){
 }
 
 async function init(){
+  diagLogEvent('app', `Starting — v${APP_VERSION}, storage: ${usingNativeAppStorage?'Claude':'browser'}`);
   await runPasscodeGate();
   await loadSettingsOnly(); // pick up anything the gate just wrote (pin/passcode), fully
   document.getElementById('loadingScreen').classList.remove('hidden');
-  await loadAll();
+  await loadAll(); // local data only now — fast, no network wait
   document.getElementById('loadingScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   render();
-  maybeShowNewDayModal();
   // keep the "Synced Xm ago" label fresh without requiring an interaction
   setInterval(updateSyncBadge, 30000);
   if(!usingNativeAppStorage){
     setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
   }
+  // The app itself stays fully non-blocking (runBackgroundSync isn't awaited
+  // here), but the New Day review specifically waits for it to resolve —
+  // showing it before a cross-device sync completes risks displaying stale
+  // "not done" status for something you actually finished on another device.
+  runBackgroundSync().then(()=> maybeShowNewDayModal());
 }
 
 init();
