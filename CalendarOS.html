@@ -531,25 +531,53 @@ select.filter-select, input.filter-date{
 .cal-legend-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
 
 /* ============ LISTS VIEW ============ */
-.lists-grid{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:14px;
+.lists-layout{display:flex; gap:20px; align-items:flex-start;}
+.lists-toc{
+  width:300px; flex-shrink:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+  overflow:hidden; box-shadow:var(--shadow-card);
 }
-.list-card{padding:16px;}
-.list-card h4{
-  font-family:var(--font-display); font-size:15px; margin:0 0 10px; display:flex; align-items:center; justify-content:space-between;
+.lists-toc-item{
+  display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%;
+  padding:12px 16px; border-bottom:1px solid var(--paper-dim); text-align:left; background:transparent;
+  font-size:13px; color:var(--ink-soft);
 }
-.list-items{display:flex; flex-direction:column; gap:5px; margin-bottom:8px;}
-.list-item{display:flex; align-items:center; gap:8px; font-size:13px;}
-.list-item .li-check{
+.lists-toc-item:last-child{border-bottom:none;}
+.lists-toc-item:hover{background:var(--paper-dim);}
+.lists-toc-item.active{background:var(--brass); color:#fff; font-weight:600;}
+.lists-toc-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.lists-toc-count{font-family:var(--font-mono); font-size:10.5px; opacity:.7; flex-shrink:0;}
+
+.notebook-page{
+  flex:1; min-width:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+  padding:24px 28px; box-shadow:var(--shadow-card); position:relative;
+  background-image:repeating-linear-gradient(to bottom, transparent, transparent 34px, var(--paper-dim) 35px);
+  background-position: 0 90px;
+}
+body.dark-mode .notebook-page{background-image:repeating-linear-gradient(to bottom, transparent, transparent 34px, rgba(255,255,255,0.04) 35px);}
+.notebook-page::before{
+  content:''; position:absolute; top:0; bottom:0; left:64px; width:1px; background:var(--flag-soft);
+}
+.notebook-header{display:flex; align-items:center; justify-content:space-between; padding-left:80px;}
+.notebook-header h3{font-family:var(--font-display); font-size:20px; margin:0;}
+.notebook-page > .page-sub{padding-left:80px;}
+.notebook-lines{padding-left:38px;}
+.notebook-line{display:flex; align-items:center; gap:16px; font-size:13.5px; height:35px;}
+.notebook-line .li-check{
   width:16px; height:16px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;
 }
-.list-item .li-check.checked{background:var(--teal); border-color:var(--teal);}
-.list-item.done span.li-text{text-decoration:line-through; color:var(--slate-light);}
+.notebook-line .li-check.checked{background:var(--teal); border-color:var(--teal);}
+.notebook-line.done .li-text{text-decoration:line-through; color:var(--slate-light);}
+.notebook-line.add-line input{
+  flex:1; border:none; background:transparent; font-size:13.5px; color:var(--ink); font-family:inherit;
+}
 .li-text{flex:1;}
 .li-cat{font-family:var(--font-mono); font-size:9.5px; color:var(--slate-light);}
-.add-item-row{display:flex; gap:6px; margin-top:8px;}
-.add-item-row input{flex:1; border:1px dashed var(--line); border-radius:6px; padding:6px 8px; font-size:12px; background:transparent;}
+
+@media (max-width: 760px){
+  .lists-layout{flex-direction:column;}
+  .lists-toc{width:100%;}
+}
 
 /* ============ HEALTH LOG ============ */
 .health-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px;}
@@ -579,6 +607,10 @@ table.log-table tr.log-row-active td{background:var(--teal-soft);}
 }
 .metric-manage-row:last-child{border-bottom:none;}
 .metric-manage-name{flex:1; font-size:13px; font-weight:500;}
+
+.changelog-entry{padding:14px 18px; margin-bottom:10px;}
+.changelog-version{font-family:var(--font-mono); font-weight:700; color:var(--brass-deep); font-size:13px; margin-bottom:6px;}
+.changelog-list{margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft); line-height:1.7;}
 
 .diag-log-preview{
   max-height:280px; overflow-y:auto; background:var(--paper-dim); border-radius:8px; padding:8px 12px;
@@ -750,6 +782,15 @@ body.dark-mode .loading-screen{background:#0F1216;}
 .loading-screen .brand-mark{width:14px;height:14px;background:var(--brass); transform:rotate(45deg); animation:spin 1.1s linear infinite;}
 @keyframes spin{to{transform:rotate(405deg);}}
 
+#newTaskHint{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:#EDE9DD; padding:10px 18px; border-radius:999px;
+  font-family:var(--font-mono); font-size:12.5px; box-shadow:var(--shadow-pop);
+  z-index:600; opacity:0; pointer-events:none; transition:opacity .15s ease, transform .15s ease;
+}
+#newTaskHint b{color:var(--brass); font-weight:700;}
+#newTaskHint.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
 #syncBlockOverlay{
   position:fixed; inset:0; z-index:500; cursor:not-allowed;
   background:rgba(24,28,34,0.04);
@@ -896,8 +937,162 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '3.0.0';
 const APP_NAME = 'CalendarOS';
+
+/* ---------- Change Log ----------
+   STANDING RULE: every time APP_VERSION is bumped, add a matching entry
+   here describing what shipped. Newest first. Rendered under
+   Settings → Change Log. */
+const CHANGELOG = [
+  { v:'3.0.0', changes: [
+    'BREAKING SCHEMA CHANGE: training_logs moved from one row per day to one row per EXERCISE per day (new composite key: pin, log_date, exercise_id). Existing training_logs rows were cleared as part of this (confirmed — they were test data). See Settings → Cloud Sync → Copy SQL for the migration if upgrading an existing Supabase project.',
+    'Training logging is now per-exercise: each exercise in a session gets its own completed/difficulty/notes, not one shared entry for the whole day. Walk/rest days (no individual exercises) log against the session as a whole so there\'s still something to check off.',
+    'Training page restructured into 5 subpages in a left sidebar + panel (matching Settings\' layout): Today\'s Training, Calendar View, Log History, Session Library, Exercise Library — replacing the single long scrolling page.',
+    'New Calendar View subpage: month grid showing each day\'s session color and completion aggregate (e.g. "4/6"); clicking a day expands its full log card inline without leaving the calendar.',
+    'Log History subpage now groups by day with an aggregate summary (X/Y done, avg difficulty) and lists every exercise\'s own completed/difficulty/notes underneath, each individually deletable.',
+    'Exercise Library is now sorted alphabetically.',
+    'New "Clear Wrong Mappings" button: one click removes calendar days pointing to a session id not in the library, calendar days with an empty session reference, and exercise references inside sessions that don\'t exist in the library — with a preview-and-confirm summary before anything is removed. Sessions, exercises, and logged history are never touched by this.',
+    'Lists page: fixed header/counter and checkbox+item-text alignment relative to the notebook\'s red margin line (both were sitting well to its left); widened the list-name sidebar from 230px to 300px.',
+  ]},
+  { v:'2.9.3', changes: [
+    'Added "Sync Error History" (Settings → Activity & Error Log): a small, separate, local-only record of only sync FAILURES (last 15), durable across reloads and not cleared by a later successful sync — unlike the existing session log, which is intentionally in-memory-only and resets on every reload. This closes a real diagnostic gap hit while investigating the v2.9.0/2.9.2 sync bug: by the time a diagnostic log was requested, the app had already reloaded and synced cleanly, so the session log had nothing left to show — there was no way to see what had actually failed. Copy/Download Log now include this history alongside the session log.',
+  ]},
+  { v:'2.9.2', changes: [
+    'Fixed a real, reproducible sync bug reported in practice: tasks cleared in the morning reappearing as overdue a couple hours later. Root cause — the v2.9.0 Training feature added its 4 new Supabase tables into the SAME all-or-nothing loop as the core task/list/health tables, in both the full push and full pull. If the training-tables SQL migration hadn\'t been re-run yet in the live Supabase project (a very plausible gap right after updating), any pull would throw partway through and abort BEFORE ever assigning the freshly-fetched core data to state — meaning the app silently fell back to old/stale local data on every open instead of showing the real confirmed state, and any push would throw after the real task data had already reached Supabase but before completing, leaving the dirty flag stuck true and retrying (and re-failing) identically forever. Training pull/push are now fully fault-isolated from core sync: a training-specific failure is logged (visible in Settings → Activity & Error Log) but can never block, delay, or fail the core task/list/health push or pull. Verified with a test that mocks Supabase responding normally for core tables while every training table 404s exactly as an unmigrated project would — confirms core data still loads/pushes correctly and the training failure is logged but contained.',
+  ]},
+  { v:'2.9.1', changes: [
+    'Fixed a real diagnosability gap found via an actual broken import: a calendar day mapped to a session id that isn\'t in the library, and a session block referencing an exercise id that isn\'t in the library, both rendered identically to "nothing mapped at all" — making a bad import (usually an AI assuming ids already existed from a "previous import" that never actually happened) look indistinguishable from an empty calendar. Now shown distinctly: a dangling day shows the specific missing id and a "Clear this day\'s mapping" action; a dangling exercise block shows "⚠ missing exercise "<id>"" instead of a generic placeholder; the Training page also shows a summary warning banner listing every dangling id in the current library, so problems surface immediately after import rather than only when you happen to click into an affected day',
+    'Added "Copy Prompt" button (Training page) — copies a full task brief for an AI to generate a new import: exact schema, the self-containment rule that caused the bug above (never assume an id already exists unless it\'s in a pasted current Export), a self-check the AI runs before returning output, and where to plug in the date range / plan doc / current export / progress notes',
+  ]},
+  { v:'2.9.0', changes: [
+    'New Training page: a framework (not a static plan) for at-home/gym training — a reusable exercise library, sessions built from exercises via reps/sets/notes/video links, and a calendar mapping specific dates to sessions, so the plan can be re-tailored monthly without touching code',
+    'Session-level daily logging: mark a day completed, rate difficulty 1–5, and add free-text notes for any date, including walk/rest days',
+    'Export/Import as JSON: Export includes everything logged (completions, difficulty, notes, and — by comparing against the calendar — missed days) so it can be handed to an AI for month-end review; "Copy Import Template" produces a commented, AI-fillable schema; import previews new/updated counts before applying, same compute-then-confirm pattern as the tasks CSV importer',
+    'Training data syncs via Supabase like the rest of the app (new tables: training_exercises, training_sessions, training_calendar, training_logs — see Settings → Cloud Sync → Copy SQL for the additive, idempotent migration)',
+    'Deliberately not wired into the existing task list/dashboard — the Training page is self-contained, per request',
+  ]},
+  { v:'2.8.0', changes: [
+    'Lists page rebuilt as a two-pane layout: a table-of-contents on the left, selected list shown notebook-style on the right',
+    'All Tasks: Export/Import as CSV for batch adding or editing many tasks at once in a spreadsheet — one unified file covers both one-time and recurring tasks, matches on ID to update existing tasks vs. blank ID to create new ones',
+    'Activity & Error Log broadened beyond just sync — now also logs task created/edited/deleted/completed, list changes, and page navigation',
+  ]},
+  { v:'2.7.3', changes: [
+    'Fixed a real, reproducible bug causing completed one-time tasks to revert to "overdue" — the "unsynced changes" flag was only written to disk after a sync attempt finished, not when it started, so a tab closing mid-sync (e.g. right around a day change) left a stale "nothing pending" flag on disk; the next load would then pull from Supabase and overwrite the correct local completion with stale remote data. The flag is now persisted immediately, before any network calls, closing that window. Verified with a test that reproduces the exact scenario: mark done → connection cut mid-sync → reload → task stays done and self-heals to Supabase.',
+  ]},
+  { v:'2.7.2', changes: [
+    'Fixed the new-task shortcut: Ctrl+N is reserved by the browser itself and can never be reliably intercepted, so switched to a plain N key instead (only active when not typing in a field)',
+    'Fixed pressing O/R not working after clicking "+ New Task" with the mouse — both entry points now share the same logic',
+    'Fixed the version number crowding the dark-mode toggle in the sidebar — moved it below the CalendarOS name instead, replacing "Daily Operations"',
+  ]},
+  { v:'2.7.1', changes: [
+    'Fixed a real offline data-loss risk: a small bounded window of recent activity is now kept locally even with sync on, so completions made while genuinely offline survive a browser close/reload instead of only living in memory until a sync succeeds',
+  ]},
+  { v:'2.7.0', changes: [
+    'Ctrl/Cmd+N shortcut: press it, then O (one-time) or R (recurring) to jump straight into a new task with the name field ready to type',
+    'Version number now shown next to the CalendarOS name in the sidebar',
+    'This Change Log page, backfilled from v1.0.0 through today',
+  ]},
+  { v:'2.6.0', changes: [
+    'Once Supabase sync is connected, local storage now only caches task/list structure — full history (completions, health entries, ratings) never touches local storage at all, which was the root cause of repeated "storage full" errors',
+    'Added an in-app sync/storage diagnostics log (Settings → Activity & Error Log) to make future issues much faster to diagnose',
+  ]},
+  { v:'2.5.1', changes: [
+    'Fixed a real bug: rapid consecutive task completions could queue up faster than they could sync, risking loss if the browser closed before they finished — now coalesced into a single sync pass',
+    'Added a warning before closing the tab if there are unsynced changes',
+  ]},
+  { v:'2.5.0', changes: [
+    'Full delete capability for Health Log metrics, including the original four (Weight/Water/Calorie Deficit/No. 2)',
+    'Added a safety check to the Supabase setup SQL to abort if accidentally run against the wrong Supabase project',
+  ]},
+  { v:'2.4.0', changes: [
+    'Non-blocking sync — the app shows your data immediately instead of waiting for sync to finish first',
+    'Health Log rebuilt with fully custom, user-defined metrics — add any metric with its own name/type/unit',
+    'Fixed cross-device day-rollover sync issues (starting a new day on one device now correctly reflects on others)',
+    'JSON backup export/import for full app data',
+  ]},
+  { v:'2.3.1', changes: [
+    'Fixed the storage-quota warning message repeating on every single action instead of only when something actually changed',
+  ]},
+  { v:'2.3.0', changes: [
+    'Local storage quota handling made much more aggressive (trims down to as little as 3 days of local history if needed), since Supabase already holds the full history',
+  ]},
+  { v:'2.2.1', changes: [
+    'Fixed a browser storage quota error that could occur when marking tasks complete on devices with a lot of history',
+  ]},
+  { v:'2.2.0', changes: [
+    'Calendar redesigned: day cells split into recurring vs one-time sections, dots colored by location/silo/recurrence-type with a toggle, hover tooltips, and a legend',
+  ]},
+  { v:'2.1.0', changes: [
+    'Settings page reorganized into a sectioned sidebar + panel layout',
+  ]},
+  { v:'2.0.0', changes: [
+    'Health Log rebuilt with fully custom, user-defined metrics (first version of this feature)',
+  ]},
+  { v:'1.9.1', changes: [
+    'Daily recurring tasks left unresolved overnight now auto-mark as missed instead of double-showing on the Dashboard',
+  ]},
+  { v:'1.9.0', changes: [
+    'Fixed Ctrl+Z not undoing "mark as missed" actions',
+    'Search now matches on notes',
+    'Fixed a leftover search filter from one page silently hiding tasks on another page (e.g. Overdue)',
+  ]},
+  { v:'1.8.0', changes: [
+    'New Day modal rebuilt into a fully interactive review screen — check things off right there instead of just seeing a static summary',
+  ]},
+  { v:'1.7.0', changes: [
+    'Reschedule a single recurring occurrence to a new date (auto-marks the original date missed)',
+    'Overdue recurring tasks now persist as "Overdue" instead of silently disappearing',
+    'Notes field included in search',
+    'Click-to-edit on tasks, removed the separate pencil icon',
+    'New Day modal shows overdue tasks cleared and a daily % rating',
+  ]},
+  { v:'1.6.0', changes: [
+    'Reworked the recurring-task reschedule buttons to reuse the same quick-date-button component as one-time tasks',
+  ]},
+  { v:'1.5.2', changes: [
+    'Fixed the missed-task visual treatment (strikethrough, X mark, sink to bottom) not fully applying',
+  ]},
+  { v:'1.5.1', changes: [
+    'Fixed a sync race condition where rapid consecutive completions could silently overwrite each other before reaching Supabase',
+  ]},
+  { v:'1.5.0', changes: [
+    'Dashboard: location-group progress (X/Y, %), "On-Time This Week" stat, optimistic UI for marking tasks complete',
+    'Quick date buttons when editing tasks (Tomorrow / +3 days / +7 days / Next Sunday / 1st of next month)',
+    'Missed-task visual treatment: strikethrough, X mark, sinks to bottom of its group',
+    'All Tasks page hides the checkbox for recurring tasks and shows their next occurrence date instead',
+    'Added an iOS home-screen icon',
+  ]},
+  { v:'1.4.2', changes: [
+    'Added a localStorage fallback for running outside Claude.ai (standalone / GitHub Pages)',
+  ]},
+  { v:'1.4.1', changes: [
+    'Fixed Health Log inputs firing too many storage writes; added retry-with-backoff for storage writes',
+  ]},
+  { v:'1.4.0', changes: [
+    'Sync reliability pass: local-changes-win-if-unconfirmed logic, sync status badge, blocking load screen with live progress',
+  ]},
+  { v:'1.3.1', changes: [
+    'Fixed a Settings crash caused by missing recurrence-type color data',
+  ]},
+  { v:'1.3.0', changes: [
+    'Silo colors, drag-to-reorder sidebar pages, general UI refinements',
+  ]},
+  { v:'1.2.0', changes: [
+    'Migrated Supabase sync from a single JSON blob to normalized per-entity tables for more reliable, granular sync',
+  ]},
+  { v:'1.1.1', changes: [
+    'Fixed Settings page going blank due to missing fields on older saved data',
+  ]},
+  { v:'1.1.0', changes: [
+    'Group-by-location toggle, dark mode, accent/completed-task/recurrence-type color customization',
+    'Ability to hide sidebar pages, weekend day selector on Calendar',
+    'Enter-key-to-add-next-item fix in Lists',
+  ]},
+  { v:'1.0.0', changes: [
+    'Initial conversion from the original spreadsheet into a working web app: Dashboard, One-Time & Recurring Tasks, Calendar, Lists, Health Log, and Settings pages built from scratch',
+  ]},
+];
 
 /* ---------- Constants ---------- */
 const DOW_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -914,6 +1109,7 @@ const HIDEABLE_PAGES = [
   ['calendar','Calendar'],
   ['lists','Lists'],
   ['health','Health Log'],
+  ['training','Training'],
 ];
 const DEFAULT_SETTINGS_EXTRAS = {
   weekendDays: ['Fri','Sat'],
@@ -945,7 +1141,7 @@ const DEFAULT_SETTINGS_EXTRAS = {
     '5.Last': '#3A3F47',
   },
   hiddenPages: [],
-  pageOrder: ['dashboard','overdue','tasks','calendar','lists','health','settings'],
+  pageOrder: ['dashboard','overdue','tasks','calendar','lists','health','training','settings'],
   rememberUnlock: true,
   healthCoreMetricsSeeded: false,
   darkMode: false,
@@ -969,7 +1165,7 @@ function backfillSettingsDefaults(){
   if(!state.settings.siloColors) state.settings.siloColors = {};
   if(!state.settings.locationColors) state.settings.locationColors = {};
   // any locations/pages added since pageOrder was created should still show up
-  const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','lists','health','settings'];
+  const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','lists','health','training','settings'];
   if(!state.settings.pageOrder) state.settings.pageOrder = ALL_PAGE_KEYS.slice();
   ALL_PAGE_KEYS.forEach(k=>{ if(!state.settings.pageOrder.includes(k)) state.settings.pageOrder.push(k); });
 }
@@ -984,7 +1180,10 @@ const STORAGE_KEYS = {
   SYNC_META: 'dispatch:syncmeta', // { dirty, lastSyncedAt, lastError }
   UNLOCK: 'dispatch:unlock',      // { pin: '<last successfully entered pin>' } — only set if "remember" is on
   RATINGS: 'dispatch:ratings',    // [ {date, rating, doneCount, totalCount, overdueCleared, loggedAt} ]
+  RECENT_COMPLETIONS: 'dispatch:recentcompletions', // bounded ~14-day buffer, offline safety net when sync IS configured
   HEALTH_METRIC_DEFS: 'dispatch:healthmetricdefs', // [ {id, name, type, unit, sortOrder} ]
+  TRAINING: 'dispatch:training', // { exercises:[], sessions:[], calendar:[], logs:[] }
+  SYNC_ERROR_HISTORY: 'dispatch:syncerrorhistory', // durable, bounded, local-only — see recordSyncErrorHistory()
 };
 
 /* ---------- App State ---------- */
@@ -1000,6 +1199,7 @@ const state = {
   searchQuery: '',
   groupByLocation: true, // always defaults on each load, per user preference — not persisted
   hideCompleted: false,
+  selectedListId: null,
   calMonthCursor: null, // {year, month}
   calColorMode: 'location', // 'location' | 'silo' | 'recurType'
   loaded: false,
@@ -1009,6 +1209,15 @@ const state = {
   healthMetricDefs: [], // [{id, name, type:'number'|'yesno'|'text', unit, sortOrder}]
   // status: 'off' | 'syncing' | 'synced' | 'pending' | 'error'
   syncMeta: { status: 'off', dirty: false, lastSyncedAt: null, lastError: null, progress: null },
+  // Training: exercises are a reusable library; sessions reference exercises via blocks;
+  // calendar maps a specific date -> sessionId (this is what gets re-mapped monthly);
+  // logs are session-level (completed/difficulty/notes) keyed by date.
+  training: { exercises: [], sessions: [], calendar: [], logs: [] },
+  trainingSelectedDate: null, // date being viewed/logged on the Training page; defaults to today on first render
+  syncErrorHistory: [], // durable, bounded sync-failure breadcrumbs — populated properly in loadAll(), this is just a safe pre-load default
+  trainingSection: 'today', // which Training subpage is active: today | calendar | history | sessions | exercises
+  trainingCalMonthCursor: null, // {year, month} for the Training Calendar View subpage; set on first render
+  trainingCalExpandedDate: null, // which date is inline-expanded in the Training Calendar View
 };
 
 /* ---------- Date helpers ---------- */
@@ -1181,6 +1390,10 @@ function isMissedOn(taskId, dateStr){
 // Pending deletes to push to Supabase — entries removed locally that Supabase
 // still needs to be told about (fixes: unchecking didn't sync — see changelog).
 const pendingCompletionDeletes = [];
+// Same pattern for Training: exercises/sessions/calendar-days/logs removed
+// locally (via import remap or manual delete) need an explicit DELETE sent —
+// an upsert of what remains never tells Supabase to drop a row.
+const pendingTrainingDeletes = []; // [{table, match: {col:val,...}}]
 function setOccurrenceStatus(taskId, dateStr, status){
   // status: 'done' | 'missed' | null (null clears the occurrence entirely)
   const c = state.tasks.completions;
@@ -1326,13 +1539,16 @@ async function loadSettingsOnly(){
 
 async function loadAll(){
   try{
-    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes] = await Promise.all([
+    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, syncErrHistRes] = await Promise.all([
       safeGet(STORAGE_KEYS.TASKS),
       safeGet(STORAGE_KEYS.LISTS),
       safeGet(STORAGE_KEYS.HEALTH),
       safeGet(STORAGE_KEYS.RATINGS),
       safeGet(STORAGE_KEYS.HEALTH_METRIC_DEFS),
+      safeGet(STORAGE_KEYS.TRAINING),
+      safeGet(STORAGE_KEYS.SYNC_ERROR_HISTORY),
     ]);
+    state.syncErrorHistory = syncErrHistRes ? JSON.parse(syncErrHistRes.value) : [];
 
     if(tasksRes){
       const parsed = JSON.parse(tasksRes.value);
@@ -1373,6 +1589,17 @@ async function loadAll(){
 
     state.dailyRatings = ratingsRes ? JSON.parse(ratingsRes.value) : [];
 
+    // Training data (exercises/sessions/calendar/logs) is small and bounded
+    // (a month's plan + logs at a time, not a growing per-day history like
+    // completions), so unlike health/ratings it always keeps a local copy
+    // even when sync is on — same treatment as tasks/lists.
+    if(trainingRes){
+      const t = JSON.parse(trainingRes.value);
+      state.training = { exercises: t.exercises||[], sessions: t.sessions||[], calendar: t.calendar||[], logs: t.logs||[] };
+    } else {
+      state.training = { exercises: [], sessions: [], calendar: [], logs: [] };
+    }
+
     // settings were already loaded by loadSettingsOnly() before the gate;
     // if for some reason this runs standalone, make sure they're present.
     if(!state.settings || !state.settings.locations) await loadSettingsOnly();
@@ -1381,8 +1608,19 @@ async function loadAll(){
     // Once sync is on, Supabase is the durable copy of everything historical
     // (completions, health entries, ratings) — reclaim whatever local space
     // an older version of the app was using for that, right away rather than
-    // leaving it to sit stale forever.
+    // leaving it to sit stale forever. The recent-completions buffer is the
+    // one exception: load it into state now (best-known state before the
+    // pull even runs), and pullFromSupabase() will properly merge/reconcile
+    // it against whatever Supabase actually has.
     if(syncConfigured()){
+      try{
+        const recentRes = await safeGet(STORAGE_KEYS.RECENT_COMPLETIONS);
+        if(recentRes){
+          const buffer = JSON.parse(recentRes.value);
+          const { merged } = mergeRecentCompletionsIntoRemote(state.tasks.completions, buffer);
+          state.tasks.completions = merged;
+        }
+      } catch(e){ console.error('recent-completions buffer load failed', e); }
       try{ await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), false); } catch(e){}
       try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
       try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
@@ -1436,13 +1674,16 @@ async function runBackgroundSync(){
   render(); // refresh with whatever came from the sync
 }
 
-function markSyncDirty(){
-  // In-memory only — no storage write here. This is a transient "in flight"
-  // state; the outcome (success or error) writes to storage a moment later
-  // regardless, so persisting this intermediate step would only add an extra
-  // storage call per save for no durability benefit.
+async function markSyncDirty(){
+  // Persisted IMMEDIATELY, before any of the actual network calls run. If the
+  // tab closes or reloads mid-sync, the next load MUST still see dirty=true
+  // — otherwise it wrongly assumes everything's already confirmed on the
+  // server, pulls fresh data, and overwrites correct local changes with a
+  // stale remote copy that never actually received this update. This was a
+  // real, reproducible bug — this write closes that window.
   state.syncMeta.dirty = true;
   state.syncMeta.status = 'syncing';
+  await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta), 'sync meta', {silent:true});
 }
 async function markSyncSuccess(){
   state.syncMeta.dirty = false;
@@ -1456,12 +1697,14 @@ async function markSyncError(message){
   state.syncMeta.lastError = message;
   // dirty stays true — we know local hasn't been confirmed on the server
   await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta));
+  await recordSyncErrorHistory('core', message);
 }
 
 /* ---------- Supabase sync (optional, cross-device) ----------
    Normalized tables (see Settings > Sync for the exact SQL):
      one_time_tasks, recurring_tasks, task_completions, lists, list_items,
-     health_logs, app_settings — each scoped by a "pin" column.
+     health_logs, app_settings, training_exercises, training_sessions,
+     training_calendar, training_logs — each scoped by a "pin" column.
    Each entity table also carries a `meta jsonb` column for fields added
    later without needing a migration first.
    Security note: RLS on these tables is permissive (open to anyone holding
@@ -1588,6 +1831,40 @@ function ratingToRow(r){
 function rowToRating(row){
   return { date:row.rating_date, rating:row.rating, doneCount:row.done_count, totalCount:row.total_count, overdueCleared:row.overdue_cleared, loggedAt:row.logged_at };
 }
+function trainingExerciseToRow(ex){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:ex.id, name:ex.name, video_url:ex.videoUrl||null, notes:ex.notes||'', updated_at:new Date().toISOString() };
+}
+function rowToTrainingExercise(r){
+  return { id:r.id, name:r.name, videoUrl:r.video_url||'', notes:r.notes||'' };
+}
+function trainingSessionToRow(sess){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:sess.id, name:sess.name, type:sess.type||'strength', format:sess.format||'',
+           color:sess.color||null, blocks: sess.blocks||[], updated_at:new Date().toISOString() };
+}
+function rowToTrainingSession(r){
+  return { id:r.id, name:r.name, type:r.type||'strength', format:r.format||'', color:r.color||null, blocks:r.blocks||[] };
+}
+function trainingCalendarToRow(c){
+  const s = state.settings.sync;
+  return { pin:s.pin, cal_date:c.date, session_id:c.sessionId };
+}
+function rowToTrainingCalendar(r){
+  return { date:r.cal_date, sessionId:r.session_id };
+}
+function trainingLogToRow(l){
+  const s = state.settings.sync;
+  // exerciseId is never actually null in practice — sessions with no
+  // exercises (walk/rest days) log against the sentinel '__session__' so
+  // this stays a real, non-null PRIMARY KEY column (Postgres PKs can't be
+  // nullable, and a UNIQUE constraint would let multiple NULLs collide).
+  return { pin:s.pin, log_date:l.date, exercise_id: l.exerciseId || '__session__', session_id:l.sessionId||null, completed:!!l.completed,
+           difficulty: l.difficulty===undefined?null:l.difficulty, notes:l.notes||'', logged_at:l.loggedAt||null };
+}
+function rowToTrainingLog(r){
+  return { date:r.log_date, exerciseId: r.exercise_id||'__session__', sessionId:r.session_id, completed:!!r.completed, difficulty:r.difficulty, notes:r.notes||'', loggedAt:r.logged_at };
+}
 function buildCompletionRows(){
   const s = state.settings.sync;
   const rows = [];
@@ -1608,10 +1885,18 @@ async function flushPendingCompletionDeletes(){
     pendingCompletionDeletes.shift();
   }
 }
+async function flushPendingTrainingDeletes(){
+  while(pendingTrainingDeletes.length){
+    const { table, match } = pendingTrainingDeletes[0];
+    const q = Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    await supaDeleteMatch(table, q);
+    pendingTrainingDeletes.shift();
+  }
+}
 
 /* ---- full push / pull ---- */
 async function pushFullStateToSupabase(onProgress){
-  const steps = [
+  const coreSteps = [
     ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
     ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
     ()=> flushPendingCompletionDeletes(),
@@ -1627,21 +1912,81 @@ async function pushFullStateToSupabase(onProgress){
     ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
     ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
-  for(let i=0;i<steps.length;i++){
-    await steps[i]();
-    if(onProgress) onProgress(i+1, steps.length);
+  // Training runs AFTER the core steps and is deliberately fault-isolated
+  // from them: if the training-tables SQL migration hasn't been run yet in
+  // this Supabase project (or any other training-specific failure happens),
+  // that must NEVER abort or fail the core task/list/health push. Before
+  // this isolation, a single throw anywhere in this array failed the whole
+  // function — meaning a training-table issue alone marked the entire push
+  // "failed" (dirty stays true forever, retried and failing identically on
+  // every subsequent load) even though the real task data already made it
+  // to Supabase. That's the same failure shape as the v2.7.3 dirty-flag bug,
+  // just from a different cause — closing it the same way: isolate blast radius.
+  const trainingSteps = [
+    ()=> flushPendingTrainingDeletes(),
+    ()=> supaUpsert('training_exercises', state.training.exercises.map(trainingExerciseToRow), 'pin,id'),
+    ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
+    ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
+    ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+  ];
+  const total = coreSteps.length + trainingSteps.length;
+  for(let i=0;i<coreSteps.length;i++){
+    await coreSteps[i](); // core failures still throw and correctly fail the whole sync — unchanged
+    if(onProgress) onProgress(i+1, total);
+  }
+  try{
+    for(let i=0;i<trainingSteps.length;i++){
+      await trainingSteps[i]();
+      if(onProgress) onProgress(coreSteps.length+i+1, total);
+    }
+  } catch(e){
+    // Swallowed deliberately. Logged so it's visible in Settings > Activity
+    // & Error Log, but this must never propagate and fail the core sync.
+    diagLogEvent('sync', 'Training push failed — core sync still succeeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('training-push', e.message||String(e));
+    console.error('Training push failed (core task/list/health data still synced fine):', e);
   }
 }
 
 async function pullFromSupabase(onProgress){
-  const tables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'];
+  const coreTables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'];
+  const trainingTables = ['training_exercises','training_sessions','training_calendar','training_logs'];
+  const totalTables = coreTables.length + trainingTables.length;
   const results = {};
-  for(let i=0;i<tables.length;i++){
-    results[tables[i]] = await supaSelectAll(tables[i]);
-    if(onProgress) onProgress(i+1, tables.length);
+  for(let i=0;i<coreTables.length;i++){
+    results[coreTables[i]] = await supaSelectAll(coreTables[i]);
+    if(onProgress) onProgress(i+1, totalTables);
   }
   const { one_time_tasks:oneTimeRows, recurring_tasks:recurringRows, task_completions:completionRows,
           lists:listRows, list_items:itemRows, health_logs:healthRows, daily_ratings:ratingRows, health_metric_defs:metricDefRows, app_settings:settingsRows } = results;
+
+  // Training is fetched separately, AFTER the core tables, and is
+  // deliberately fault-isolated: if the training-tables SQL migration
+  // hasn't been run yet in this Supabase project (or any other
+  // training-specific failure happens), that must NEVER abort the core
+  // task/list/health pull. Before this isolation, one throw anywhere in a
+  // single combined table loop aborted the ENTIRE pull before any state
+  // assignment ran — meaning a training-table issue alone was enough to
+  // make every subsequent app open silently fall back to old local/cached
+  // data instead of pulling the real confirmed state, on any device that
+  // wasn't the one holding the latest changes. That is very likely the
+  // exact mechanism behind "tasks I cleared this morning came back a few
+  // hours later" — closing it the same way the v2.7.3 dirty-flag bug was
+  // closed: isolate blast radius so a training issue can only ever affect
+  // training data, never the core task pull.
+  let trainingPulled = null;
+  try{
+    const trainResults = {};
+    for(let i=0;i<trainingTables.length;i++){
+      trainResults[trainingTables[i]] = await supaSelectAll(trainingTables[i]);
+      if(onProgress) onProgress(coreTables.length+i+1, totalTables);
+    }
+    trainingPulled = trainResults;
+  } catch(e){
+    diagLogEvent('sync', 'Training pull failed — core pull still proceeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('training-pull', e.message||String(e));
+    console.error('Training pull failed (core task/list/health data still pulled fine):', e);
+  }
 
   const hasAnyRemoteData = oneTimeRows.length || recurringRows.length || listRows.length;
 
@@ -1653,7 +1998,26 @@ async function pullFromSupabase(onProgress){
       if(!completions[r.task_id]) completions[r.task_id] = {};
       completions[r.task_id][r.completed_date] = { status: r.status || 'done', loggedAt: r.logged_at || null };
     });
-    state.tasks.completions = completions;
+
+    // Reconcile against the local offline-safety buffer — if this device has
+    // more recent activity than what just came from Supabase (e.g. changes
+    // made while genuinely offline), the local version wins rather than
+    // being silently overwritten by the pull.
+    let needsReconcilePush = false;
+    try{
+      const recentRes = await safeGet(STORAGE_KEYS.RECENT_COMPLETIONS);
+      if(recentRes){
+        const buffer = JSON.parse(recentRes.value);
+        const { merged, hadNewerLocal } = mergeRecentCompletionsIntoRemote(completions, buffer);
+        state.tasks.completions = merged;
+        needsReconcilePush = hadNewerLocal;
+        if(hadNewerLocal) diagLogEvent('sync', 'Pull found newer local completions than Supabase had — reconciling');
+      } else {
+        state.tasks.completions = completions;
+      }
+    } catch(e){
+      state.tasks.completions = completions;
+    }
 
     listRows.sort((a,b)=> (a.sort_order||0)-(b.sort_order||0));
     const itemsByList = {};
@@ -1667,6 +2031,20 @@ async function pullFromSupabase(onProgress){
     state.dailyRatings = ratingRows.map(rowToRating);
     state.healthMetricDefs = metricDefRows.map(rowToMetricDef);
     ensureCoreMetricDefs();
+
+    if(trainingPulled){
+      state.training = {
+        exercises: trainingPulled.training_exercises.map(rowToTrainingExercise),
+        sessions: trainingPulled.training_sessions.map(rowToTrainingSession),
+        calendar: trainingPulled.training_calendar.map(rowToTrainingCalendar),
+        logs: trainingPulled.training_logs.map(rowToTrainingLog),
+      };
+      pendingTrainingDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
+    }
+    // else: training fetch failed — leave state.training exactly as it was
+    // (whatever loadAll() already put there), rather than wiping it or
+    // crashing. Local training data (and its own next successful sync) is
+    // unaffected by this pull's training-fetch failure.
 
     if(settingsRows.length){
       state.settings.locations = settingsRows[0].locations || state.settings.locations;
@@ -1687,11 +2065,24 @@ async function pullFromSupabase(onProgress){
     // gets cached locally — completion/health/ratings history stays in
     // memory and in Supabase only, never written to local storage here.
     try{ await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), false); } catch(e){ console.error('local cache write failed (tasks)', e); }
+    try{ await window.storage.set(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), false); } catch(e){}
     try{ await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false); } catch(e){ console.error('local cache write failed (lists)', e); }
     try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
     try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
     try{ await window.storage.set(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), false); } catch(e){ console.error('local cache write failed (metric defs)', e); }
+    if(trainingPulled){ try{ await window.storage.set(STORAGE_KEYS.TRAINING, JSON.stringify(state.training), false); } catch(e){ console.error('local cache write failed (training)', e); } }
     try{ await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false); } catch(e){ console.error('local cache write failed (settings)', e); }
+
+    if(needsReconcilePush){
+      // this device had offline activity Supabase didn't know about — push
+      // the merged, corrected state back so Supabase (and other devices)
+      // catch up, rather than waiting for the next unrelated user action.
+      scheduleSync('tasks', ()=>[
+        ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
+        ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
+        ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
+      ]);
+    }
   } else {
     // nothing remote yet — seed it from what we have locally
     await pushFullStateToSupabase(onProgress);
@@ -1751,6 +2142,47 @@ async function safeStorageSet(key, value, label, opts){
 // gets the full, untrimmed history via the normal sync steps. This is purely
 // about staying under the browser's local storage size limit, which only
 // applies when running outside claude.ai (Supabase has no such limit).
+// Offline safety net: even when sync is configured (so full completion
+// history isn't cached locally — see saveTasks), a small BOUNDED window of
+// just the most recent activity still gets written locally every save.
+// Without this, marking things done while genuinely offline only lives in
+// memory — if the tab closes or reloads before a sync succeeds, that work
+// is gone with no local trace at all. This buffer is small enough (a couple
+// weeks, not years) to never recreate the original quota problem, while
+// still surviving a realistic offline session.
+const RECENT_COMPLETIONS_WINDOW_DAYS = 14;
+function buildRecentCompletionsBuffer(completions){
+  const cutoff = addDays(todayStr(), -RECENT_COMPLETIONS_WINDOW_DAYS);
+  const buffer = {};
+  Object.entries(completions).forEach(([taskId, byDate])=>{
+    const kept = {};
+    Object.entries(byDate).forEach(([dateStr, o])=>{ if(dateStr >= cutoff) kept[dateStr] = o; });
+    if(Object.keys(kept).length) buffer[taskId] = kept;
+  });
+  return buffer;
+}
+// Merges a local recent-completions buffer into freshly-pulled remote data —
+// for any (task, date) where the local entry is newer (or remote is simply
+// missing it, meaning it never successfully synced), the local version wins.
+// Returns whether anything local actually needed to win, so the caller knows
+// to push the reconciled result back to Supabase afterward.
+function mergeRecentCompletionsIntoRemote(remoteCompletions, localBuffer){
+  const merged = JSON.parse(JSON.stringify(remoteCompletions||{}));
+  let hadNewerLocal = false;
+  Object.entries(localBuffer||{}).forEach(([taskId, byDate])=>{
+    Object.entries(byDate).forEach(([dateStr, localEntry])=>{
+      const remoteEntry = merged[taskId] && merged[taskId][dateStr];
+      const localIsNewer = !remoteEntry || (localEntry.loggedAt && (!remoteEntry.loggedAt || localEntry.loggedAt > remoteEntry.loggedAt));
+      if(localIsNewer){
+        if(!merged[taskId]) merged[taskId] = {};
+        merged[taskId][dateStr] = localEntry;
+        hadNewerLocal = true;
+      }
+    });
+  });
+  return { merged, hadNewerLocal };
+}
+
 function pruneCompletionsForCache(tasks, maxDays){
   const cutoff = addDays(todayStr(), -maxDays);
   const trimmedCompletions = {};
@@ -1833,7 +2265,7 @@ function enqueueSync(taskFn){
 
 async function runSyncSteps(steps){
   const startedAt = performance.now();
-  markSyncDirty();
+  await markSyncDirty();
   state.syncMeta.progress = { current: 0, total: steps.length };
   updateSyncBadge();
   try{
@@ -1904,6 +2336,12 @@ async function saveTasks(){
     // instantly and works offline for editing, without local storage ever
     // growing unbounded with years of check-off history.
     await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks', {silent:true});
+    // ...but DO keep a small bounded window of just the most recent activity
+    // locally too — the offline safety net (see buildRecentCompletionsBuffer).
+    try{
+      const buffer = buildRecentCompletionsBuffer(state.tasks.completions);
+      await window.storage.set(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buffer), false);
+    } catch(e){ console.error('recent-completions buffer write failed', e); }
   } else {
     // No sync configured — local storage is the ONLY copy, so it needs the
     // full trim-fallback safety net to avoid ever losing data outright.
@@ -2014,6 +2452,18 @@ async function saveSettings(){
     ]);
   }
 }
+async function saveTraining(){
+  await safeStorageSet(STORAGE_KEYS.TRAINING, JSON.stringify(state.training), 'training');
+  if(syncConfigured()){
+    scheduleSync('training', ()=>[
+      ()=> flushPendingTrainingDeletes(),
+      ()=> supaUpsert('training_exercises', state.training.exercises.map(trainingExerciseToRow), 'pin,id'),
+      ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
+      ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
+      ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+    ]);
+  }
+}
 
 /* ---------- ID generator ---------- */
 function newId(prefix){
@@ -2082,18 +2532,54 @@ function locationColor(loc){
    sync issue can be diagnosed from the actual log instead of a description
    after the fact. */
 const diagLog = [];
-const MAX_DIAG_LOG = 400;
+const MAX_DIAG_LOG = 800;
 function diagLogEvent(category, message, data){
   diagLog.push({ t: new Date().toISOString(), category, message, data: data!==undefined ? data : null });
   if(diagLog.length > MAX_DIAG_LOG) diagLog.shift();
 }
+// Sync error HISTORY — deliberately separate from diagLog above. diagLog is
+// in-memory/session-only by design (persisting the full 800-entry log would
+// recreate the original storage-quota problem), which means it's gone the
+// moment the tab reloads — exactly the gap that made a real incident
+// undiagnosable after the fact (the person could only send us a log from
+// *after* things had already gone healthy again). This is a small, separate,
+// LOCAL-ONLY (never synced to Supabase) rolling history of only the sync
+// failures themselves — bounded to the last 15, so it can't grow unbounded,
+// but durable across reloads and not wiped by a later successful sync. See
+// Settings → Activity & Error Log → "Sync Error History".
+const MAX_SYNC_ERROR_HISTORY = 15;
+async function recordSyncErrorHistory(source, message){
+  const entry = { t: new Date().toISOString(), source, message };
+  try{
+    const res = await safeGet(STORAGE_KEYS.SYNC_ERROR_HISTORY);
+    const history = res ? JSON.parse(res.value) : [];
+    history.push(entry);
+    while(history.length > MAX_SYNC_ERROR_HISTORY) history.shift();
+    await safeStorageSet(STORAGE_KEYS.SYNC_ERROR_HISTORY, JSON.stringify(history), 'sync error history', {silent:true});
+    state.syncErrorHistory = history; // keep in-memory copy in sync so the Settings page reflects it immediately, no reload needed
+  } catch(e){ console.error('failed to persist sync error history (non-fatal)', e); }
+}
+async function clearSyncErrorHistory(){
+  try{ await window.storage.delete(STORAGE_KEYS.SYNC_ERROR_HISTORY, false); } catch(e){}
+  state.syncErrorHistory = [];
+  renderMain();
+}
 function formatDiagLog(){
+  const errorHistory = state.syncErrorHistory || [];
   const lines = [
     `CalendarOS Diagnostic Log — generated ${new Date().toISOString()}`,
     `App version: ${APP_VERSION} | Storage: ${usingNativeAppStorage?'Claude':'Browser (standalone)'} | Sync configured: ${syncConfigured()}`,
     `Sync status: ${state.syncMeta.status} | dirty: ${state.syncMeta.dirty} | last synced: ${state.syncMeta.lastSyncedAt||'never'} | last error: ${state.syncMeta.lastError||'none'}`,
     '='.repeat(70),
+    `SYNC ERROR HISTORY (persists across reloads, unlike the session log below — last ${MAX_SYNC_ERROR_HISTORY}):`,
   ];
+  if(errorHistory.length){
+    errorHistory.forEach(e=> lines.push(`  [${e.t}] [${e.source}] ${e.message}`));
+  } else {
+    lines.push('  (none recorded)');
+  }
+  lines.push('='.repeat(70));
+  lines.push(`CURRENT SESSION LOG (in-memory only — resets on every reload, started ${diagLog.length?diagLog[0].t:'n/a'}):`);
   diagLog.forEach(e=>{
     lines.push(`[${e.t}] [${e.category}] ${e.message}${e.data ? ' — ' + JSON.stringify(e.data) : ''}`);
   });
@@ -2245,6 +2731,7 @@ function render(){
     calendar: ['▦','Calendar'],
     lists: ['▤','Lists'],
     health: ['♥','Health Log'],
+    training: ['⛊','Training'],
     settings: ['⚙','Settings'],
   };
   const order = (state.settings.pageOrder && state.settings.pageOrder.length) ? state.settings.pageOrder : Object.keys(NAV_META);
@@ -2258,7 +2745,7 @@ function render(){
         <div class="brand"><span class="brand-mark"></span>${APP_NAME}</div>
         <button class="dark-toggle-btn" title="Toggle dark mode" onclick="toggleDarkMode()">${state.settings.darkMode ? '☀' : '☾'}</button>
       </div>
-      <div class="brand-sub">Daily Operations</div>
+      <div class="brand-sub">v${APP_VERSION}</div>
       <div class="nav">
         ${navItems.map(([key,icon,label,count])=>navItem(key,icon,label,count)).join('')}
       </div>
@@ -2359,7 +2846,7 @@ async function clearLocalCacheNow(){
     : "Clear this device's local cache? Sync isn't connected, so anything not backed up elsewhere will be PERMANENTLY LOST. This cannot be undone.";
   if(!confirm(warning)) return;
   const keysToClear = [
-    STORAGE_KEYS.TASKS, STORAGE_KEYS.LISTS, STORAGE_KEYS.HEALTH, STORAGE_KEYS.RATINGS, STORAGE_KEYS.HEALTH_METRIC_DEFS,
+    STORAGE_KEYS.TASKS, STORAGE_KEYS.LISTS, STORAGE_KEYS.HEALTH, STORAGE_KEYS.RATINGS, STORAGE_KEYS.HEALTH_METRIC_DEFS, STORAGE_KEYS.TRAINING,
   ];
   for(const key of keysToClear){
     try{ await window.storage.delete(key, false); } catch(e){ console.error('clear cache failed for', key, e); }
@@ -2377,6 +2864,7 @@ function navItem(view, icon, label, count){
 }
 
 function setView(v){
+  diagLogEvent('activity', `Navigated to ${v}`);
   state.view = v;
   state.searchQuery = '';
   if(v !== 'tasks'){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); }
@@ -2396,6 +2884,7 @@ function renderMain(){
     else if(state.view === 'calendar') el.innerHTML = renderCalendarView();
     else if(state.view === 'lists') el.innerHTML = renderListsView();
     else if(state.view === 'health') el.innerHTML = renderHealthView();
+    else if(state.view === 'training') el.innerHTML = renderTrainingView();
     else if(state.view === 'settings') el.innerHTML = renderSettingsView();
   } catch(err){
     console.error('Render error on view:', state.view, err);
@@ -2540,28 +3029,29 @@ function renderGroupedTickets(rows, opts){
 
 /* ---------- New Task type chooser ---------- */
 function openNewTaskChooser(){
+  awaitingNewTaskTypeChoice = true;
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'typeChooserOverlay';
-  overlay.onclick = (e)=>{ if(e.target === overlay) overlay.remove(); };
+  overlay.onclick = (e)=>{ if(e.target === overlay){ overlay.remove(); awaitingNewTaskTypeChoice = false; } };
   overlay.innerHTML = `
     <div class="modal">
       <h3>New Task</h3>
-      <div class="modal-sub">What kind of task is this?</div>
+      <div class="modal-sub">What kind of task is this? (or just press O / R)</div>
       <div class="type-choice-grid">
-        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); openTaskModal('oneTime');">
+        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); awaitingNewTaskTypeChoice=false; openTaskModal('oneTime');">
           <span class="tc-icon">◎</span>
           <div class="tc-title">One-Time</div>
           <div class="tc-sub">Happens once, has a due date.</div>
         </button>
-        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); openTaskModal('recurring');">
+        <button type="button" class="type-choice" onclick="document.getElementById('typeChooserOverlay').remove(); awaitingNewTaskTypeChoice=false; openTaskModal('recurring');">
           <span class="tc-icon">↻</span>
           <div class="tc-title">Recurring</div>
           <div class="tc-sub">Repeats on a schedule.</div>
         </button>
       </div>
       <div class="modal-actions">
-        <button class="btn secondary" onclick="document.getElementById('typeChooserOverlay').remove();">Cancel</button>
+        <button class="btn secondary" onclick="document.getElementById('typeChooserOverlay').remove(); awaitingNewTaskTypeChoice=false;">Cancel</button>
       </div>
     </div>
   `;
@@ -2694,6 +3184,7 @@ async function toggleComplete(kind, taskId, dateStr, isUndo){
     const prevDone = t.done;
     t.done = !t.done;
     t.doneDate = t.done ? (newDayReviewDate || todayStr()) : null;
+    diagLogEvent('activity', `${t.done?'Completed':'Un-completed'} one-time task "${t.name}"`, { id:taskId, isUndo:!!isUndo });
     saveTasks(); // fire-and-forget: UI updates now, sync (local+remote) happens in the background
     if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: prevDone, name: t.name, action:'done' });
   } else {
@@ -2701,6 +3192,7 @@ async function toggleComplete(kind, taskId, dateStr, isUndo){
     if(!t) return;
     const cur = isCompletedOn(taskId, dateStr);
     toggleDone(taskId, dateStr);
+    diagLogEvent('activity', `${!cur?'Completed':'Un-completed'} recurring task "${t.name}" for ${dateStr}`, { id:taskId, isUndo:!!isUndo });
     if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: cur, name: t.name, action:'done' });
   }
   renderMain();
@@ -2711,6 +3203,7 @@ async function toggleMissedTask(taskId, dateStr, isUndo){
   const t = state.tasks.recurring.find(x=>x.id===taskId);
   const prevMissed = isMissedOn(taskId, dateStr);
   toggleMissed(taskId, dateStr);
+  diagLogEvent('activity', `${!prevMissed?'Marked missed':'Un-marked missed'}: "${t?.name}" for ${dateStr}`, { id:taskId, isUndo:!!isUndo });
   if(!isUndo && t) pushUndo({ kind:'recurring', taskId, dateStr, prevValue: prevMissed, name: t.name, action:'missed' });
   renderMain();
   if(newDayReviewDate) refreshNewDayModal();
@@ -2735,6 +3228,7 @@ async function undoLast(){
   renderMain();
   showToast(`Undid: ${entry.name}`);
 }
+let awaitingNewTaskTypeChoice = false;
 document.addEventListener('keydown', (e)=>{
   const isUndoCombo = (e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z');
   if(isUndoCombo && !e.shiftKey){
@@ -2753,10 +3247,59 @@ document.addEventListener('keydown', (e)=>{
     e.preventDefault();
     closeModal();
   }
+
+  // New task shortcut: press N (no modifier — Ctrl/Cmd+N is reserved by the
+  // browser itself for "new window" and can't be intercepted from JS in any
+  // browser, so a plain key is what actually works), then O (one-time) or
+  // R (recurring). Works the same way whether triggered by this shortcut or
+  // by clicking "+ New Task" (see openNewTaskChooser) — both just set
+  // awaitingNewTaskTypeChoice and this same handler picks up the O/R press.
+  if(awaitingNewTaskTypeChoice){
+    e.preventDefault();
+    dismissNewTaskHint();
+    const chooserOverlay = document.getElementById('typeChooserOverlay');
+    if(chooserOverlay) chooserOverlay.remove();
+    if(e.key === 'o' || e.key === 'O'){
+      openTaskModal('oneTime');
+      setTimeout(()=>{ const el = document.getElementById('f_name'); if(el){ el.focus(); el.select(); } }, 30);
+    } else if(e.key === 'r' || e.key === 'R'){
+      openTaskModal('recurring');
+      setTimeout(()=>{ const el = document.getElementById('f_name'); if(el){ el.focus(); el.select(); } }, 30);
+    }
+    return;
+  }
+  const isNewKey = (e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey && !e.altKey;
+  const modalOpen = document.getElementById('modalOverlay') || document.getElementById('typeChooserOverlay');
+  const gateShowing = document.getElementById('gateScreen')?.innerHTML;
+  if(isNewKey && !modalOpen && !gateShowing){
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if(tag === 'INPUT' || tag === 'TEXTAREA') return; // don't hijack normal typing
+    e.preventDefault();
+    showNewTaskHint();
+  }
 });
+
+function showNewTaskHint(){
+  awaitingNewTaskTypeChoice = true;
+  let el = document.getElementById('newTaskHint');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'newTaskHint';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<b>O</b> One-Time &nbsp;·&nbsp; <b>R</b> Recurring &nbsp;·&nbsp; <span style="opacity:.6;">Esc to cancel</span>`;
+  el.classList.add('show');
+}
+function dismissNewTaskHint(){
+  awaitingNewTaskTypeChoice = false;
+  const el = document.getElementById('newTaskHint');
+  if(el) el.classList.remove('show');
+}
 
 async function deleteTask(kind, taskId){
   if(!confirm('Delete this task? This cannot be undone.')) return;
+  const taskName = (kind==='oneTime' ? state.tasks.oneTime : state.tasks.recurring).find(t=>t.id===taskId)?.name;
+  diagLogEvent('activity', `Deleted ${kind} task "${taskName}"`, { id:taskId });
   if(kind === 'oneTime'){
     state.tasks.oneTime = state.tasks.oneTime.filter(t=>t.id!==taskId);
   } else {
@@ -2831,6 +3374,9 @@ function renderTasksView(){
       ${state.batchSelectMode
         ? `<button class="btn secondary" onclick="exitBatchSelect()">Cancel Select</button>`
         : `<button class="btn secondary" onclick="enterBatchSelect()">Select</button>`}
+      <button class="btn secondary" onclick="exportTasksCsv()">Export CSV</button>
+      <input type="file" id="importCsvInput" accept=".csv,text/csv" style="display:none;" onchange="handleImportTasksCsv(event)">
+      <button class="btn secondary" onclick="document.getElementById('importCsvInput').click()">Import CSV</button>
       <button class="btn brass" onclick="openTaskModal('${tab}')">+ New ${tab==='oneTime'?'One-Time':'Recurring'} Task</button>
     </div>
 
@@ -2855,6 +3401,153 @@ function renderTasksView(){
 }
 function setTasksTab(t){ state.tasksTab = t; state.searchQuery=''; exitBatchSelect(); renderMain(); }
 function toggleTasksGroupByLocation(){ state.tasksGroupByLocation = !state.tasksGroupByLocation; renderMain(); }
+
+/* ---------- CSV export / import for batch task editing ----------
+   Unified schema covering both task types in one file — a Type column
+   picks which fields apply. Blank ID on import = create new; matching an
+   existing ID = update that task in place. This is the batch-edit workflow:
+   export, edit many rows in a spreadsheet, re-import. */
+const TASK_CSV_COLUMNS = ['Type','ID','Name','Location','Silo','Priority','Due Date','Done','Recurrence Type','Recurrence Detail','Start Date','End Date','Notes'];
+
+function csvEscape(val){
+  val = val===null || val===undefined ? '' : String(val);
+  if(/[",\n]/.test(val)) return '"' + val.replace(/"/g,'""') + '"';
+  return val;
+}
+function csvRow(fields){ return fields.map(csvEscape).join(','); }
+
+// Minimal RFC4180-style parser: handles quoted fields containing commas,
+// newlines, and escaped quotes ("").
+function parseCsv(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === '\n' || c === '\r'){
+        if(c === '\r' && text[i+1] === '\n') i++;
+        row.push(field); field = '';
+        rows.push(row); row = [];
+      } else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || (r[0]||'').trim() !== '');
+}
+
+function exportTasksCsv(){
+  const lines = [csvRow(TASK_CSV_COLUMNS)];
+  state.tasks.oneTime.forEach(t=>{
+    lines.push(csvRow(['OneTime', t.id, t.name, t.location, t.silo, t.priority, t.due||'', t.done?'Yes':'No', '', '', '', '', t.notes||'']));
+  });
+  state.tasks.recurring.forEach(t=>{
+    lines.push(csvRow(['Recurring', t.id, t.name, t.location, t.silo, t.priority, '', '', t.type, t.detail||'', t.start||'', t.end||'', t.notes||'']));
+  });
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calendaros-tasks-${todayStr()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  diagLogEvent('activity', `Exported tasks to CSV (${state.tasks.oneTime.length + state.tasks.recurring.length} tasks)`);
+  showToast('Tasks exported');
+}
+
+function handleImportTasksCsv(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    event.target.value = '';
+    let rows;
+    try{ rows = parseCsv(e.target.result); }
+    catch(err){ showToast('⚠ Could not parse that CSV file'); return; }
+    if(rows.length < 2){ showToast('⚠ No data rows found in that file'); return; }
+
+    const header = rows[0].map(h=>h.trim());
+    const idx = name => header.indexOf(name);
+    const iType=idx('Type'), iId=idx('ID'), iName=idx('Name'), iLoc=idx('Location'), iSilo=idx('Silo'),
+          iPri=idx('Priority'), iDue=idx('Due Date'), iDone=idx('Done'), iRType=idx('Recurrence Type'),
+          iRDetail=idx('Recurrence Detail'), iStart=idx('Start Date'), iEnd=idx('End Date'), iNotes=idx('Notes');
+    if(iType===-1 || iName===-1){ showToast('⚠ CSV is missing required "Type" or "Name" columns'); return; }
+
+    // Build the plan first — nothing in state.tasks is touched yet, so a
+    // "Cancel" at the confirm step below genuinely leaves everything as-is.
+    const plan = { newOneTime:[], updOneTime:[], newRecurring:[], updRecurring:[], skipped:0 };
+    rows.slice(1).forEach(r=>{
+      const type = (r[iType]||'').trim();
+      const name = (r[iName]||'').trim();
+      if(!name){ plan.skipped++; return; }
+      const id = (r[iId]||'').trim();
+
+      if(type === 'OneTime'){
+        const existing = id ? state.tasks.oneTime.find(t=>t.id===id) : null;
+        const fields = {
+          name, location: (r[iLoc]||'').trim(), silo: (r[iSilo]||'').trim(),
+          priority: (r[iPri]||'Medium').trim() || 'Medium', due: (r[iDue]||'').trim() || null,
+          done: /^(yes|true|1)$/i.test((r[iDone]||'').trim()), notes: (r[iNotes]||'').trim(),
+        };
+        if(existing) plan.updOneTime.push({ existing, fields });
+        else plan.newOneTime.push(fields);
+      } else if(type === 'Recurring'){
+        const existing = id ? state.tasks.recurring.find(t=>t.id===id) : null;
+        const fields = {
+          name, location: (r[iLoc]||'').trim(), silo: (r[iSilo]||'').trim(),
+          priority: (r[iPri]||'Medium').trim() || 'Medium',
+          type: (r[iRType]||'Daily').trim() || 'Daily', detail: (r[iRDetail]||'').trim(),
+          start: (r[iStart]||'').trim() || todayStr(), end: (r[iEnd]||'').trim() || null,
+          notes: (r[iNotes]||'').trim(),
+        };
+        if(existing) plan.updRecurring.push({ existing, fields });
+        else plan.newRecurring.push(fields);
+      } else {
+        plan.skipped++;
+      }
+    });
+
+    const summary = `New: ${plan.newOneTime.length} one-time, ${plan.newRecurring.length} recurring\n` +
+      `Updated: ${plan.updOneTime.length} one-time, ${plan.updRecurring.length} recurring` +
+      (plan.skipped ? `\nSkipped (missing/invalid Type or Name): ${plan.skipped}` : '');
+    if(!confirm(`Import this CSV?\n\n${summary}\n\nApply these changes?`)) return;
+
+    // Now actually apply — nothing above this line touched state.tasks.
+    plan.newOneTime.forEach(fields=>{
+      state.tasks.oneTime.push(Object.assign({ id:newId('ot'), dueHistory:[], doneDate: fields.done?todayStr():null }, fields));
+    });
+    plan.updOneTime.forEach(({existing, fields})=>{
+      if(fields.due && existing.due && existing.due !== fields.due){
+        if(!existing.dueHistory) existing.dueHistory = [];
+        existing.dueHistory.push(existing.due);
+      }
+      Object.assign(existing, fields, { doneDate: fields.done ? (existing.doneDate||todayStr()) : null });
+    });
+    plan.newRecurring.forEach(fields=>{
+      state.tasks.recurring.push(Object.assign({ id:newId('rt') }, fields));
+    });
+    plan.updRecurring.forEach(({existing, fields})=>{
+      Object.assign(existing, fields);
+    });
+
+    await saveTasks();
+    diagLogEvent('activity', 'Imported tasks from CSV', {
+      newOneTime: plan.newOneTime.length, updOneTime: plan.updOneTime.length,
+      newRecurring: plan.newRecurring.length, updRecurring: plan.updRecurring.length, skipped: plan.skipped,
+    });
+    renderMain();
+    showToast(`Imported: ${plan.newOneTime.length+plan.updOneTime.length} one-time, ${plan.newRecurring.length+plan.updRecurring.length} recurring`);
+  };
+  reader.readAsText(file);
+}
 
 /* ---------- Batch edit ---------- */
 function enterBatchSelect(){ state.batchSelectMode = true; state.selectedTaskIds = new Set(); renderMain(); }
@@ -3067,7 +3760,14 @@ function jumpToDate(dateStr){
 /* =========================================================
    RENDER: LISTS VIEW
    ========================================================= */
+if(!state.selectedListId && state.lists.length) state.selectedListId = state.lists[0].id;
+
 function renderListsView(){
+  if(!state.selectedListId || !state.lists.find(l=>l.id===state.selectedListId)){
+    state.selectedListId = state.lists.length ? state.lists[0].id : null;
+  }
+  const active = state.lists.find(l=>l.id===state.selectedListId);
+
   return `
     <div class="topbar">
       <div>
@@ -3076,37 +3776,52 @@ function renderListsView(){
       </div>
       <button class="btn brass" onclick="addNewList()">+ New List</button>
     </div>
-    <div class="lists-grid">
-      ${state.lists.map(l=>renderListCard(l)).join('')}
+    <div class="lists-layout">
+      <div class="lists-toc">
+        ${state.lists.length ? state.lists.map(l=>{
+          const doneCount = l.items.filter(i=>i.done).length;
+          return `
+            <button class="lists-toc-item ${l.id===state.selectedListId?'active':''}" onclick="selectList('${l.id}')">
+              <span class="lists-toc-title">${escapeHtml(l.title)}</span>
+              <span class="lists-toc-count">${doneCount}/${l.items.length}</span>
+            </button>
+          `;
+        }).join('') : `<div class="page-sub" style="padding:14px;">No lists yet — create one to get started.</div>`}
+      </div>
+      <div class="notebook-page">
+        ${active ? renderNotebookPage(active) : `<div class="empty-state"><span class="glyph">☺</span>Pick a list on the left, or create a new one.</div>`}
+      </div>
     </div>
   `;
 }
+function selectList(listId){
+  state.selectedListId = listId;
+  renderMain();
+}
 
-function renderListCard(list){
+function renderNotebookPage(list){
   const doneCount = list.items.filter(i=>i.done).length;
   return `
-    <div class="card list-card">
-      <h4>
-        <span>${escapeHtml(list.title)}</span>
-        <span style="display:flex; gap:2px;">
-          ${doneCount>0 ? `<button class="icon-btn" title="Uncheck all items" onclick="uncheckAllListItems('${list.id}')">↺</button>` : ''}
-          <button class="icon-btn" title="Delete list" onclick="deleteList('${list.id}')">✕</button>
-        </span>
-      </h4>
-      <div class="page-sub" style="margin-bottom:8px;">${doneCount}/${list.items.length} done</div>
-      <div class="list-items">
-        ${list.items.map(item=>`
-          <div class="list-item ${item.done?'done':''}">
-            <button class="li-check ${item.done?'checked':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>
-            <span class="li-text" onclick="editListItemText('${list.id}','${item.id}')" title="Click to edit" style="cursor:pointer;">${escapeHtml(item.text)}</span>
-            ${item.category ? `<span class="li-cat">${escapeHtml(item.category)}</span>` : ''}
-            <button class="icon-btn" style="width:18px;height:18px;font-size:11px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
-          </div>
-        `).join('') || `<div class="page-sub">No items yet.</div>`}
-      </div>
-      <div class="add-item-row">
+    <div class="notebook-header">
+      <h3>${escapeHtml(list.title)}</h3>
+      <span style="display:flex; gap:2px;">
+        ${doneCount>0 ? `<button class="icon-btn" title="Uncheck all items" onclick="uncheckAllListItems('${list.id}')">↺</button>` : ''}
+        <button class="icon-btn" title="Delete list" onclick="deleteList('${list.id}')">✕</button>
+      </span>
+    </div>
+    <div class="page-sub" style="margin-bottom:14px;">${doneCount}/${list.items.length} done</div>
+    <div class="notebook-lines">
+      ${list.items.map(item=>`
+        <div class="notebook-line ${item.done?'done':''}">
+          <button class="li-check ${item.done?'checked':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>
+          <span class="li-text" onclick="editListItemText('${list.id}','${item.id}')" title="Click to edit" style="cursor:pointer;">${escapeHtml(item.text)}</span>
+          ${item.category ? `<span class="li-cat">${escapeHtml(item.category)}</span>` : ''}
+          <button class="icon-btn" style="width:18px;height:18px;font-size:11px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
+        </div>
+      `).join('') || `<div class="page-sub" style="padding:8px 0;">No items yet — start writing below.</div>`}
+      <div class="notebook-line add-line">
+        <span class="li-check" style="opacity:.3;">+</span>
         <input type="text" id="addItemInput_${list.id}" placeholder="Add item…" onkeydown="if(event.key==='Enter'){addListItem('${list.id}', this.value); this.value='';}">
-        <button class="btn secondary sm" onclick="const inp=this.previousElementSibling; addListItem('${list.id}', inp.value); inp.value='';">Add</button>
       </div>
     </div>
   `;
@@ -3143,6 +3858,8 @@ async function uncheckAllListItems(listId){
 async function deleteListItem(listId, itemId){
   const list = state.lists.find(l=>l.id===listId);
   if(!list) return;
+  const itemText = list.items.find(i=>i.id===itemId)?.text;
+  diagLogEvent('activity', `Deleted list item "${itemText}"`, { listId, itemId });
   list.items = list.items.filter(i=>i.id!==itemId);
   await saveLists();
   if(syncConfigured()){
@@ -3158,6 +3875,7 @@ async function addListItem(listId, text){
   const list = state.lists.find(l=>l.id===listId);
   if(!list) return;
   list.items.push({ id: newId('item'), text, done:false });
+  diagLogEvent('activity', `Added list item "${text}" to "${list.title}"`, { listId });
   await saveLists();
   renderMain();
   // keep the person typing without needing to re-click the box
@@ -3166,6 +3884,8 @@ async function addListItem(listId, text){
 }
 async function deleteList(listId){
   if(!confirm('Delete this entire list?')) return;
+  const listTitle = state.lists.find(l=>l.id===listId)?.title;
+  diagLogEvent('activity', `Deleted list "${listTitle}"`, { listId });
   state.lists = state.lists.filter(l=>l.id!==listId);
   await saveLists();
   if(syncConfigured()){
@@ -3180,6 +3900,7 @@ async function addNewList(){
   const title = prompt('Name this list:');
   if(!title || !title.trim()) return;
   state.lists.push({ id: newId('list'), title: title.trim(), items: [] });
+  diagLogEvent('activity', `Created list "${title.trim()}"`);
   await saveLists();
   renderMain();
 }
@@ -3455,6 +4176,763 @@ async function deleteMetricDef(metricId){
 }
 
 /* =========================================================
+   RENDER: TRAINING VIEW
+   Framework, not copy-paste: `exercises` is a reusable library,
+   `sessions` reference exercises via `blocks`, `calendar` maps a specific
+   date -> sessionId (this is what gets re-mapped monthly via import),
+   `logs` are session-level (completed/difficulty/notes) keyed by date.
+   ========================================================= */
+/* =========================================================
+   RENDER: TRAINING VIEW
+   Framework, not copy-paste: `exercises` is a reusable library,
+   `sessions` reference exercises via `blocks`, `calendar` maps a specific
+   date -> sessionId (re-mapped monthly via import). `logs` are now PER
+   EXERCISE (date + exerciseId), not per day — sessions with no exercises
+   (walk/rest days) log against the sentinel exerciseId '__session__' so
+   there's still something to check off/rate/annotate on those days.
+   Subpages (Today's Training / Calendar View / Log History / Session
+   Library / Exercise Library) live in a left sidebar + panel, same
+   pattern as Settings.
+   ========================================================= */
+const TRAINING_SESSION_LEVEL_ID = '__session__';
+
+function ensureTrainingViewDate(){
+  if(!state.trainingSelectedDate) state.trainingSelectedDate = todayStr();
+}
+function getTrainingCalEntry(date){
+  return state.training.calendar.find(c=>c.date===date) || null;
+}
+function getTrainingSessionById(id){
+  return state.training.sessions.find(s=>s.id===id) || null;
+}
+function getTrainingExerciseById(id){
+  return state.training.exercises.find(e=>e.id===id) || null;
+}
+function getTrainingLogsForDate(date){
+  return state.training.logs.filter(l=>l.date===date);
+}
+function getTrainingLogForExercise(date, exerciseId){
+  return state.training.logs.find(l=>l.date===date && l.exerciseId===exerciseId) || null;
+}
+function shiftTrainingDate(delta){
+  ensureTrainingViewDate();
+  state.trainingSelectedDate = addDays(state.trainingSelectedDate, delta);
+  renderMain();
+}
+function setTrainingViewDate(d){
+  state.trainingSelectedDate = d;
+  renderMain();
+}
+function setTrainingSection(key){
+  state.trainingSection = key;
+  renderMain();
+}
+
+// The exercise "blocks" a day's session actually has to log against — for a
+// normal strength session this is session.blocks as-is; for a walk/rest
+// session with no exercises, it's a single synthetic block standing in for
+// "the whole session," keyed by the sentinel id above.
+function getTrainingLoggableBlocks(session){
+  if(session.blocks && session.blocks.length) return session.blocks;
+  return [{ exerciseId: TRAINING_SESSION_LEVEL_ID, reps:null, sets:null, notes:null, __sessionLevel:true }];
+}
+
+function computeDayAggregate(date){
+  const cal = getTrainingCalEntry(date);
+  if(!cal) return null;
+  const session = getTrainingSessionById(cal.sessionId);
+  if(!session) return null; // dangling — nothing to aggregate
+  const blocks = getTrainingLoggableBlocks(session);
+  const logs = getTrainingLogsForDate(date);
+  let completed = 0, diffSum = 0, diffCount = 0;
+  blocks.forEach(b=>{
+    const log = logs.find(l=> l.exerciseId===b.exerciseId);
+    if(log && log.completed) completed++;
+    if(log && log.difficulty!=null){ diffSum += log.difficulty; diffCount++; }
+  });
+  return { completed, total: blocks.length, avgDifficulty: diffCount ? Math.round((diffSum/diffCount)*10)/10 : null, session };
+}
+
+function getTrainingIntegrityIssues(){
+  const definedSessIds = new Set(state.training.sessions.map(s=>s.id));
+  const definedExIds = new Set(state.training.exercises.map(e=>e.id));
+  const missingSessIds = new Set();
+  const emptyMappedDates = [];
+  state.training.calendar.forEach(c=>{
+    if(!c.sessionId) emptyMappedDates.push(c.date);
+    else if(!definedSessIds.has(c.sessionId)) missingSessIds.add(c.sessionId);
+  });
+  const missingExIds = new Set();
+  state.training.sessions.forEach(s=> (s.blocks||[]).forEach(b=>{ if(b.exerciseId && !definedExIds.has(b.exerciseId)) missingExIds.add(b.exerciseId); }));
+  return { missingSessIds: [...missingSessIds], missingExIds: [...missingExIds], emptyMappedDates };
+}
+
+async function clearAllWrongTrainingMappings(){
+  const definedSessIds = new Set(state.training.sessions.map(s=>s.id));
+  const definedExIds = new Set(state.training.exercises.map(e=>e.id));
+
+  const badCalEntries = state.training.calendar.filter(c=> !c.sessionId || !definedSessIds.has(c.sessionId));
+  let danglingBlockCount = 0;
+  state.training.sessions.forEach(s=> (s.blocks||[]).forEach(b=>{ if(b.exerciseId && !definedExIds.has(b.exerciseId)) danglingBlockCount++; }));
+
+  if(!badCalEntries.length && !danglingBlockCount){
+    showToast('Nothing to clear — no wrong mappings found');
+    return;
+  }
+
+  const summaryLines = [
+    badCalEntries.length ? `${badCalEntries.length} calendar day(s) with a broken or empty session mapping` : null,
+    danglingBlockCount ? `${danglingBlockCount} exercise reference(s) inside sessions that don't exist in your library` : null,
+  ].filter(Boolean).join('\n');
+  if(!confirm(`Clear wrong mappings?\n\n${summaryLines}\n\nThis removes only the broken references — your sessions, exercises, and logged history are untouched. Continue?`)) return;
+
+  badCalEntries.forEach(c=> pendingTrainingDeletes.push({ table:'training_calendar', match:{ cal_date: c.date } }));
+  state.training.calendar = state.training.calendar.filter(c=> c.sessionId && definedSessIds.has(c.sessionId));
+
+  state.training.sessions.forEach(s=>{
+    if(s.blocks && s.blocks.length){
+      s.blocks = s.blocks.filter(b=> !b.exerciseId || definedExIds.has(b.exerciseId));
+    }
+  });
+
+  await saveTraining();
+  diagLogEvent('activity', 'Cleared wrong training mappings', { calDays: badCalEntries.length, exBlocks: danglingBlockCount });
+  renderMain();
+  showToast(`Cleared ${badCalEntries.length} day mapping(s) and ${danglingBlockCount} exercise reference(s)`);
+}
+
+function renderTrainingView(){
+  ensureTrainingViewDate();
+  if(!state.trainingSection) state.trainingSection = 'today';
+  const issues = getTrainingIntegrityIssues();
+  const hasIssues = issues.missingSessIds.length || issues.missingExIds.length || issues.emptyMappedDates.length;
+
+  const TRAINING_NAV = [
+    ['today','◐',"Today's Training"],
+    ['calendar','▦','Calendar View'],
+    ['history','≡','Log History'],
+    ['sessions','▤','Session Library'],
+    ['exercises','⛊','Exercise Library'],
+  ];
+  const sectionRenderers = {
+    today: renderTrainingToday,
+    calendar: renderTrainingCalendarSubpage,
+    history: renderTrainingHistorySubpage,
+    sessions: renderTrainingSessionsSubpage,
+    exercises: renderTrainingExercisesSubpage,
+  };
+  const active = sectionRenderers[state.trainingSection] ? state.trainingSection : 'today';
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Training</h1>
+        <div class="page-sub">${state.training.sessions.length} session${state.training.sessions.length===1?'':'s'} in library · ${state.training.calendar.length} day${state.training.calendar.length===1?'':'s'} planned</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn secondary sm" onclick="exportTrainingJson()">Export</button>
+        <button class="btn secondary sm" onclick="copyTrainingImportTemplate()">Copy Import Template</button>
+        <button class="btn secondary sm" onclick="copyTrainingImportPrompt()">Copy Prompt</button>
+        <button class="btn secondary sm" onclick="openTrainingPasteImportModal()">Paste &amp; Import</button>
+        <label class="btn brass sm" style="cursor:pointer;">
+          Import File
+          <input type="file" accept="application/json" style="display:none;" onchange="handleImportTrainingJson(event)">
+        </label>
+      </div>
+    </div>
+
+    ${hasIssues ? `
+      <div class="card" style="padding:14px 16px; margin-bottom:16px; border:1px solid var(--brass-deep);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+          <div>
+            <b style="color:var(--brass-deep);">⚠ This plan has wrong/dangling mappings</b>
+            <div class="page-sub" style="margin-top:6px; line-height:1.6;">
+              ${issues.missingSessIds.length ? `${issues.missingSessIds.length} calendar day(s) point to a session id not in your library: ${issues.missingSessIds.map(id=>`<code>${escapeHtml(id)}</code>`).join(', ')}.<br>` : ''}
+              ${issues.emptyMappedDates.length ? `${issues.emptyMappedDates.length} calendar day(s) have an empty session reference.<br>` : ''}
+              ${issues.missingExIds.length ? `${issues.missingExIds.length} exercise id(s) referenced by a session aren't in your library: ${issues.missingExIds.map(id=>`<code>${escapeHtml(id)}</code>`).join(', ')}.<br>` : ''}
+            </div>
+          </div>
+          <button class="btn brass sm" onclick="clearAllWrongTrainingMappings()">Clear Wrong Mappings</button>
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="settings-layout">
+      <div class="settings-nav">
+        ${TRAINING_NAV.map(([key,icon,label])=>`
+          <button class="settings-nav-item ${active===key?'active':''}" onclick="setTrainingSection('${key}')">
+            <span class="settings-nav-icon">${icon}</span>${label}
+          </button>
+        `).join('')}
+      </div>
+      <div class="settings-panel">
+        ${sectionRenderers[active]()}
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Subpage: Today's Training ---------- */
+function renderTrainingToday(){
+  const viewDate = state.trainingSelectedDate;
+  return `
+    <div class="filter-bar">
+      <button class="btn ghost sm" onclick="shiftTrainingDate(-1)">← Prev Day</button>
+      <input type="date" class="filter-date" value="${viewDate}" onchange="setTrainingViewDate(this.value)">
+      <button class="btn ghost sm" onclick="shiftTrainingDate(1)">Next Day →</button>
+      ${viewDate!==todayStr() ? `<button class="btn ghost sm" onclick="setTrainingViewDate('${todayStr()}')">↺ Jump to Today</button>` : ''}
+      <span class="page-sub" style="margin-left:auto;">${fullDate(viewDate)}</span>
+    </div>
+
+    ${renderTrainingDayCard(viewDate)}
+
+    <div class="section">
+      <div class="section-head"><h2>Upcoming</h2></div>
+      <div class="card" style="padding:4px 16px;">
+        ${renderTrainingUpcomingList(viewDate)}
+      </div>
+    </div>
+  `;
+}
+
+function renderTrainingUpcomingList(fromDate){
+  const rows = [];
+  for(let i=0;i<7;i++){
+    const d = addDays(fromDate, i);
+    const cal = getTrainingCalEntry(d);
+    const session = cal ? getTrainingSessionById(cal.sessionId) : null;
+    const agg = computeDayAggregate(d);
+    let label;
+    if(!cal) label = `<span class="page-sub">— unmapped —</span>`;
+    else if(!session) label = `<span class="page-sub" style="color:var(--brass-deep);">⚠ missing "${escapeHtml(cal.sessionId)}"</span>`;
+    else label = `<span class="page-sub">${escapeHtml(session.name)}</span>`;
+    rows.push(`<div class="metric-manage-row" style="cursor:pointer;" onclick="setTrainingViewDate('${d}')">
+      <span class="metric-manage-name">${humanDate(d)}${d===todayStr()?' <span class="ptr-locked">today</span>':''}</span>
+      ${label}
+      <span>${agg ? `${agg.completed}/${agg.total}` : ''}</span>
+    </div>`);
+  }
+  return rows.join('');
+}
+
+function renderTrainingExerciseLogRow(date, block, index){
+  const isSessionLevel = !!block.__sessionLevel;
+  const ex = isSessionLevel ? null : getTrainingExerciseById(block.exerciseId);
+  const log = getTrainingLogForExercise(date, block.exerciseId);
+  const reps = !isSessionLevel && block.reps ? String(block.reps) : '';
+  const sets = !isSessionLevel && block.sets ? `${block.sets} sets` : '';
+  const repsLine = [reps, sets].filter(Boolean).join(' · ');
+  const rowId = `trainEx_${index}`;
+  const title = isSessionLevel ? 'Log this session' : (ex ? ex.name : null);
+  return `
+    <div class="card" style="padding:12px 14px; margin-bottom:10px; background:var(--paper-dim);" data-exercise-id="${escapeHtml(block.exerciseId)}" data-row-id="${rowId}">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;">
+        <b>${title ? escapeHtml(title) : `⚠ missing exercise "${escapeHtml(block.exerciseId||'')}"`}</b>
+        ${repsLine ? `<span class="page-sub">${escapeHtml(repsLine)}</span>` : ''}
+      </div>
+      ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
+      ${!isSessionLevel && ex && ex.videoUrl ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Form guide</a>` : ''}
+      <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
+        <div class="toggle-switch ${log&&log.completed?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+        <div class="radio-pills" id="${rowId}_diff">
+          ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${log&&log.difficulty===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v})">${v}</button>`).join('')}
+        </div>
+      </div>
+      <textarea id="${rowId}_notes" rows="2" style="margin-top:8px;" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…">${escapeHtml(log&&log.notes?log.notes:'')}</textarea>
+    </div>
+  `;
+}
+function pickTrainingExDifficultyUI(rowId, val){
+  document.querySelectorAll(`#${rowId}_diff .radio-pill`).forEach(b=> b.classList.toggle('active', Number(b.dataset.val)===val));
+}
+
+function renderTrainingDayCard(date){
+  const cal = getTrainingCalEntry(date);
+  if(!cal){
+    return `<div class="card empty-state" style="margin-bottom:20px;"><span class="glyph">☺</span>No session mapped to ${humanDate(date)} yet. Import this month's plan to fill in the calendar.</div>`;
+  }
+  const session = getTrainingSessionById(cal.sessionId);
+  if(!session){
+    return `<div class="card empty-state" style="margin-bottom:20px; border:1px solid var(--brass-deep);">
+      <span class="glyph">⚠</span>${humanDate(date)} is mapped to session id <code>${escapeHtml(cal.sessionId)}</code>, but that session isn't in your library. Re-import including that session's full definition, or clear this day's mapping below.
+      <div style="margin-top:12px;"><button class="btn secondary sm" onclick="clearTrainingDayMapping('${date}')">Clear this day's mapping</button></div>
+    </div>`;
+  }
+  const blocks = getTrainingLoggableBlocks(session);
+  const agg = computeDayAggregate(date);
+  const typeColors = { strength:'var(--brass)', walk:'var(--teal)', rest:'var(--slate-light)' };
+  const typeColor = typeColors[session.type] || 'var(--slate)';
+  const hasLogs = getTrainingLogsForDate(date).length > 0;
+  return `
+    <div class="card" style="padding:18px; margin-bottom:20px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${typeColor};display:inline-block;"></span>
+        <h2 style="margin:0; font-family:var(--font-display);">${escapeHtml(session.name)}</h2>
+        ${agg ? `<span class="page-sub" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
+        <button class="icon-btn" title="Clear this day's mapping" onclick="clearTrainingDayMapping('${date}')">✕</button>
+      </div>
+      ${session.format ? `<div class="page-sub" style="margin-bottom:8px;">${escapeHtml(session.format)}</div>` : ''}
+
+      <div id="trainingExerciseRows">
+        ${blocks.map((b,i)=> renderTrainingExerciseLogRow(date, b, i)).join('')}
+      </div>
+
+      <div class="modal-actions" style="justify-content:flex-start; margin-top:4px;">
+        <button class="btn brass" onclick="saveTrainingDayLogs('${date}','${session.id}')">Save Today's Log</button>
+        ${hasLogs ? `<button class="btn secondary" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+async function saveTrainingDayLogs(date, sessionId){
+  const rowEls = document.querySelectorAll('#trainingExerciseRows [data-row-id]');
+  if(!rowEls.length){ showToast('Nothing to save'); return; }
+  let count = 0;
+  rowEls.forEach(rowEl=>{
+    const rowId = rowEl.dataset.rowId;
+    const exerciseId = rowEl.dataset.exerciseId;
+    const doneEl = document.getElementById(`${rowId}_done`);
+    const completed = doneEl ? doneEl.classList.contains('on') : false;
+    const diffEl = document.querySelector(`#${rowId}_diff .radio-pill.active`);
+    const difficulty = diffEl ? Number(diffEl.dataset.val) : null;
+    const notesEl = document.getElementById(`${rowId}_notes`);
+    const notes = notesEl ? notesEl.value.trim() : '';
+    let log = getTrainingLogForExercise(date, exerciseId);
+    if(!log){
+      log = { date, exerciseId, sessionId, completed:false, difficulty:null, notes:'', loggedAt:null };
+      state.training.logs.push(log);
+    }
+    log.sessionId = sessionId;
+    log.completed = completed;
+    log.difficulty = difficulty;
+    log.notes = notes;
+    log.loggedAt = new Date().toISOString();
+    count++;
+  });
+  await saveTraining();
+  diagLogEvent('activity', `Training log saved for ${date}`, { exercises: count });
+  renderMain();
+  showToast(`Saved log for ${count} exercise${count===1?'':'s'}`);
+}
+async function deleteTrainingExerciseLog(date, exerciseId){
+  const log = getTrainingLogForExercise(date, exerciseId);
+  if(!log) return;
+  if(!confirm(`Delete this log entry? This can't be undone.`)) return;
+  state.training.logs = state.training.logs.filter(l=> !(l.date===date && l.exerciseId===exerciseId));
+  pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:exerciseId } });
+  await saveTraining();
+  renderMain();
+  showToast('Log entry deleted');
+}
+async function deleteTrainingDayLogs(date){
+  const logs = getTrainingLogsForDate(date);
+  if(!logs.length) return;
+  if(!confirm(`Delete all ${logs.length} logged exercise${logs.length===1?'':'s'} for ${humanDate(date)}? This can't be undone.`)) return;
+  logs.forEach(l=> pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:l.exerciseId } }));
+  state.training.logs = state.training.logs.filter(l=>l.date!==date);
+  await saveTraining();
+  renderMain();
+  showToast('Logs deleted');
+}
+async function clearTrainingDayMapping(date){
+  const cal = getTrainingCalEntry(date);
+  if(!cal) return;
+  if(!confirm(`Remove the session mapped to ${humanDate(date)}? Any logs already saved for that day are kept.`)) return;
+  state.training.calendar = state.training.calendar.filter(c=>c.date!==date);
+  pendingTrainingDeletes.push({ table:'training_calendar', match:{ cal_date: date } });
+  await saveTraining();
+  renderMain();
+  showToast('Day cleared');
+}
+
+/* ---------- Subpage: Calendar View ---------- */
+function renderTrainingCalendarSubpage(){
+  if(!state.trainingCalMonthCursor){
+    const t = parseDate(todayStr());
+    state.trainingCalMonthCursor = { year: t.getFullYear(), month: t.getMonth() };
+  }
+  const { year, month } = state.trainingCalMonthCursor;
+  const firstOfMonth = new Date(year, month, 1);
+  const startDow = firstOfMonth.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const typeColors = { strength:'var(--brass)', walk:'var(--teal)', rest:'var(--slate-light)' };
+
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-cell empty"></div>`;
+  for(let day=1; day<=daysInMonth; day++){
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const cal = getTrainingCalEntry(dateStr);
+    const session = cal ? getTrainingSessionById(cal.sessionId) : null;
+    const isToday = dateStr === todayStr();
+    const dotColor = session ? (typeColors[session.type]||'var(--slate)') : (cal ? 'var(--brass-deep)' : null);
+    const agg = computeDayAggregate(dateStr);
+    cells += `
+      <div class="cal-cell ${isToday?'today':''}" onclick="toggleTrainingCalExpand('${dateStr}')">
+        <div class="cal-cell-top">
+          <span class="date-num">${day}</span>
+          ${dotColor ? `<span style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0;"></span>` : ''}
+        </div>
+        ${session ? `<div class="page-sub" style="font-size:9.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(session.name)}</div>`
+          : (cal ? `<div class="page-sub" style="font-size:9.5px; color:var(--brass-deep);">⚠ missing</div>` : '')}
+        ${agg ? `<div class="page-sub" style="font-size:9.5px;">${agg.completed}/${agg.total}</div>` : ''}
+      </div>`;
+  }
+
+  const expanded = state.trainingCalExpandedDate;
+
+  return `
+    <div class="card" style="padding:20px;">
+      <div class="cal-header">
+        <button class="btn secondary sm" onclick="shiftTrainingCalMonth(-1)">← Prev</button>
+        <h2>${MONTH_NAMES[month]} ${year}</h2>
+        <button class="btn secondary sm" onclick="shiftTrainingCalMonth(1)">Next →</button>
+        <button class="btn ghost sm" onclick="goToCurrentTrainingCalMonth()">Today</button>
+      </div>
+      <div class="cal-grid">
+        ${DOW_ABBR.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+    ${expanded ? `
+      <div class="section">
+        <div class="section-head"><h2>${humanDate(expanded)}</h2><button class="btn ghost sm" onclick="toggleTrainingCalExpand('${expanded}')">Close</button></div>
+        ${renderTrainingDayCard(expanded)}
+      </div>
+    ` : ''}
+  `;
+}
+function shiftTrainingCalMonth(delta){
+  let { year, month } = state.trainingCalMonthCursor;
+  month += delta;
+  if(month < 0){ month = 11; year--; }
+  if(month > 11){ month = 0; year++; }
+  state.trainingCalMonthCursor = { year, month };
+  renderMain();
+}
+function goToCurrentTrainingCalMonth(){
+  const t = parseDate(todayStr());
+  state.trainingCalMonthCursor = { year: t.getFullYear(), month: t.getMonth() };
+  renderMain();
+}
+function toggleTrainingCalExpand(date){
+  state.trainingCalExpandedDate = state.trainingCalExpandedDate === date ? null : date;
+  renderMain();
+}
+
+/* ---------- Subpage: Log History ---------- */
+function renderTrainingHistorySubpage(){
+  const dates = [...new Set(state.training.logs.map(l=>l.date))].sort((a,b)=> a<b?1:-1).slice(0,60);
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Log History</h2></div>
+      ${dates.length ? dates.map(date=>{
+        const agg = computeDayAggregate(date);
+        const cal = getTrainingCalEntry(date);
+        const session = cal ? getTrainingSessionById(cal.sessionId) : null;
+        const logs = getTrainingLogsForDate(date);
+        return `
+          <div class="card" style="padding:14px 18px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <b>${humanDate(date)}${session?` — ${escapeHtml(session.name)}`:''}</b>
+              <div style="display:flex; align-items:center; gap:10px;">
+                ${agg ? `<span class="page-sub">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg ${agg.avgDifficulty}`:''}</span>` : ''}
+                <button class="btn ghost sm" onclick="setTrainingViewDate('${date}'); setTrainingSection('today');">Open</button>
+                <button class="icon-btn" title="Delete all logs for this day" onclick="deleteTrainingDayLogs('${date}')">✕</button>
+              </div>
+            </div>
+            <table class="log-table" style="margin-top:8px;">
+              <thead><tr><th>Exercise</th><th>Completed</th><th>Difficulty</th><th>Notes</th><th></th></tr></thead>
+              <tbody>
+                ${logs.map(l=>{
+                  const isSessionLevel = l.exerciseId === TRAINING_SESSION_LEVEL_ID;
+                  const ex = !isSessionLevel ? getTrainingExerciseById(l.exerciseId) : null;
+                  const name = isSessionLevel ? (session?escapeHtml(session.name):'(session)') : (ex?escapeHtml(ex.name):`⚠ missing "${escapeHtml(l.exerciseId)}"`);
+                  return `<tr>
+                    <td>${name}</td>
+                    <td>${l.completed?'✓':'—'}</td>
+                    <td>${l.difficulty===null||l.difficulty===undefined?'—':l.difficulty}</td>
+                    <td style="max-width:240px; white-space:normal;">${escapeHtml(l.notes||'')}</td>
+                    <td><button class="icon-btn" title="Delete" onclick="deleteTrainingExerciseLog('${date}','${escapeHtml(l.exerciseId)}')">✕</button></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('') : `<div class="card empty-state"><span class="glyph">☺</span>No training logged yet.</div>`}
+    </div>
+  `;
+}
+
+/* ---------- Subpage: Session Library ---------- */
+function renderTrainingSessionsSubpage(){
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Session Library</h2></div>
+      <div class="card" style="padding:4px 16px;">
+        ${state.training.sessions.length ? state.training.sessions.map(s=>`
+          <div class="metric-manage-row">
+            <span class="metric-manage-name">${escapeHtml(s.name)} <span class="page-sub">(${escapeHtml(s.type||'strength')}${s.blocks&&s.blocks.length?`, ${s.blocks.length} exercise${s.blocks.length===1?'':'s'}`:''})</span></span>
+            <button class="icon-btn" title="Delete" onclick="deleteTrainingSession('${s.id}')">✕</button>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No sessions yet — import a plan to get started.</div>`}
+      </div>
+    </div>
+  `;
+}
+async function deleteTrainingSession(id){
+  const sess = state.training.sessions.find(s=>s.id===id);
+  if(!sess) return;
+  const usedDays = state.training.calendar.filter(c=>c.sessionId===id).length;
+  const msg = usedDays
+    ? `Delete "${sess.name}"? It's currently mapped to ${usedDays} calendar day(s) — those days will show as unmapped until you import a replacement.`
+    : `Delete "${sess.name}"?`;
+  if(!confirm(msg)) return;
+  state.training.sessions = state.training.sessions.filter(s=>s.id!==id);
+  pendingTrainingDeletes.push({ table:'training_sessions', match:{ id } });
+  await saveTraining();
+  renderMain();
+  showToast('Session deleted');
+}
+
+/* ---------- Subpage: Exercise Library (alphabetical) ---------- */
+function renderTrainingExercisesSubpage(){
+  const sorted = [...state.training.exercises].sort((a,b)=> a.name.localeCompare(b.name));
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Exercise Library</h2></div>
+      <div class="card" style="padding:4px 16px;">
+        ${sorted.length ? sorted.map(ex=>`
+          <div class="metric-manage-row">
+            <span class="metric-manage-name">${escapeHtml(ex.name)}</span>
+            ${ex.videoUrl ? `<a class="btn ghost sm" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Video</a>` : ''}
+            <button class="icon-btn" title="Delete" onclick="deleteTrainingExercise('${ex.id}')">✕</button>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No exercises yet.</div>`}
+      </div>
+    </div>
+  `;
+}
+async function deleteTrainingExercise(id){
+  const ex = state.training.exercises.find(e=>e.id===id);
+  if(!ex) return;
+  if(!confirm(`Delete "${ex.name}" from the exercise library? Sessions referencing it will show it as removed rather than breaking.`)) return;
+  state.training.exercises = state.training.exercises.filter(e=>e.id!==id);
+  pendingTrainingDeletes.push({ table:'training_exercises', match:{ id } });
+  await saveTraining();
+  renderMain();
+  showToast('Exercise deleted');
+}
+
+/* ---------- Training: export / import ---------- */
+function exportTrainingJson(){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    exercises: state.training.exercises,
+    sessions: state.training.sessions,
+    calendar: state.training.calendar,
+    logs: state.training.logs, // full history, now per-exercise — completed, difficulty, notes, and (by comparing against `calendar`) missed days
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calendaros-training-${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  diagLogEvent('activity', `Exported training data (${state.training.logs.length} logs)`);
+  showToast('Training data exported');
+}
+
+function copyTrainingImportTemplate(){
+  const template = {
+    exercises: [
+      { id: "ex_example_squat", name: "Bodyweight Squat", videoUrl: "https://www.youtube.com/watch?v=DlS-GAF8Edg", notes: "" }
+    ],
+    sessions: [
+      { id: "sess_example_fullbodyA", name: "Full Body A", type: "strength", format: "3 sets, 60-90s rest",
+        blocks: [ { exerciseId: "ex_example_squat", reps: "12", sets: 3, notes: "" } ] },
+      { id: "sess_example_walk", name: "Walk – 30 min, brisk", type: "walk", format: "", blocks: [] },
+      { id: "sess_example_rest", name: "Rest / light stretching", type: "rest", format: "", blocks: [] }
+    ],
+    calendar: [
+      { date: "2026-09-01", sessionId: "sess_example_fullbodyA" }
+    ]
+  };
+  const text =
+`// CalendarOS Training import template.
+// Hand this to the AI along with your latest Export (for progress/history
+// context) and ask it to fill in next month's exercises/sessions/calendar.
+//
+// Rules:
+// - "type" must be one of: strength | walk | rest
+// - exercises[].id / sessions[].id: reuse an existing id to UPDATE that item
+//   (e.g. refresh a video link); use a new unique id to ADD a new one.
+// - calendar[].date is YYYY-MM-DD, one entry per day. Importing a date
+//   that's already mapped REPLACES which session that day points to.
+// - Don't include a "logs" array — logging happens per-exercise in-app.
+// - Lines starting with // (like these) are stripped automatically before
+//   parsing, so it's safe to paste this whole block as-is.
+
+${JSON.stringify(template, null, 2)}`;
+  navigator.clipboard.writeText(text).then(()=> showToast('Import template copied')).catch(()=> showToast('Could not copy — select manually'));
+}
+
+function copyTrainingImportPrompt(){
+  const text =
+`You're generating a CalendarOS Training import — a JSON file that plans my workouts for a date range. Follow this exactly.
+
+=== WHAT TO PRODUCE ===
+A single JSON object with exactly these top-level keys: "exercises", "sessions", "calendar". No other keys — in particular, never include a "logs" key (that's my own per-exercise completion history, not something you generate).
+
+Schema:
+- exercises: [{ id, name, videoUrl, notes }]
+  A reusable library of individual movements.
+- sessions: [{ id, name, type, format, blocks }]
+  "type" must be exactly one of: strength | walk | rest
+  "format" is a short free-text line (e.g. "3 sets, 60-90s rest", or "" for walk/rest days)
+  "blocks" is an array of { exerciseId, reps, sets, notes } — one entry per exercise in that session, in order. Walk/rest sessions should have blocks: [].
+- calendar: [{ date, sessionId }]
+  One entry per calendar day I want mapped, date as YYYY-MM-DD. Importing a date that's already mapped REPLACES which session it points to.
+
+=== THE ONE RULE THAT MATTERS MOST ===
+Every exerciseId used anywhere in "sessions[].blocks[]" MUST have a matching entry in THIS import's "exercises" array — no exceptions. Every sessionId used in "calendar[]" MUST have a matching entry in THIS import's "sessions" array — no exceptions.
+
+Do NOT assume an exercise or session id already exists in the app "from a previous import" unless I have pasted you my current Export JSON in this same conversation and that exact id is genuinely present in it. If I haven't given you a current Export, or the id isn't in it, you must include the FULL definition for that id in this import — not just reference it. Guessing that something already exists is exactly how imports silently break.
+
+Before you output anything, self-check:
+1. List every distinct exerciseId referenced in sessions[].blocks[].
+2. Confirm each one has a matching id in this import's exercises[] (or in my pasted current Export's exercises).
+3. List every distinct sessionId referenced in calendar[].
+4. Confirm each one has a matching id in this import's sessions[] (or in my pasted current Export's sessions).
+5. If anything in steps 2 or 4 fails, add the missing definition — don't proceed with a dangling reference.
+
+=== WHAT TO BASE THE PLAN ON ===
+- My training plan document (attached/pasted separately) — its structure, exercise selection, rep/set ranges, progression logic, and the daily pelvic floor add-on if it's part of the plan.
+- My current Export (if I've provided one) — specifically the "logs" array, which is now per-exercise — to actually tailor the plan: where a specific exercise's difficulty was consistently low, progress it (more reps/sets, harder variation, or a note); where it was high or frequently un-logged, hold steady or back off. Carry forward anything useful written in a log's notes.
+- The exact date range I specify below — only generate calendar entries for that range.
+
+=== OUTPUT FORMAT ===
+- Valid JSON. You may prefix lines with // as comments (CalendarOS strips lines starting with // before parsing), but the JSON itself must parse cleanly once those lines are removed.
+- One single code block. Don't split it or add prose in between.
+- Keep ids stable across months for anything unchanged — only mint a new id when the exercise or session content actually changes.
+
+=== MY INPUTS ===
+Date range for this import: [FILL IN — e.g. "September 1–30, 2026"]
+Training plan document: [ATTACH OR PASTE IT]
+Current Export (recommended — paste the JSON from the Training page's "Export" button, or state "this is my first import, nothing exists yet" if true):
+[PASTE CURRENT EXPORT JSON HERE, OR NOTE THAT THE LIBRARY IS EMPTY]
+
+Any changes vs last month (optional): [e.g. "increase difficulty on Upper Body," "I missed most walk days on night shifts, keep those easier"]`;
+  navigator.clipboard.writeText(text).then(()=> showToast('Prompt copied')).catch(()=> showToast('Could not copy — select manually'));
+}
+
+function stripJsonComments(text){
+  return text.split('\n').filter(line => !line.trim().startsWith('//')).join('\n');
+}
+
+function processTrainingImportText(text){
+  let data;
+  try{
+    data = JSON.parse(stripJsonComments(text));
+  } catch(e){
+    showToast('⚠ Could not parse that JSON — check for a syntax error');
+    return;
+  }
+  const plan = { newEx:[], updEx:[], newSess:[], updSess:[], newCal:[], updCal:[], skipped:0 };
+
+  (Array.isArray(data.exercises)?data.exercises:[]).forEach(ex=>{
+    if(!ex || !ex.name){ plan.skipped++; return; }
+    const id = (ex.id||'').trim();
+    const existing = id ? state.training.exercises.find(e=>e.id===id) : null;
+    const fields = { name: ex.name, videoUrl: ex.videoUrl||'', notes: ex.notes||'' };
+    if(existing) plan.updEx.push({ existing, fields });
+    else plan.newEx.push(Object.assign({ id: id || newId('ex') }, fields));
+  });
+
+  (Array.isArray(data.sessions)?data.sessions:[]).forEach(sess=>{
+    if(!sess || !sess.name){ plan.skipped++; return; }
+    const id = (sess.id||'').trim();
+    const existing = id ? state.training.sessions.find(s=>s.id===id) : null;
+    const fields = { name: sess.name, type: sess.type||'strength', format: sess.format||'', color: sess.color||null, blocks: Array.isArray(sess.blocks)?sess.blocks:[] };
+    if(existing) plan.updSess.push({ existing, fields });
+    else plan.newSess.push(Object.assign({ id: id || newId('sess') }, fields));
+  });
+
+  (Array.isArray(data.calendar)?data.calendar:[]).forEach(c=>{
+    if(!c || !c.date || !c.sessionId){ plan.skipped++; return; }
+    const existing = state.training.calendar.find(x=>x.date===c.date);
+    if(existing) plan.updCal.push({ existing, sessionId: c.sessionId });
+    else plan.newCal.push({ date: c.date, sessionId: c.sessionId });
+  });
+
+  const summary = `Exercises — new: ${plan.newEx.length}, updated: ${plan.updEx.length}\n` +
+    `Sessions — new: ${plan.newSess.length}, updated: ${plan.updSess.length}\n` +
+    `Calendar days — new: ${plan.newCal.length}, remapped: ${plan.updCal.length}` +
+    (plan.skipped ? `\nSkipped (missing required fields): ${plan.skipped}` : '');
+  if(!confirm(`Import this training plan?\n\n${summary}\n\nApply these changes?`)) return;
+
+  plan.newEx.forEach(e=> state.training.exercises.push(e));
+  plan.updEx.forEach(({existing, fields})=> Object.assign(existing, fields));
+  plan.newSess.forEach(s=> state.training.sessions.push(s));
+  plan.updSess.forEach(({existing, fields})=> Object.assign(existing, fields));
+  plan.newCal.forEach(c=> state.training.calendar.push(c));
+  plan.updCal.forEach(({existing, sessionId})=> { existing.sessionId = sessionId; });
+
+  saveTraining();
+  diagLogEvent('activity', 'Imported training plan', {
+    newEx:plan.newEx.length, updEx:plan.updEx.length, newSess:plan.newSess.length,
+    updSess:plan.updSess.length, newCal:plan.newCal.length, updCal:plan.updCal.length,
+  });
+  renderMain();
+  showToast(`Imported: ${plan.newEx.length+plan.updEx.length} exercises, ${plan.newSess.length+plan.updSess.length} sessions, ${plan.newCal.length+plan.updCal.length} calendar days`);
+}
+
+function handleImportTrainingJson(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    event.target.value = '';
+    processTrainingImportText(e.target.result);
+  };
+  reader.readAsText(file);
+}
+
+function openTrainingPasteImportModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'trainingPasteOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Paste Training Plan JSON</h3>
+      <div class="modal-sub">Paste the JSON your AI generated from the import template. Nothing is applied until you confirm on the next step.</div>
+      <div class="field">
+        <textarea id="trainingPasteText" rows="14" style="font-family:monospace; font-size:12px;" placeholder='{ "exercises": [...], "sessions": [...], "calendar": [...] }'></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('trainingPasteOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitTrainingPasteImport()">Preview &amp; Import</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function submitTrainingPasteImport(){
+  const textEl = document.getElementById('trainingPasteText');
+  const text = textEl ? textEl.value : '';
+  if(!text.trim()){ showToast('Paste some JSON first'); return; }
+  processTrainingImportText(text);
+  const overlay = document.getElementById('trainingPasteOverlay');
+  if(overlay) overlay.remove();
+}
+
+
+/* =========================================================
    RENDER: SETTINGS VIEW
    ========================================================= */
 if(!state.settingsSection) state.settingsSection = 'general';
@@ -3466,7 +4944,8 @@ function renderSettingsView(){
     ['pages','⧉','Page Visibility'],
     ['sync','☁','Cloud Sync'],
     ['backup','⇅','Backup'],
-    ['diagnostics','🩺','Diagnostics'],
+    ['diagnostics','🩺','Activity & Error Log'],
+    ['changelog','📜','Change Log'],
     ['security','🔒','Security'],
     ['about','ℹ','About'],
   ];
@@ -3477,6 +4956,7 @@ function renderSettingsView(){
     sync: renderSettingsSync,
     backup: renderSettingsBackup,
     diagnostics: renderSettingsDiagnostics,
+    changelog: renderSettingsChangelog,
     security: renderSettingsSecurity,
     about: renderSettingsAbout,
   };
@@ -3678,6 +5158,26 @@ create table if not exists app_settings (
   pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
   last_active_date date
 );
+create table if not exists training_exercises (
+  pin text not null, id text not null, name text not null,
+  video_url text, notes text, updated_at timestamptz default now(),
+  primary key (pin, id)
+);
+create table if not exists training_sessions (
+  pin text not null, id text not null, name text not null,
+  type text default 'strength', format text, color text,
+  blocks jsonb default '[]', updated_at timestamptz default now(),
+  primary key (pin, id)
+);
+create table if not exists training_calendar (
+  pin text not null, cal_date date not null, session_id text,
+  primary key (pin, cal_date)
+);
+create table if not exists training_logs (
+  pin text not null, log_date date not null, exercise_id text not null default '__session__',
+  session_id text, completed boolean default false, difficulty int, notes text, logged_at timestamptz,
+  primary key (pin, log_date, exercise_id)
+);
 
 -- Already had these tables from an earlier version? Run these lines instead —
 -- they only ADD new tables/columns, nothing existing is touched or deleted:
@@ -3690,10 +5190,21 @@ alter table health_logs add column if not exists custom_metrics jsonb default '{
 alter table health_metric_defs add column if not exists core boolean default false;
 alter table health_metric_defs add column if not exists visible boolean default true;
 
+-- BREAKING CHANGE (v3.0.0): training_logs moved from one row per DAY to one
+-- row per EXERCISE per day, so it needs an exercise_id column as part of its
+-- key. This clears existing training_logs rows — nothing else is touched.
+-- Only run this if you have training_logs from before v3.0.0 (harmless / a
+-- no-op if you don't, or if you already ran it):
+delete from training_logs;
+alter table training_logs add column if not exists exercise_id text not null default '__session__';
+alter table training_logs drop constraint if exists training_logs_pkey;
+alter table training_logs add primary key (pin, log_date, exercise_id);
+
 do $$
 declare t text;
 begin
-  for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'])
+  for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings',
+                                'training_exercises','training_sessions','training_calendar','training_logs'])
   loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists "allow anon all" on %I;', t);
@@ -3852,12 +5363,34 @@ function renderSettingsPages(){
 
 function renderSettingsDiagnostics(){
   const recent = diagLog.slice(-15).reverse();
+  const errHistory = (state.syncErrorHistory||[]).slice().reverse();
   return `
+    <div class="section">
+      <div class="section-head"><h2>Sync Error History</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:12px;">
+          The log below resets every time the app reloads — genuinely useful for "what's happening right now," but useless for diagnosing something that already happened and healed itself before you thought to grab it. This section is different: a small, separate record of only sync FAILURES (last ${MAX_SYNC_ERROR_HISTORY}), local-only, that survives reloads and isn't cleared by a later successful sync. If something goes wrong and then seems to fix itself, this is where the evidence actually is.
+        </div>
+        ${errHistory.length ? `
+          <div class="diag-log-preview">
+            ${errHistory.map(e=>`
+              <div class="diag-log-row">
+                <span class="diag-log-time">${new Date(e.t).toLocaleString()}</span>
+                <span class="diag-log-cat">${escapeHtml(e.source)}</span>
+                <span class="diag-log-msg">${escapeHtml(e.message)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn secondary sm" style="margin-top:10px;" onclick="if(confirm('Clear the persisted sync error history? This cannot be undone.')) clearSyncErrorHistory();">Clear History</button>
+        ` : `<div class="page-sub">No sync failures recorded since this was added — good sign, or nothing's failed yet.</div>`}
+      </div>
+    </div>
+
     <div class="section">
       <div class="section-head"><h2>Sync &amp; Storage Diagnostics</h2></div>
       <div class="card" style="padding:16px;">
         <div class="page-sub" style="margin-bottom:12px;">
-          A running log of every sync attempt, local save, and Supabase call this session — timestamps and real error messages included. If something goes wrong, copy this and share it directly instead of describing what happened; it's much faster to diagnose from the actual log.
+          A running log of every sync attempt, local save, and Supabase call this session — timestamps and real error messages included. If something goes wrong, copy this and share it directly instead of describing what happened; it's much faster to diagnose from the actual log. (Copy/Download below include the Sync Error History above too.)
         </div>
         <div style="display:flex; gap:8px; margin-bottom:14px;">
           <button class="btn brass sm" onclick="copyDiagLog()">Copy Log</button>
@@ -4001,6 +5534,23 @@ function handleImportFile(event){
     render();
   };
   reader.readAsText(file);
+}
+
+function renderSettingsChangelog(){
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Change Log</h2></div>
+      <div class="page-sub" style="margin-bottom:14px;">Every shipped update, newest first.</div>
+      ${CHANGELOG.map(entry=>`
+        <div class="card changelog-entry">
+          <div class="changelog-version">v${entry.v}</div>
+          <ul class="changelog-list">
+            ${entry.changes.map(c=>`<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderSettingsAbout(){
@@ -4469,6 +6019,7 @@ async function saveTaskModal(){
     }
   }
   await saveTasks();
+  diagLogEvent('activity', `${modalEditingId?'Edited':'Created'} ${modalKind} task "${name}"`, { id: modalEditingId||'(new)' });
   closeModal();
   renderMain();
   showToast(modalEditingId ? 'Task updated' : 'Task created');
