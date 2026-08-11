@@ -258,14 +258,20 @@ a{color:inherit;}
   flex:1;
   min-width:0;
   padding:28px 36px 80px;
-  max-width:1180px;
+  max-width:min(1800px, 92vw); /* was a flat 1180px regardless of screen size — didn't actually scale with a large display */
   background: var(--page-gradient);
+  transition:margin-right 0.28s cubic-bezier(.32,.72,0,1);
 }
 .main.cw-compact{max-width:980px;}
 .main.cw-standard{max-width:1240px;}
 .main.cw-wide{max-width:1600px;}
 .main.cw-xwide{max-width:1920px;}
 .main.cw-full{max-width:none;}
+/* When a list is pinned open in the floating right panel, push the main
+   content area's right edge left so its text/columns never sit behind the
+   panel. :has() reacts automatically whenever #pinnedListPanel gains/loses
+   its "open" class — no extra JS state needed. */
+.main:has(+ #pinnedListPanel.open){margin-right:360px; max-width:min(1440px, 88vw);}
 
 .topbar{
   display:flex;
@@ -1309,7 +1315,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.2.0';
+const APP_VERSION = '4.3.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1317,6 +1323,12 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.3.0', changes: [
+    'Fixed: pinning/unpinning a list from the Lists page itself didn\'t visually update the pin button until navigating elsewhere — the toggle was only re-rendering the floating panel, not the page you were actually looking at.',
+    'When a list is pinned open, the main content area now automatically narrows (and gets a right margin) so text can never sit behind the floating panel, on any page — reacts live via CSS, no extra clicking needed.',
+    'Fixed "Automatic" content width: it was actually a flat 1180px cap regardless of screen size, not real automatic sizing. Now scales with the viewport (up to a generous cap) so a large display isn\'t wasted.',
+    'Lists can now be renamed (✎ button next to the title).',
+  ]},
   { v:'4.2.0', changes: [
     'Fixed a real bug: list items with long enough text to wrap onto a second line overlapped the row below it and became unreadable. Root cause — the row had a hardcoded 35px height matching the ruled-paper background instead of growing with its content. Fixed by giving item text the same 35px line-height as the ruled paper itself, so a wrapped line lands exactly on the next rule automatically, with the checkbox/drag-handle/delete button now anchored to the first line specifically rather than the full (possibly taller) row.',
     'Fixed the "No items yet" empty-state message sitting to the left of the notebook\'s red margin line instead of aligned with real item text — it wasn\'t a direct child of the element the alignment CSS targeted, so it never got the same indent.',
@@ -3430,12 +3442,12 @@ function renderMain(){
 function togglePinList(listId){
   state.settings.pinnedListId = state.settings.pinnedListId === listId ? null : listId;
   saveSettings();
-  renderPinnedPanel();
+  renderMain(); // re-renders the current page too (e.g. the pin button's active state on the Lists page itself), not just the floating panel
 }
 function unpinList(){
   state.settings.pinnedListId = null;
   saveSettings();
-  renderPinnedPanel();
+  renderMain();
 }
 function renderPinnedPanel(){
   const el = document.getElementById('pinnedListPanel');
@@ -4453,6 +4465,7 @@ function renderNotebookPage(list){
     <div class="notebook-header">
       <h3>${escapeHtml(list.title)}</h3>
       <span style="display:flex; gap:6px; align-items:center;">
+        <button class="icon-btn" title="Rename list" onclick="renameList('${list.id}')">✎</button>
         ${folders.length ? `
           <select onchange="setListFolder('${list.id}', this.value)" style="font-size:11.5px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink);">
             <option value="" ${!list.folder?'selected':''}>No folder</option>
@@ -4691,6 +4704,19 @@ async function setListFolder(listId, folder){
   list.folder = folder || null;
   await saveLists();
   renderMain();
+}
+async function renameList(listId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  const newTitle = prompt('Rename list:', list.title);
+  if(newTitle === null) return; // cancelled
+  const trimmed = newTitle.trim();
+  if(!trimmed || trimmed === list.title) return;
+  list.title = trimmed;
+  diagLogEvent('activity', `Renamed list to "${trimmed}"`, { listId });
+  await saveLists();
+  renderMain();
+  showToast('List renamed');
 }
 
 /* =========================================================
