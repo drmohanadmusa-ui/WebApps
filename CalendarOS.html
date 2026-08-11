@@ -15,12 +15,12 @@
 <style>
 /* ============ DESIGN TOKENS ============ */
 :root{
-  --ink:#181C22;
-  --ink-soft:#2B313B;
-  --paper:#F7F4EC;
-  --paper-raised:#FFFFFF;
-  --paper-dim:#EDE9DD;
-  --line:#DCD6C4;
+  --ink:#3A2A1D;
+  --ink-soft:#8A7461;
+  --paper:#F7EEDF;
+  --paper-raised:#FFFCF8;
+  --paper-dim:#FBF3E9;
+  --line:rgba(107,66,38,0.12);
   --brass:#B9862F;
   --brass-deep:#8E661F;
   --teal:#3C7A73;
@@ -30,16 +30,85 @@
   --slate:#6B7280;
   --slate-light:#9CA3AF;
   --gold-stamp:#C8963E;
+  --accent-soft:#F0D9BE;
 
-  --font-display:'Fraunces', serif;
+  --font-display:'Inter', sans-serif;
   --font-body:'Inter', sans-serif;
   --font-mono:'IBM Plex Mono', monospace;
 
   --radius-s:6px;
   --radius-m:10px;
   --radius-l:16px;
+  --shadow-card: 0 6px 18px rgba(107,66,38,0.08), 0 1px 3px rgba(107,66,38,0.05);
+  --shadow-tile: 0 8px 24px rgba(107,66,38,0.09), 0 2px 6px rgba(107,66,38,0.06);
+  --shadow-pop: 0 16px 40px rgba(107,66,34,0.16), 0 4px 10px rgba(107,66,38,0.09);
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #E7B98A 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #DCEBE8 0%, transparent 70%),
+    linear-gradient(160deg, #FBF0DF 0%, #F3DCC0 60%, #ECC79C 100%);
+}
+
+/* ---------- Alternate color themes ---------- */
+/* Same token names, different values — every page re-themes automatically
+   since the whole stylesheet already reads from these variables (this is
+   the same mechanism dark mode already used). Font stays sans-serif in
+   every theme — that was a separate, explicit decision, not tied to color. */
+body[data-theme="classic"]{
+  --ink:#181C22; --ink-soft:#2B313B; --paper:#F7F4EC; --paper-raised:#FFFFFF; --paper-dim:#EDE9DD;
+  --line:#DCD6C4; --teal-soft:#E4EEEC; --accent-soft:#F0D9BE;
   --shadow-card: 0 1px 2px rgba(24,28,34,0.06), 0 1px 1px rgba(24,28,34,0.04);
-  --shadow-pop: 0 12px 32px rgba(24,28,34,0.18);
+  --shadow-tile: 0 3px 8px rgba(24,28,34,0.09), 0 1px 3px rgba(24,28,34,0.06);
+  --page-gradient: var(--paper);
+}
+body[data-theme="ocean"]{
+  --ink:#1E2A38; --ink-soft:#5E7889; --paper:#EAF2F5; --paper-raised:#FFFFFF; --paper-dim:#F1F7F9;
+  --line:rgba(30,66,90,0.12); --brass:#2E7BA6; --brass-deep:#215A7A; --teal:#2C7A6E; --teal-soft:#DCEEEA;
+  --flag:#C15B4A; --flag-soft:#F6E1DC; --accent-soft:#CFE6F0;
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #A9CFE0 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #CFE9E3 0%, transparent 70%),
+    linear-gradient(160deg, #F3F9FB 0%, #E1EFF3 60%, #CDE3EC 100%);
+}
+body[data-theme="sage"]{
+  --ink:#2B3324; --ink-soft:#6E7A5F; --paper:#F0F3E7; --paper-raised:#FFFDF8; --paper-dim:#F4F6EC;
+  --line:rgba(59,74,42,0.12); --brass:#7A8F4A; --brass-deep:#5C6C37; --teal:#3E7A72; --teal-soft:#DEEBE6;
+  --flag:#B5583E; --flag-soft:#F1DFD5; --accent-soft:#E1E9C9;
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #C3D19B 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #D8E8DC 0%, transparent 70%),
+    linear-gradient(160deg, #F6F8ED 0%, #ECF1DD 60%, #DEE8C6 100%);
+}
+/* Cool/muted — slate, stone, a touch of lavender */
+body[data-theme="slate"]{
+  --ink:#262B33; --ink-soft:#646F80; --paper:#EEF0F3; --paper-raised:#FFFFFF; --paper-dim:#F4F5F8;
+  --line:rgba(38,43,51,0.12); --brass:#5C6A8C; --brass-deep:#454F6B; --teal:#4C7A8C; --teal-soft:#DEEAEE;
+  --flag:#8C6A9E; --flag-soft:#EBE1F0; --accent-soft:#DCE1EC;
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #B7C0D6 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #D6C9E6 0%, transparent 70%),
+    linear-gradient(160deg, #F5F6F9 0%, #EEF0F3 60%, #DDE1EA 100%);
+}
+/* Bold/vibrant — warm coral and hot pink energy */
+body[data-theme="coral"]{
+  --ink:#3A1F22; --ink-soft:#8C5A5F; --paper:#FFF1EC; --paper-raised:#FFFFFF; --paper-dim:#FFE7DE;
+  --line:rgba(214,64,69,0.14); --brass:#E8552F; --brass-deep:#BF3D1B; --teal:#2E9E8C; --teal-soft:#DBF2ED;
+  --flag:#D6284F; --flag-soft:#FBDCE3; --accent-soft:#FFD9C7;
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #FFB199 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #FFC2D9 0%, transparent 70%),
+    linear-gradient(160deg, #FFF6F2 0%, #FFE7DE 60%, #FFCBB5 100%);
+}
+/* Dark & moody — deep navy/plum, works as its own aesthetic in light mode too */
+body[data-theme="midnight"]{
+  --ink:#E6E4F0; --ink-soft:#9E9BC2; --paper:#161327; --paper-raised:#1F1B37; --paper-dim:#1B1830;
+  --line:rgba(230,228,240,0.10); --brass:#9A7FE0; --brass-deep:#7A5FC0; --teal:#4FA6A0; --teal-soft:#20343A;
+  --flag:#E0668A; --flag-soft:#3A222E; --accent-soft:#2A2450;
+  --shadow-card: 0 6px 18px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.25);
+  --shadow-tile: 0 8px 24px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #2E2360 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #1E3A3A 0%, transparent 70%),
+    linear-gradient(160deg, #171430 0%, #161327 60%, #100E1F 100%);
 }
 
 *{box-sizing:border-box;}
@@ -109,7 +178,7 @@ a{color:inherit;}
 .nav{
   display:flex;
   flex-direction:column;
-  gap:2px;
+  gap:3px;
   margin-top:6px;
 }
 .nav-item{
@@ -124,11 +193,25 @@ a{color:inherit;}
   text-align:left;
   font-size:13.5px;
   font-weight:500;
-  transition:background .12s ease, color .12s ease;
+  position:relative;
+  transition:background .18s ease, color .18s ease, transform .18s ease, padding-left .18s ease;
+  opacity:0; animation: navItemIn 0.32s ease forwards;
 }
-.nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
-.nav-item.active{background:var(--brass); color:#1a1408;}
-.nav-item .nav-icon{width:16px; text-align:center; font-size:14px; opacity:.9;}
+.nav-item:nth-child(1){animation-delay:0.02s;}
+.nav-item:nth-child(2){animation-delay:0.05s;}
+.nav-item:nth-child(3){animation-delay:0.08s;}
+.nav-item:nth-child(4){animation-delay:0.11s;}
+.nav-item:nth-child(5){animation-delay:0.14s;}
+.nav-item:nth-child(6){animation-delay:0.17s;}
+.nav-item:nth-child(7){animation-delay:0.20s;}
+.nav-item:nth-child(8){animation-delay:0.23s;}
+.nav-item:nth-child(9){animation-delay:0.26s;}
+@keyframes navItemIn{ from{ opacity:0; transform:translateX(-8px); } to{ opacity:1; transform:translateX(0); } }
+.nav-item:hover{background:rgba(255,255,255,0.07); color:#fff; padding-left:14px;}
+.nav-item:hover .nav-icon{transform:scale(1.15);}
+.nav-item.active{background:var(--brass); color:#1a1408; box-shadow:0 4px 14px color-mix(in srgb, var(--brass) 35%, transparent);}
+.nav-item.active .nav-icon{transform:scale(1.05);}
+.nav-item .nav-icon{width:16px; text-align:center; font-size:14px; opacity:.9; display:inline-block; transition:transform .18s ease;}
 .nav-count{
   margin-left:auto;
   font-family:var(--font-mono);
@@ -176,7 +259,13 @@ a{color:inherit;}
   min-width:0;
   padding:28px 36px 80px;
   max-width:1180px;
+  background: var(--page-gradient);
 }
+.main.cw-compact{max-width:980px;}
+.main.cw-standard{max-width:1240px;}
+.main.cw-wide{max-width:1600px;}
+.main.cw-xwide{max-width:1920px;}
+.main.cw-full{max-width:none;}
 
 .topbar{
   display:flex;
@@ -418,6 +507,7 @@ body.dark-mode .ticket.missed{background:linear-gradient(90deg, rgba(232,201,160
   border:1px solid var(--line);
   border-radius:var(--radius-m);
   padding:14px 16px;
+  box-shadow:var(--shadow-tile);
 }
 .stat-num{font-family:var(--font-display); font-size:26px; font-weight:600; line-height:1;}
 .stat-missed{font-family:var(--font-mono); font-size:12px; font-weight:600; color:#C9832E; vertical-align:middle;}
@@ -430,6 +520,54 @@ body.dark-mode .ticket.missed{background:linear-gradient(90deg, rgba(232,201,160
 .filter-bar{
   display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;
 }
+.quick-add-row{
+  display:flex; align-items:center; gap:10px; background:var(--paper-raised); border:1px solid var(--line);
+  border-radius:var(--radius-m); padding:11px 16px; margin-bottom:16px;
+}
+.quick-add-plus{color:var(--slate-light); font-size:15px; flex-shrink:0;}
+.quick-add-row input{flex:1; border:none; background:transparent; font-size:13.5px; color:var(--ink); font-family:inherit;}
+.quick-add-row input:focus{outline:none;}
+
+.cmd-palette{
+  width:560px; max-width:92vw; background:var(--paper-raised); border-radius:12px; border:1px solid var(--line);
+  box-shadow:0 12px 32px rgba(24,28,34,0.18), 0 4px 12px rgba(24,28,34,0.10);
+  overflow:hidden;
+  animation: cmdPaletteIn 0.18s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes cmdPaletteIn{
+  from{ opacity:0; transform: translateY(-10px) scale(0.97); }
+  to{ opacity:1; transform: translateY(0) scale(1); }
+}
+.modal-overlay.cmd-overlay{align-items:flex-start; padding-top:10vh; animation: cmdOverlayIn 0.15s ease;}
+@keyframes cmdOverlayIn{ from{ background:rgba(24,28,34,0); } to{ background:rgba(24,28,34,0.45); } }
+.cmd-palette-input{
+  width:100%; box-sizing:border-box; border:none; border-bottom:1px solid var(--line);
+  padding:16px 18px; font-size:15px; background:transparent; color:var(--ink); font-family:inherit;
+}
+.cmd-palette-input:focus{outline:none;}
+.cmd-palette-results{max-height:340px; overflow-y:auto; padding:6px 0;}
+.cmd-palette-item{
+  display:flex; align-items:center; gap:10px; padding:9px 18px; cursor:pointer; font-size:13.5px;
+  opacity:0; animation: cmdItemIn 0.16s ease forwards;
+}
+.cmd-palette-item:nth-child(1){animation-delay:0.01s;}
+.cmd-palette-item:nth-child(2){animation-delay:0.03s;}
+.cmd-palette-item:nth-child(3){animation-delay:0.05s;}
+.cmd-palette-item:nth-child(4){animation-delay:0.07s;}
+.cmd-palette-item:nth-child(5){animation-delay:0.09s;}
+.cmd-palette-item:nth-child(n+6){animation-delay:0.11s;}
+@keyframes cmdItemIn{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:translateY(0); } }
+.cmd-palette-item.active, .cmd-palette-item:hover{background:var(--paper-dim);}
+.cmd-palette-icon{width:18px; text-align:center; color:var(--slate);}
+.cmd-palette-label{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.cmd-palette-sub{font-family:var(--font-mono); font-size:10px; color:var(--slate-light); text-transform:uppercase; letter-spacing:0.03em; flex-shrink:0;}
+
+@keyframes checkPop{
+  0%{transform:scale(0.55); opacity:0.35;}
+  55%{transform:scale(1.2);}
+  100%{transform:scale(1); opacity:1;}
+}
+.tick-btn.pop, .li-check.pop{animation:checkPop 0.32s cubic-bezier(.34,1.56,.64,1);}
 .chip-select{
   display:flex; background:var(--paper-dim); border-radius:999px; padding:3px; gap:2px;
 }
@@ -533,8 +671,12 @@ select.filter-select, input.filter-date{
 /* ============ LISTS VIEW ============ */
 .lists-layout{display:flex; gap:20px; align-items:flex-start;}
 .lists-toc{
-  width:300px; flex-shrink:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
-  overflow:hidden; box-shadow:var(--shadow-card);
+  width:300px; flex-shrink:0;
+  display:flex; flex-direction:column; gap:16px;
+}
+.lists-toc-folder-card{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+  overflow:hidden; box-shadow:var(--shadow-tile);
 }
 .lists-toc-item{
   display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%;
@@ -546,6 +688,10 @@ select.filter-select, input.filter-date{
 .lists-toc-item.active{background:var(--brass); color:#fff; font-weight:600;}
 .lists-toc-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .lists-toc-count{font-family:var(--font-mono); font-size:10.5px; opacity:.7; flex-shrink:0;}
+.lists-toc-folder-header{
+  padding:12px 16px 6px; font-size:10.5px; font-weight:600; text-transform:uppercase;
+  letter-spacing:0.04em; color:var(--slate-light);
+}
 
 .notebook-page{
   flex:1; min-width:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
@@ -555,29 +701,87 @@ select.filter-select, input.filter-date{
 }
 body.dark-mode .notebook-page{background-image:repeating-linear-gradient(to bottom, transparent, transparent 34px, rgba(255,255,255,0.04) 35px);}
 .notebook-page::before{
-  content:''; position:absolute; top:0; bottom:0; left:64px; width:1px; background:var(--flag-soft);
+  content:''; position:absolute; top:0; bottom:0; left:64px; width:1px; background:var(--flag); opacity:0.55;
 }
-.notebook-header{display:flex; align-items:center; justify-content:space-between; padding-left:80px;}
+.notebook-header{display:flex; align-items:center; justify-content:space-between; padding-left:52px;}
 .notebook-header h3{font-family:var(--font-display); font-size:20px; margin:0;}
-.notebook-page > .page-sub{padding-left:80px;}
-.notebook-lines{padding-left:38px;}
-.notebook-line{display:flex; align-items:center; gap:16px; font-size:13.5px; height:35px;}
+.notebook-page > .page-sub{padding-left:52px;}
+.notebook-lines{padding-left:12px;}
+/* align-items:flex-start (not center) plus line-height:35px on .li-text
+   (below) means a wrapped second/third line automatically lands on the
+   next ruled-paper line, since the ruled background repeats every 35px too
+   — no JS measurement needed. Controls that sit beside the text (checkbox,
+   drag handle, delete) get a small top offset instead, so they stay
+   centered on the FIRST line rather than the full (possibly taller) row. */
+.notebook-line{display:flex; align-items:flex-start; gap:16px; font-size:13.5px; min-height:35px; position:relative;}
+.notebook-line.add-line{align-items:center;} /* single-line row, no wrapping — keep the old centered feel */
+.notebook-line.dragging{opacity:0.4;}
+.drag-handle-sm{
+  position:absolute; left:-15px; top:17px; transform:translateY(-50%);
+  font-size:12px; color:var(--slate-light); cursor:grab; opacity:0; transition:opacity .15s;
+}
+.notebook-line:hover .drag-handle-sm{opacity:0.6;}
+@keyframes rowSettle{
+  0%{transform:translateY(-6px); opacity:0.4;}
+  100%{transform:translateY(0); opacity:1;}
+}
+.notebook-line.settle{animation:rowSettle 0.22s ease-out;}
 .notebook-line .li-check{
   width:16px; height:16px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;
 }
+.notebook-line:not(.add-line) .li-check{margin-top:9px;}
 .notebook-line .li-check.checked{background:var(--teal); border-color:var(--teal);}
 .notebook-line.done .li-text{text-decoration:line-through; color:var(--slate-light);}
 .notebook-line.add-line input{
   flex:1; border:none; background:transparent; font-size:13.5px; color:var(--ink); font-family:inherit;
 }
-.li-text{flex:1;}
-.li-cat{font-family:var(--font-mono); font-size:9.5px; color:var(--slate-light);}
+.li-text{flex:1; line-height:35px; white-space:normal; overflow-wrap:anywhere;}
+.li-edit-input{
+  flex:1; border:none; border-bottom:1.5px solid var(--brass); background:transparent;
+  font-size:13.5px; font-family:inherit; color:var(--ink); line-height:35px; padding:0;
+}
+.li-cat{font-family:var(--font-mono); font-size:9.5px; color:var(--slate-light); margin-top:13px;}
 
 @media (max-width: 760px){
   .lists-layout{flex-direction:column;}
   .lists-toc{width:100%;}
 }
+
+.pin-list-btn{
+  background:transparent; border:1px solid var(--line); border-radius:6px; width:26px; height:26px;
+  display:inline-flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink-soft);
+  cursor:pointer; flex-shrink:0;
+}
+.pin-list-btn.active{background:var(--brass); border-color:var(--brass); color:#fff;}
+
+#pinnedListPanel{
+  position:fixed; top:0; right:0; height:100vh; width:340px; z-index:60;
+  background:var(--paper-raised); border-left:1px solid var(--line); box-shadow:var(--shadow-pop);
+  padding:20px 20px 20px; overflow-y:auto; box-sizing:border-box;
+  transform:translateX(100%); transition:transform 0.28s cubic-bezier(.32,.72,0,1);
+}
+#pinnedListPanel.open{transform:translateX(0);}
+.pinned-panel-close{
+  position:absolute; top:14px; right:14px; background:transparent; border:none; font-size:16px;
+  color:var(--slate-light); cursor:pointer; width:26px; height:26px; border-radius:6px;
+}
+.pinned-panel-close:hover{background:var(--paper-dim);}
+.pinned-panel-label{
+  font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--slate-light); margin-bottom:10px;
+}
+
+/* ============ TRAINING: exercise picker + danger zone ============ */
+.ex-picker-input{width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink); font-family:inherit;}
+.ex-picker-results{position:absolute; top:100%; left:0; right:0; z-index:50; background:var(--paper-raised); border:1px solid var(--line); border-radius:8px; margin-top:4px; max-height:180px; overflow-y:auto; box-shadow:var(--shadow-card);}
+.ex-picker-result-item{padding:8px 10px; font-size:13px; cursor:pointer;}
+.ex-picker-result-item:hover{background:var(--paper-dim);}
+.danger-zone{border:1px solid var(--flag); border-radius:12px; padding:16px; margin-top:24px; background:var(--flag-soft);}
+body.dark-mode .danger-zone{background:color-mix(in srgb, var(--flag) 12%, var(--paper-raised));}
+.danger-zone h3{color:var(--flag); margin:0 0 6px 0; font-family:var(--font-display); font-size:15px;}
+.btn.danger{background:var(--flag); border-color:var(--flag); color:#fff;}
+.btn.danger:disabled{opacity:.4; cursor:not-allowed;}
 
 /* ============ HEALTH LOG ============ */
 .health-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px;}
@@ -718,6 +922,21 @@ table.log-table tr.log-row-active td{background:var(--teal-soft);}
 .color-row label{
   font-size:12.5px; font-weight:500; color:var(--ink-soft); min-width:120px;
 }
+.theme-swatch-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+.theme-swatch{
+  display:flex; flex-direction:column; align-items:center; gap:6px; background:none; border:none;
+  padding:4px; border-radius:12px; transition: transform .15s ease;
+}
+.theme-swatch:hover{ transform: translateY(-2px); }
+.theme-swatch-preview{
+  width:52px; height:38px; border-radius:10px; border:2px solid transparent;
+  display:flex; align-items:flex-end; justify-content:flex-start; padding:5px; box-shadow: var(--shadow-card);
+  transition: border-color .15s ease;
+}
+.theme-swatch-preview span{ width:14px; height:14px; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+.theme-swatch.selected .theme-swatch-preview{ border-color: var(--ink); }
+.theme-swatch-label{ font-size:10.5px; color: var(--ink-soft); font-weight:600; }
+.theme-swatch.selected .theme-swatch-label{ color: var(--ink); }
 .color-row input[type=color]{
   width:36px; height:30px; border:1px solid var(--line); border-radius:6px; padding:2px; background:var(--paper-raised);
 }
@@ -757,6 +976,10 @@ body.dark-mode{
   --line:#3A4048;
   --slate:#9CA3AF;
   --slate-light:#6B7280;
+  --page-gradient:
+    radial-gradient(480px 480px at 100% 0%, #4A3A28 0%, transparent 70%),
+    radial-gradient(360px 360px at 0% 100%, #1F3B36 0%, transparent 70%),
+    linear-gradient(160deg, #1E1812 0%, #241C15 100%);
 }
 body.dark-mode .sidebar{background:#0F1216;}
 body.dark-mode .ticket-title{color:var(--ink);}
@@ -774,13 +997,64 @@ body.dark-mode .loading-screen{background:#0F1216;}
 
 /* ============ MISC ============ */
 .hidden{display:none !important;}
-.loading-screen{
-  position:fixed; inset:0; background:var(--ink); color:#EDE9DD;
-  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; z-index:999;
-  font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em;
-}
-.loading-screen .brand-mark{width:14px;height:14px;background:var(--brass); transform:rotate(45deg); animation:spin 1.1s linear infinite;}
 @keyframes spin{to{transform:rotate(405deg);}}
+.loading-screen{
+  position:fixed; inset:0; z-index:999;
+  background: var(--page-gradient);
+}
+.loading-screen.hidden{display:none;}
+.splash{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; }
+.splash-ring{
+  position:absolute; width:130px; height:130px; border-radius:50%;
+  border:1.5px solid rgba(107,66,38,0.18); animation: splashRingPulse 2.2s ease-out infinite;
+}
+@keyframes splashRingPulse{
+  0%{ transform:scale(0.6); opacity:0.7; }
+  100%{ transform:scale(1.4); opacity:0; }
+}
+.splash-mark{
+  width:60px; height:60px; border-radius:18px;
+  background: linear-gradient(135deg, var(--brass), #6B4226);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 14px 34px rgba(107,66,38,0.28);
+  animation: splashBreathe 1.8s ease-in-out infinite;
+}
+@keyframes splashBreathe{
+  0%,100%{ transform: scale(1) rotate(0deg); }
+  50%{ transform: scale(1.08) rotate(6deg); }
+}
+.splash-mark-inner{
+  width:20px; height:20px; background:#fff; opacity:0.9; transform:rotate(45deg); border-radius:3px;
+}
+.splash-name{
+  font-family: var(--font-body); font-weight:800; font-size:20px; letter-spacing:-0.01em;
+  color:#4A2D18; opacity:0; animation: splashFadeIn 0.6s ease 0.25s forwards;
+}
+body.dark-mode .splash-name{ color:#F3E9DD; }
+@keyframes splashFadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+.splash-dots{ display:flex; gap:6px; opacity:0; animation: splashFadeIn 0.5s ease 0.5s forwards; }
+.splash-dots span{
+  width:6px; height:6px; border-radius:50%; background:#6B4226; opacity:0.35;
+  animation: splashDotBounce 1.1s ease infinite;
+}
+body.dark-mode .splash-dots span{ background:#E7B98A; }
+.splash-dots span:nth-child(2){ animation-delay:0.15s; }
+.splash-dots span:nth-child(3){ animation-delay:0.3s; }
+@keyframes splashDotBounce{ 0%,100%{opacity:0.35; transform:translateY(0);} 50%{opacity:1; transform:translateY(-5px);} }
+.splash-status{
+  font-size:12.5px; color:#8A7461; margin-top:2px; min-height:16px; text-align:center; max-width:280px;
+  opacity:0; animation: splashFadeIn 0.5s ease 0.6s forwards;
+}
+body.dark-mode .splash-status{ color:#B8A896; }
+.splash-bypass.hidden{ display:none; }
+.splash-bypass{
+  margin-top:6px; padding:9px 18px; border-radius:999px; border:1px solid rgba(107,66,38,0.25);
+  background:transparent; color:#4A2D18; font-family:var(--font-body); font-size:12.5px; font-weight:600;
+  cursor:pointer; opacity:0; animation: splashFadeIn 0.4s ease forwards;
+}
+.splash-bypass:hover{ background:rgba(107,66,38,0.08); }
+body.dark-mode .splash-bypass{ color:#F3E9DD; border-color:rgba(255,255,255,0.2); }
+body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
 
 #newTaskHint{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
@@ -879,15 +1153,113 @@ body.dark-mode .loading-screen{background:#0F1216;}
   .main{padding:18px;}
   .stat-strip{gap:8px;}
 }
+
+/* ============================================================
+   GLOBAL: colored task icons, tag chips, ticket completion states
+   Previously scoped to .dash-v2 (Dashboard-only preview); now the
+   baseline for every page, since the direction was approved.
+   ============================================================ */
+.ticket{ transition: transform .15s ease, box-shadow .15s ease; }
+.ticket:hover{ box-shadow: var(--shadow-tile); transform: translateY(-1px); }
+
+/* Completed/incomplete needs to be obvious at a glance, not just a tiny
+   checkmark buried inside a same-hue circle (a location color can easily
+   land near teal, making "done" and "not done" nearly indistinguishable —
+   this happened in practice). Location color now ALWAYS stays on the main
+   circle (it's an identity signal, not a status signal); completion gets
+   its own independent signal: a small badge at the corner, plus fading the
+   whole row back so incomplete tasks visually lead. */
+.tick-btn.tick-colorful{
+  width:30px; height:30px; border:none; background: var(--task-color, var(--paper-dim)); opacity:0.9;
+  position:relative; color:transparent;
+}
+.tick-btn.tick-colorful.checked, .tick-btn.tick-colorful.missed-tick{ opacity:1; }
+.tick-btn.tick-colorful.checked::after, .tick-btn.tick-colorful.missed-tick::after{
+  content:'✓'; position:absolute; bottom:-4px; right:-4px; width:16px; height:16px; border-radius:50%;
+  background: var(--completed-color, var(--teal)); color:#fff; font-size:9px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2.5px var(--paper-raised);
+}
+.tick-btn.tick-colorful.missed-tick::after{ content:'✕'; background:#C98A3E; }
+.ticket.done{ opacity:0.5; }
+.ticket.done:hover{ opacity:0.85; }
+.ticket.missed{ opacity:0.55; }
+.ticket.missed:hover{ opacity:0.85; }
+.ticket.missed .ticket-title{ text-decoration:none; } /* missed ≠ done — no strikethrough, just faded */
+
+/* Tags/chips (silo, location, priority, category, folder) — rounder, a
+   touch of depth, subtle lift on hover instead of a flat static label. */
+.tag{
+  border-radius:999px; transition: transform .12s ease, box-shadow .12s ease;
+}
+.tag:hover{ transform: translateY(-1px); box-shadow: 0 3px 8px rgba(107,66,38,0.12); }
+.li-cat{ border-radius:999px; padding:3px 9px; background: var(--paper-dim); transition: transform .12s ease; }
+.li-cat:hover{ transform: translateY(-1px); }
+
+/* ============================================================
+   DASHBOARD-SPECIFIC: progress rings, decorative stat accents, FAB.
+   Everything else the old .dash-v2 block did (colors, fonts, card/
+   ticket styling) is now the app-wide baseline above and in :root.
+   ============================================================ */
+.dash-v2{ position:relative; }
+
+.dash-v2 .stat-card{ position:relative; overflow:hidden; }
+.dash-v2 .stat-card::after{
+  content:''; position:absolute; width:80px; height:80px; border-radius:50%; top:-36px; right:-26px; opacity:0.5;
+  background: var(--paper-dim);
+}
+.dash-v2 .stat-card.flag::after{ background: var(--flag-soft); }
+.dash-v2 .stat-card.teal::after{ background: var(--teal-soft); }
+.dash-v2 .stat-card.brass::after{ background: var(--accent-soft); }
+
+.dash-v2 .ring-row{ display:flex; gap:14px; margin-bottom:18px; }
+.dash-v2 .ring-card{
+  flex:1; background: var(--paper-raised); border-radius:18px; padding:16px; box-shadow: var(--shadow-tile);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.dash-v2 .ring{
+  width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:14px; color: var(--ink); position:relative;
+}
+.dash-v2 .ring::before{
+  content:''; position:absolute; inset:6px; border-radius:50%; background: var(--paper-raised);
+}
+.dash-v2 .ring span{ position:relative; }
+.dash-v2 .ring-label{ font-size:11px; color: var(--ink-soft); font-weight:600; }
+:root{ --teal-soft-ring: var(--teal-soft); }
+
+.dash-fab{
+  position:fixed; bottom:32px; right:36px; width:58px; height:58px; border-radius:50%;
+  background: linear-gradient(135deg, var(--brass), var(--brass-deep)); box-shadow: var(--shadow-pop);
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;
+  z-index:50; cursor:pointer; transition: transform .15s ease;
+}
+.dash-fab:hover{ transform: scale(1.06); }
+
+/* ============================================================
+   Subpage/list-switch transitions — a quick fade+lift, not a hard cut,
+   when moving between Settings sections or between selected Lists.
+   ============================================================ */
+@keyframes panelFadeIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:translateY(0); } }
+.settings-panel{ animation: panelFadeIn 0.22s ease; }
+.notebook-page{ animation: panelFadeIn 0.2s ease; }
 </style>
 </head>
+
 <body>
 
 <div id="gateScreen"></div>
 
 <div class="loading-screen hidden" id="loadingScreen">
-  <div class="brand-mark"></div>
-  <div>LOADING CALENDAROS…</div>
+  <div class="splash">
+    <div class="splash-ring"></div>
+    <div class="splash-mark">
+      <div class="splash-mark-inner"></div>
+    </div>
+    <div class="splash-name">CalendarOS</div>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+    <div class="splash-status" id="splashStatus"></div>
+    <button class="splash-bypass hidden" id="splashBypassBtn">Use local copy for now</button>
+  </div>
 </div>
 
 <div id="app" class="hidden"></div>
@@ -937,7 +1309,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '4.2.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -945,6 +1317,73 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.2.0', changes: [
+    'Fixed a real bug: list items with long enough text to wrap onto a second line overlapped the row below it and became unreadable. Root cause — the row had a hardcoded 35px height matching the ruled-paper background instead of growing with its content. Fixed by giving item text the same 35px line-height as the ruled paper itself, so a wrapped line lands exactly on the next rule automatically, with the checkbox/drag-handle/delete button now anchored to the first line specifically rather than the full (possibly taller) row.',
+    'Fixed the "No items yet" empty-state message sitting to the left of the notebook\'s red margin line instead of aligned with real item text — it wasn\'t a direct child of the element the alignment CSS targeted, so it never got the same indent.',
+    '"Remove all items" button on a list (only shown once it has items) — clears every item after a plain confirm.',
+    'Pin a list to a floating panel on the right side of the screen (📌 button next to the folder dropdown) — stays visible while using the rest of the app, animates in/out, persists across reload. Auto-hides only when you\'re already looking at that exact list on the Lists page itself, to avoid showing it twice.',
+    '3 new Color Themes: Slate (cool/muted), Coral (bold/vibrant), and Midnight (dark, works as its own aesthetic even outside Dark Mode) — 7 total now.',
+    'List items are now edited inline (click the text, type, Enter or click away to save, Escape to cancel) instead of a browser prompt() popup.',
+  ]},
+  { v:'4.1.0', changes: [
+    'Lists page: each folder (including "No Folder") is now its own separately boxed card with a visible shadow, with real background gap between them — replacing the previous top-border approach, which the person correctly pointed out looked like a thin same-color line rather than distinct separation.',
+    'Splash screen bypass ("Use local copy for now") no longer appears after a few seconds by default — now only shows if loading has taken longer than 30s, or the browser reports no internet connection at all (checked immediately at start, and again if the connection drops mid-wait, so a genuinely offline person isn\'t stuck watching a timer). Verified with a real offline simulation (not just a delay), confirming it fires immediately when offline and stays hidden through a slow-but-online wait.',
+    'List export: replaced the file download with a popup showing the text pre-selected for copying (plus an explicit Copy button) — no more triggering a browser download for something you just want to paste somewhere. Also replaced the [x]/[ ] bracket notation with a plain numbered list (1. 2. 3...); the completion count stays as a summary line at the top.',
+  ]},
+  { v:'4.0.0', changes: [
+    'The warm/floating design direction is now applied app-wide, not just the Dashboard. This was done by re-pointing the app\'s existing semantic CSS tokens (--paper, --ink, --brass, --teal, etc. — already used consistently across every page) to the new palette and sans-serif font, so every page updated automatically rather than needing to be individually rewritten. Colored task icons, the done/missed fade treatment, and rounded pill-style tags are now the default everywhere, not Dashboard-only.',
+    'Color Theme picker (Settings → Appearance): 4 presets — Warm Amber (new default), Classic Ledger (the original palette, preserved as an option), Ocean, Sage. Local-only, same treatment as Dark Mode. Found and fixed a real bug before shipping: switching themes updated the actual colors correctly but the swatch\'s "selected" indicator didn\'t move until an unrelated re-render happened — verified via computed styles, not just a screenshot, that the underlying color change was real, then traced the indicator lag to a missing render call.',
+    'Settings subpage switches and List switches now fade in instead of cutting instantly.',
+    'Dashboard-specific widgets (progress rings, floating action button, decorative stat-card accents) stay Dashboard-only — those are page-specific content, not part of the base theme.',
+  ]},
+  { v:'3.5.0', changes: [
+    'Splash screen now covers the ENTIRE loading window (local load + initial Supabase sync), not just the local load — the local load alone was resolving so fast the splash was never actually visible in practice, while the real wait (network sync) was still using the old plain "Syncing…" banner. If sync hangs or you\'re offline, a "Use local copy for now" button appears after ~4s so you\'re never stuck waiting indefinitely — the real sync keeps trying in the background and reconciles quietly once it succeeds. Verified with a test that genuinely holds a network request open (not just a short timeout) to confirm the app stays hidden, the bypass appears and works, and there\'s no leftover blocking overlay once the delayed sync eventually completes.',
+    'Missed recurring tasks on the Dashboard now fade the same way completed tasks do — previously only a tiny badge distinguished them. Deliberately no strikethrough (missed ≠ done).',
+    'The per-location counter ("1.Office 3/76") now counts missed tasks as "handled" alongside completed ones, since both are states you\'ve already acted on/acknowledged — the counter is meant to reflect what still needs a decision, not just what\'s been checked off.',
+    'Lists page: folder groups in the sidebar now have real visual separation (a top border + spacing) instead of running together, with the very first group kept clean (no stray border at the top).',
+    'Export a list as .txt (icon button in the list header): title, completion count, and every item with a `[x]`/`[ ]` marker and its category if set.',
+  ]},
+  { v:'3.4.0', changes: [
+    'Fixed a real readability problem on the redesigned Dashboard: completed and incomplete tasks were nearly indistinguishable at a glance (a location color could land close to the "done" teal, and the only real signal was a tiny checkmark). Completion is now its own independent signal — a small badge at the corner of the icon plus the whole row fading back — while the main icon color stays a stable location identity regardless of done/not-done state.',
+    'Splash screen replacing the skeleton-grid loading screen: warm gradient background, a breathing/pulsing brand mark with an expanding ring, wordmark fade-in, bouncing dots. No longer trying to preview page structure — just a proper branded loading moment.',
+    'Sidebar: nav items now animate in with a quick staggered fade-slide on every render, smoother hover (slight indent + icon scale), and the active item has a soft glow shadow instead of a flat fill.',
+    'Command palette (Cmd/Ctrl+K): the palette itself now animates in (scale + fade), and result rows stagger in briefly as you type.',
+    'List Folders discoverability fix: added a hint card on the Lists page when no folders exist yet, with a button that jumps straight to Settings → General and focuses the folder input — the feature wasn\'t broken, just easy to miss since it required finding Settings first.',
+  ]},
+  { v:'3.3.0', changes: [
+    'DESIGN PREVIEW — Dashboard page only: new warm/floating card visual direction (moodboard-inspired), fully sans-serif, scoped entirely under a .dash-v2 wrapper so every other page is completely untouched — verified with a test that checks the redesign does NOT leak onto Overdue/All Tasks/Settings',
+    'Warm gradient background, floating cards with soft shadows (light and dark mode both handled)',
+    'Task rows now show a colored circular icon (colored by location, reusing the existing location-color system) instead of a plain checkbox outline — still the same real completion button underneath, verified clicking it still actually completes the task',
+    'New progress rings (Overdue total, On-time rate this week) showing real computed data, not placeholder numbers',
+    'The rectangular "+ New Task" button is now a floating circular action button (bottom-right) — verified still wired to the real task-creation flow',
+    'This is a direction to react to, not a final decision — nothing else in the app changed pending feedback',
+  ]},
+  { v:'3.2.0', changes: [
+    'SCHEMA CHANGE: List Folders — new `list_folders` column on app_settings, new `folder` column on lists (both additive, in Copy SQL). A managed set of folders (curated in Settings → General → List Folders), assignable per-list from a dropdown in its header; the Lists sidebar now groups by folder with a "No Folder" group for the rest.',
+    'Content Width setting (Settings → Appearance): Automatic or Manual with 5 presets (Compact/Standard/Wide/Extra Wide/Full Width), matching LedgerOS. Local-only — same treatment as Dark Mode, never synced, since a wide-screen preference on one device shouldn\'t force itself onto another.',
+    'Command palette (Cmd/Ctrl+K): live search across pages, lists, and tasks; arrow keys + Enter or click to jump straight there.',
+    'Inline quick-add on All Tasks (One-Time tab): type and press Enter to create a task directly, no modal.',
+    'Subtler elevation: dashboard stat tiles now carry a distinct shadow (new --shadow-tile token) instead of the same flat weight as every other card.',
+    'Motion: a one-shot "pop" animation on the checkmark when completing a task or list item — tested to confirm it fires only on the actual toggle action and never replays on unrelated re-renders.',
+    'List item drag-reorder: items within a list can now be dragged into a new order (hover a row to reveal the handle), with a one-shot "settle" animation on drop. Reordering persists via the existing sort_order sync path — no schema change needed.',
+    'Skeleton loading screen: replaced the plain "LOADING CALENDAROS…" text with a shimmering placeholder shaped like the actual sidebar/dashboard layout, shown during the brief window between the passcode gate and first render.',
+    'Fixed the checkbox/text/margin-line alignment holding up correctly with the new drag handles added (handles are positioned out-of-flow so they don\'t disturb the alignment fixed in 3.1.1).',
+  ]},
+  { v:'3.1.1', changes: [
+    'Fixed Lists page alignment properly this time — the previous pass (v2.9.x) checked the right CSS properties but didn\'t account for the notebook card\'s own 28px padding stacking on top of each child\'s padding-left, so the checkbox ended up rendering almost exactly on the margin line instead of left of it. Verified this time with actual rendered pixel measurements (not just computed CSS values): the line now sits within 1px of the true midpoint between the checkbox and the item text, and the list title sits clearly to its right.',
+    'The margin line itself is now visibly red/rust-colored — it was previously using a near-white tint (contrast against the paper background was too low to see, let alone use as an alignment reference).',
+    'Fixed a real, reported bug: deleting a metric in Health Log → Manage Metrics didn\'t stay deleted after a reload when Cloud Sync is on. Root cause — same bug class as the original v2.7.3 completions issue and the v2.9.0 training-tables issue: the delete only removed the metric locally and re-upserted what remained, but never told Supabase to actually delete the row, so the next pull brought it right back. Now sends a real DELETE, verified with a test that reproduces the exact symptom (delete → pull → metric should stay gone) against a mocked Supabase.',
+  ]},
+  { v:'3.1.0', changes: [
+    'Manual session builder (Session Library → "+ New Session", or the pencil icon on an existing session to edit): build a session from scratch — name, type, format — and add exercises via a searchable dropdown (type to filter your exercise library) instead of needing a JSON import',
+    'Manual exercise add (Exercise Library → "+ Add Exercise") so the whole workflow can start from scratch without ever touching JSON',
+    '"Assign to Dates" on any session: pick individual dates one at a time, or generate a whole range on specific weekdays at once (e.g. every Mon/Wed/Fri through end of month)',
+    '"Move to another date" (⇄ icon on a day\'s card): reassign a single day\'s session to a different date. Already-logged exercises for the original date intentionally stay attached to that date rather than moving with it',
+    'Danger Zone: four independently-scoped clear actions — Clear Training Plan (calendar only), Clear All Logs, Clear All Sessions, Clear All Exercises — each behind a disclaimer explaining exactly what is and isn\'t affected, and a type-the-exact-phrase confirmation before anything is deleted',
+    'Fixed: the completed/difficulty counter next to the session name only updated after clicking Save — now updates live as you toggle/rate each exercise',
+    'Added a "Difficulty" label next to the 1–5 rating buttons',
+    'Notes textarea for each exercise is now full-width (was defaulting to the browser\'s small default size, not actually connected to the app\'s field-width styling)',
+  ]},
   { v:'3.0.0', changes: [
     'BREAKING SCHEMA CHANGE: training_logs moved from one row per day to one row per EXERCISE per day (new composite key: pin, log_date, exercise_id). Existing training_logs rows were cleared as part of this (confirmed — they were test data). See Settings → Cloud Sync → Copy SQL for the migration if upgrading an existing Supabase project.',
     'Training logging is now per-exercise: each exercise in a session gets its own completed/difficulty/notes, not one shared entry for the whole day. Walk/rest days (no individual exercises) log against the session as a whole so there\'s still something to check off.',
@@ -1102,6 +1541,15 @@ const RECUR_TYPES = ['Daily','Days of Week','Weekly','Bi-Weekly','Monthly','Year
 const PRIORITIES = ['High','Medium','Low'];
 const MAX_UNDO = 5;
 const ACCENT_PRESETS = ['#B9862F','#2F6E68','#3E6491','#7C5C8C','#4C7A3D','#3A3F47'];
+const COLOR_THEMES = [
+  { key:'warm', label:'Warm Amber', previewBg:'#F3DCC0', previewAccent:'#B9862F' },
+  { key:'classic', label:'Classic Ledger', previewBg:'#F7F4EC', previewAccent:'#B9862F' },
+  { key:'ocean', label:'Ocean', previewBg:'#E1EFF3', previewAccent:'#2E7BA6' },
+  { key:'sage', label:'Sage', previewBg:'#ECF1DD', previewAccent:'#7A8F4A' },
+  { key:'slate', label:'Slate', previewBg:'#EEF0F3', previewAccent:'#5C6A8C' },
+  { key:'coral', label:'Coral', previewBg:'#FFE7DE', previewAccent:'#E8552F' },
+  { key:'midnight', label:'Midnight', previewBg:'#1F1B37', previewAccent:'#9A7FE0' },
+];
 const COMPLETED_PRESETS = ['#3C7A73','#4C8C5C','#6B8C4C','#5C7999','#7A7A7A'];
 const HIDEABLE_PAGES = [
   ['overdue','Overdue'],
@@ -1146,6 +1594,19 @@ const DEFAULT_SETTINGS_EXTRAS = {
   healthCoreMetricsSeeded: false,
   darkMode: false,
   localPasscode: null, // used only when no Supabase sync is configured on this device
+  // Local-only display preference (same treatment as darkMode) — never
+  // synced to Supabase, since a wide-screen preference set on a desktop
+  // shouldn't force itself onto a phone.
+  contentWidthMode: 'auto', // 'auto' | 'manual'
+  contentWidthPreset: 'standard', // compact | standard | wide | xwide | full
+  colorTheme: 'warm', // 'warm' | 'classic' | 'ocean' | 'sage' | 'slate' | 'coral' | 'midnight' — local-only display preference, same treatment as darkMode/contentWidth
+  // Unlike the above, this DOES sync — it's real data (a managed set of
+  // folder names for grouping Lists), not a device display preference.
+  listFolders: [],
+  // Which list (if any) is pinned open in the floating right-side panel —
+  // local-only, same treatment as darkMode/colorTheme, since a panel pinned
+  // open on one device shouldn't force itself open on another.
+  pinnedListId: null,
 };
 // Fills in any settings fields missing from a saved blob (e.g. one written by
 // an earlier version of the app), including partially-missing nested objects
@@ -1206,6 +1667,7 @@ const state = {
   undoStack: [], // [{kind, taskId, dateStr, prevValue}]
   dailyRatings: [], // [{date, rating, doneCount, totalCount, overdueCleared, loggedAt}]
   initialSyncBlocking: false, // true while the background reconciliation sync is in flight
+  splashActive: false, // true from app start until the splash screen hands off to the real app — see init()
   healthMetricDefs: [], // [{id, name, type:'number'|'yesno'|'text', unit, sortOrder}]
   // status: 'off' | 'syncing' | 'synced' | 'pending' | 'error'
   syncMeta: { status: 'off', dirty: false, lastSyncedAt: null, lastError: null, progress: null },
@@ -1218,6 +1680,8 @@ const state = {
   trainingSection: 'today', // which Training subpage is active: today | calendar | history | sessions | exercises
   trainingCalMonthCursor: null, // {year, month} for the Training Calendar View subpage; set on first render
   trainingCalExpandedDate: null, // which date is inline-expanded in the Training Calendar View
+  trainingMoveFormDate: null, // which date's "move to another date" inline form is open
+  editingListItemId: null, // list item currently showing an inline edit input instead of its text span
 };
 
 /* ---------- Date helpers ---------- */
@@ -1394,6 +1858,20 @@ const pendingCompletionDeletes = [];
 // locally (via import remap or manual delete) need an explicit DELETE sent —
 // an upsert of what remains never tells Supabase to drop a row.
 const pendingTrainingDeletes = []; // [{table, match: {col:val,...}}]
+// Same pattern for health metric definitions — deleting one locally without
+// also telling Supabase means the next pull brings it right back (this was
+// a real, reported bug: "delete a metric, refresh, it's back").
+const pendingMetricDefDeletes = []; // [id, id, ...]
+// One-shot completion "pop" animation targets — set right before a render
+// that should show the animation, cleared immediately after. This is how
+// motion works despite the app doing full innerHTML re-renders: a freshly
+// re-created DOM node still plays a CSS animation on insertion, so tagging
+// exactly the item that was just toggled (and only for that one render)
+// gives a real, precise animation without replaying on every unrelated
+// re-render of the same checked item.
+let _justCompletedId = null; // task id
+let _justCompletedListItemId = null; // list item id
+let _justReorderedListId = null; // list id whose items were just drag-reordered, for the one-shot "settle" animation
 function setOccurrenceStatus(taskId, dateStr, status){
   // status: 'done' | 'missed' | null (null clears the occurrence entirely)
   const c = state.tasks.completions;
@@ -1803,7 +2281,7 @@ function rowToRecurring(r){
 }
 function listToRow(l, idx){
   const s = state.settings.sync;
-  return { id:l.id, pin:s.pin, title:l.title, sort_order:idx, updated_at:new Date().toISOString() };
+  return { id:l.id, pin:s.pin, title:l.title, folder:l.folder||null, sort_order:idx, updated_at:new Date().toISOString() };
 }
 function listItemToRow(item, listId, idx){
   const s = state.settings.sync;
@@ -1893,6 +2371,13 @@ async function flushPendingTrainingDeletes(){
     pendingTrainingDeletes.shift();
   }
 }
+async function flushPendingMetricDefDeletes(){
+  while(pendingMetricDefDeletes.length){
+    const id = pendingMetricDefDeletes[0];
+    await supaDeleteMatch('health_metric_defs', `id=eq.${encodeURIComponent(id)}`);
+    pendingMetricDefDeletes.shift();
+  }
+}
 
 /* ---- full push / pull ---- */
 async function pushFullStateToSupabase(onProgress){
@@ -1909,8 +2394,9 @@ async function pushFullStateToSupabase(onProgress){
     },
     ()=> { const rows = state.health.map(healthToRow); return rows.length ? supaUpsert('health_logs', rows, 'pin,log_date') : null; },
     ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
+    ()=> flushPendingMetricDefDeletes(),
     ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
-    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
   // Training runs AFTER the core steps and is deliberately fault-isolated
   // from them: if the training-tables SQL migration hasn't been run yet in
@@ -2025,11 +2511,12 @@ async function pullFromSupabase(onProgress){
       if(!itemsByList[r.list_id]) itemsByList[r.list_id] = [];
       itemsByList[r.list_id].push({ id:r.id, text:r.text, category:r.category, done:!!r.done });
     });
-    state.lists = listRows.map(l=>({ id:l.id, title:l.title, items: itemsByList[l.id] || [] }));
+    state.lists = listRows.map(l=>({ id:l.id, title:l.title, folder:l.folder||null, items: itemsByList[l.id] || [] }));
 
     state.health = healthRows.map(rowToHealth);
     state.dailyRatings = ratingRows.map(rowToRating);
     state.healthMetricDefs = metricDefRows.map(rowToMetricDef);
+    pendingMetricDefDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
     ensureCoreMetricDefs();
 
     if(trainingPulled){
@@ -2049,6 +2536,7 @@ async function pullFromSupabase(onProgress){
     if(settingsRows.length){
       state.settings.locations = settingsRows[0].locations || state.settings.locations;
       state.settings.silos = settingsRows[0].silos || state.settings.silos;
+      if(settingsRows[0].list_folders) state.settings.listFolders = settingsRows[0].list_folders;
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
       // instead of each device only ever trusting its own local record.
@@ -2440,6 +2928,7 @@ async function saveHealthMetricDefs(){
   await safeStorageSet(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), 'health metrics');
   if(syncConfigured()){
     scheduleSync('metricDefs', ()=>[
+      ()=> flushPendingMetricDefDeletes(),
       ()=> supaUpsert('health_metric_defs', state.healthMetricDefs.map(metricDefToRow), 'pin,id'),
     ]);
   }
@@ -2448,7 +2937,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, last_active_date: state.settings.lastActiveDate }], 'pin'),
     ]);
   }
 }
@@ -2755,8 +3244,29 @@ function render(){
       </div>
     </div>
     <div class="main" id="mainContent"></div>
+    <div id="pinnedListPanel"></div>
   `;
+  applyContentWidthClass();
+  applyColorTheme();
   renderMain();
+}
+function applyContentWidthClass(){
+  const el = document.getElementById('mainContent');
+  if(!el) return;
+  el.classList.remove('cw-compact','cw-standard','cw-wide','cw-xwide','cw-full');
+  const cls = getContentWidthClass();
+  if(cls) el.classList.add(cls);
+}
+function applyColorTheme(){
+  const theme = state.settings.colorTheme || 'warm';
+  if(theme === 'warm') document.body.removeAttribute('data-theme'); // warm is the default :root palette, no override needed
+  else document.body.setAttribute('data-theme', theme);
+}
+function setColorTheme(theme){
+  state.settings.colorTheme = theme;
+  saveSettings();
+  applyColorTheme();
+  renderMain(); // so the swatch "selected" indicator updates immediately, not just the live CSS variables
 }
 
 function syncBadgeHtml(){
@@ -2826,6 +3336,21 @@ function toggleDarkMode(){
   state.settings.darkMode = !state.settings.darkMode;
   saveSettings();
   render();
+}
+function setContentWidthMode(mode){
+  state.settings.contentWidthMode = mode;
+  saveSettings();
+  render();
+}
+function setContentWidthPreset(preset){
+  state.settings.contentWidthPreset = preset;
+  saveSettings();
+  render();
+}
+function getContentWidthClass(){
+  if(state.settings.contentWidthMode !== 'manual') return '';
+  const map = { compact:'cw-compact', standard:'cw-standard', wide:'cw-wide', xwide:'cw-xwide', full:'cw-full' };
+  return map[state.settings.contentWidthPreset] || '';
 }
 
 async function toggleRememberUnlock(){
@@ -2898,6 +3423,44 @@ function renderMain(){
         <button class="btn brass" onclick="repairSettingsAndRetry()">Repair &amp; Retry</button>
       </div>`;
   }
+  renderPinnedPanel();
+}
+
+/* ---------- Pinned list panel (floats over every page until unpinned) ---------- */
+function togglePinList(listId){
+  state.settings.pinnedListId = state.settings.pinnedListId === listId ? null : listId;
+  saveSettings();
+  renderPinnedPanel();
+}
+function unpinList(){
+  state.settings.pinnedListId = null;
+  saveSettings();
+  renderPinnedPanel();
+}
+function renderPinnedPanel(){
+  const el = document.getElementById('pinnedListPanel');
+  if(!el) return; // shell hasn't been built yet (e.g. very first render)
+  const listId = state.settings.pinnedListId;
+  const list = listId ? state.lists.find(l=>l.id===listId) : null;
+  if(!list){
+    el.classList.remove('open');
+    el.innerHTML = '';
+    return;
+  }
+  // Don't show the floating panel duplicating the exact same list already
+  // open on the Lists page itself — only float it while looking at
+  // something else.
+  if(state.view === 'lists' && state.selectedListId === listId){
+    el.classList.remove('open');
+    el.innerHTML = '';
+    return;
+  }
+  el.classList.add('open');
+  el.innerHTML = `
+    <button class="pinned-panel-close" title="Unpin" onclick="unpinList()">✕</button>
+    <div class="pinned-panel-label">📌 Pinned List</div>
+    ${renderNotebookPage(list)}
+  `;
 }
 
 async function repairSettingsAndRetry(){
@@ -2920,7 +3483,13 @@ function renderDashboard(){
   const totalToday = countDueToday() + doneToday;
   const weeklyOnTime = computeWeeklyOnTimeRate();
 
+  // Design-direction preview, Dashboard only (see conversation) — real data,
+  // scoped entirely under .dash-v2 so no other page is affected.
+  const overdueRingPct = Math.min(100, Math.round((overdueN / Math.max(1, overdueN + totalToday)) * 100));
+  const onTimeRingPct = weeklyOnTime===null ? 0 : weeklyOnTime;
+
   return `
+    <div class="dash-v2">
     <div class="topbar">
       <div>
         <h1 class="page-title">${humanDate(state.selectedDate)}</h1>
@@ -2930,7 +3499,6 @@ function renderDashboard(){
         <span class="icon">⌕</span>
         <input type="text" placeholder="Search tasks…" value="${escapeHtml(state.searchQuery)}" oninput="onSearch(this.value)">
       </div>
-      <button class="btn brass" onclick="openNewTaskChooser()">+ New Task</button>
     </div>
 
     <div class="stat-strip">
@@ -2949,6 +3517,17 @@ function renderDashboard(){
       <div class="stat-card brass">
         <div class="stat-num">${weeklyOnTime===null?'—':weeklyOnTime+'%'}</div>
         <div class="stat-label">On-Time This Week</div>
+      </div>
+    </div>
+
+    <div class="ring-row">
+      <div class="ring-card">
+        <div class="ring" style="background:conic-gradient(var(--flag) 0% ${overdueRingPct}%, var(--flag-soft) ${overdueRingPct}% 100%);"><span>${overdueN}</span></div>
+        <div class="ring-label">Overdue total</div>
+      </div>
+      <div class="ring-card">
+        <div class="ring" style="background:conic-gradient(var(--teal) 0% ${onTimeRingPct}%, var(--teal-soft-ring) ${onTimeRingPct}% 100%);"><span>${weeklyOnTime===null?'—':weeklyOnTime+'%'}</span></div>
+        <div class="ring-label">On-time rate</div>
       </div>
     </div>
 
@@ -2974,6 +3553,9 @@ function renderDashboard(){
         <span class="section-count">${rows.length} shown</span>
       </div>
       ${state.groupByLocation ? renderGroupedTickets(rows) : renderTicketList(rows)}
+    </div>
+
+    <div class="dash-fab" title="New task" onclick="openNewTaskChooser()">+</div>
     </div>
   `;
 }
@@ -3010,14 +3592,18 @@ function renderGroupedTickets(rows, opts){
   return locOrder.map(loc=>{
     const groupRows = groups[loc];
     const collapsed = collapsedGroups.has(loc);
-    const completedCount = groupRows.filter(isRowCompleted).length;
-    const pct = groupRows.length ? Math.round((completedCount/groupRows.length)*100) : 0;
+    // Counts as "handled" if either completed OR missed — both are states
+    // you've already taken action on/acknowledged, vs. still needing a
+    // decision. isRowResolved() already encodes exactly this (done OR
+    // missed), reused here rather than recomputed.
+    const handledCount = groupRows.filter(isRowResolved).length;
+    const pct = groupRows.length ? Math.round((handledCount/groupRows.length)*100) : 0;
     return `
       <div class="group-block">
         <div class="group-header ${collapsed?'collapsed':''}" onclick="toggleGroupCollapse('${escapeHtml(loc)}')">
           <span class="caret">▾</span>
           <h3>${escapeHtml(loc)}</h3>
-          <span class="group-count">${completedCount}/${groupRows.length} (${pct}%)</span>
+          <span class="group-count">${handledCount}/${groupRows.length} (${pct}%)</span>
         </div>
         <div class="group-body ${collapsed?'collapsed':''}">
           ${sortWithCompletedLast(groupRows).map(r=>renderTicket(r, Object.assign({hideLocation:true}, opts))).join('')}
@@ -3121,7 +3707,7 @@ function renderTicket(row, opts){
     stamp = `<div class="stamp streak">${streak} day streak</div>`;
   }
 
-  const tickClass = completed ? 'checked' : (missed ? 'missed-tick' : '');
+  const tickClass = (completed ? 'checked' : (missed ? 'missed-tick' : '')) + (t.id===_justCompletedId ? ' pop' : '');
   const tickGlyph = missed ? '✕' : '✓';
   const missedBtn = isRecurring
     ? `<button class="icon-btn ${missed?'missed-active':''}" title="${missed?'Unmark missed':'Mark missed for this day'}" onclick="toggleMissedTask('${t.id}','${dateForCompletion}')">⚑</button>`
@@ -3129,9 +3715,10 @@ function renderTicket(row, opts){
   const selectBox = state.batchSelectMode
     ? `<button class="li-check select-check ${state.selectedTaskIds.has(t.id)?'checked':''}" onclick="toggleTaskSelected('${t.id}')">${state.selectedTaskIds.has(t.id)?'✓':''}</button>`
     : '';
+  const colorfulStyle = ` style="--task-color:${locationColor(t.location)};"`;
   const tickBtn = opts.hideCheckbox
     ? ''
-    : `<button class="tick-btn ${tickClass}" onclick="toggleComplete('${row.kind}','${t.id}','${dateForCompletion}')">${tickGlyph}</button>`;
+    : `<button class="tick-btn ${tickClass} tick-colorful"${colorfulStyle} onclick="toggleComplete('${row.kind}','${t.id}','${dateForCompletion}')">${tickGlyph}</button>`;
 
   return `
     <div class="ticket ${completed?'done':''} ${overdue?'overdue':''} ${missed?'missed':''} ${opts.hideCheckbox?'no-tick':''}">
@@ -3184,6 +3771,7 @@ async function toggleComplete(kind, taskId, dateStr, isUndo){
     const prevDone = t.done;
     t.done = !t.done;
     t.doneDate = t.done ? (newDayReviewDate || todayStr()) : null;
+    if(t.done) _justCompletedId = taskId; // one-shot pop animation on the checkmark, cleared right after this render
     diagLogEvent('activity', `${t.done?'Completed':'Un-completed'} one-time task "${t.name}"`, { id:taskId, isUndo:!!isUndo });
     saveTasks(); // fire-and-forget: UI updates now, sync (local+remote) happens in the background
     if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: prevDone, name: t.name, action:'done' });
@@ -3192,10 +3780,12 @@ async function toggleComplete(kind, taskId, dateStr, isUndo){
     if(!t) return;
     const cur = isCompletedOn(taskId, dateStr);
     toggleDone(taskId, dateStr);
+    if(!cur) _justCompletedId = taskId; // wasn't done before, now toggled to done
     diagLogEvent('activity', `${!cur?'Completed':'Un-completed'} recurring task "${t.name}" for ${dateStr}`, { id:taskId, isUndo:!!isUndo });
     if(!isUndo) pushUndo({ kind, taskId, dateStr, prevValue: cur, name: t.name, action:'done' });
   }
   renderMain();
+  _justCompletedId = null;
   if(newDayReviewDate) refreshNewDayModal();
 }
 
@@ -3348,6 +3938,20 @@ if(!state.tasksGroupByLocation) state.tasksGroupByLocation = true;
 if(!state.batchSelectMode) state.batchSelectMode = false;
 if(!state.selectedTaskIds) state.selectedTaskIds = new Set();
 
+async function quickAddTask(name){
+  name = (name||'').trim();
+  if(!name) return;
+  const t = {
+    id: newId('ot'), name, location: state.settings.locations[0], silo: state.settings.silos[0],
+    priority: 'Medium', due: todayStr(), done: false, doneDate: null, notes: '', dueHistory: [],
+  };
+  state.tasks.oneTime.push(t);
+  diagLogEvent('activity', `Quick-added task "${name}"`);
+  await saveTasks();
+  renderMain();
+  showToast('Task added — click it to fill in details');
+}
+
 function renderTasksView(){
   const tab = state.tasksTab;
   const oneTimeList = state.tasks.oneTime.filter(matchesFilters)
@@ -3390,6 +3994,14 @@ function renderTasksView(){
         <div class="toggle-switch ${state.tasksGroupByLocation?'on':''}" onclick="toggleTasksGroupByLocation()"><div class="knob"></div></div>
       </div>
     </div>
+
+    ${tab==='oneTime' ? `
+      <div class="quick-add-row">
+        <span class="quick-add-plus">+</span>
+        <input type="text" id="quickAddTaskInput" placeholder="Quick add a one-time task, due today… (press Enter)"
+               onkeydown="if(event.key==='Enter'){quickAddTask(this.value); this.value='';}">
+      </div>
+    ` : ''}
 
     ${state.batchSelectMode ? renderBatchBar(tab, selCount) : ''}
 
@@ -3768,6 +4380,34 @@ function renderListsView(){
   }
   const active = state.lists.find(l=>l.id===state.selectedListId);
 
+  const folders = (state.settings.listFolders||[]).slice();
+  const grouped = {};
+  folders.forEach(f=> grouped[f] = []);
+  const unfoldered = [];
+  state.lists.forEach(l=>{
+    if(l.folder && grouped[l.folder]) grouped[l.folder].push(l);
+    else unfoldered.push(l);
+  });
+  const renderListButton = (l)=>{
+    const doneCount = l.items.filter(i=>i.done).length;
+    return `
+      <button class="lists-toc-item ${l.id===state.selectedListId?'active':''}" onclick="selectList('${l.id}')">
+        <span class="lists-toc-title">${escapeHtml(l.title)}</span>
+        <span class="lists-toc-count">${doneCount}/${l.items.length}</span>
+      </button>
+    `;
+  };
+  const renderFolderCard = (label, lists)=>`
+    <div class="lists-toc-folder-card">
+      ${label ? `<div class="lists-toc-folder-header">${escapeHtml(label)}</div>` : ''}
+      ${lists.map(renderListButton).join('')}
+    </div>
+  `;
+  const sidebarContent = state.lists.length ? `
+    ${folders.map(f=> grouped[f].length ? renderFolderCard(f, grouped[f]) : '').join('')}
+    ${unfoldered.length ? renderFolderCard(folders.length ? 'No Folder' : null, unfoldered) : ''}
+  ` : `<div class="page-sub" style="padding:14px;">No lists yet — create one to get started.</div>`;
+
   return `
     <div class="topbar">
       <div>
@@ -3776,23 +4416,29 @@ function renderListsView(){
       </div>
       <button class="btn brass" onclick="addNewList()">+ New List</button>
     </div>
+    ${!folders.length ? `
+      <div class="card" style="padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div class="page-sub">Want to organize these into groups (Travel, Shopping, etc.)? Create folders first, then assign each list to one from its header.</div>
+        <button class="btn secondary sm" style="flex-shrink:0;" onclick="jumpToListFolderSettings()">Add a Folder</button>
+      </div>
+    ` : ''}
     <div class="lists-layout">
       <div class="lists-toc">
-        ${state.lists.length ? state.lists.map(l=>{
-          const doneCount = l.items.filter(i=>i.done).length;
-          return `
-            <button class="lists-toc-item ${l.id===state.selectedListId?'active':''}" onclick="selectList('${l.id}')">
-              <span class="lists-toc-title">${escapeHtml(l.title)}</span>
-              <span class="lists-toc-count">${doneCount}/${l.items.length}</span>
-            </button>
-          `;
-        }).join('') : `<div class="page-sub" style="padding:14px;">No lists yet — create one to get started.</div>`}
+        ${sidebarContent}
       </div>
       <div class="notebook-page">
         ${active ? renderNotebookPage(active) : `<div class="empty-state"><span class="glyph">☺</span>Pick a list on the left, or create a new one.</div>`}
       </div>
     </div>
   `;
+}
+function jumpToListFolderSettings(){
+  state.settingsSection = 'general';
+  setView('settings');
+  setTimeout(()=>{
+    const el = document.getElementById('newListFolderInput');
+    if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); }
+  }, 100);
 }
 function selectList(listId){
   state.selectedListId = listId;
@@ -3801,24 +4447,40 @@ function selectList(listId){
 
 function renderNotebookPage(list){
   const doneCount = list.items.filter(i=>i.done).length;
+  const folders = state.settings.listFolders||[];
+  const isPinned = state.settings.pinnedListId === list.id;
   return `
     <div class="notebook-header">
       <h3>${escapeHtml(list.title)}</h3>
-      <span style="display:flex; gap:2px;">
+      <span style="display:flex; gap:6px; align-items:center;">
+        ${folders.length ? `
+          <select onchange="setListFolder('${list.id}', this.value)" style="font-size:11.5px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink);">
+            <option value="" ${!list.folder?'selected':''}>No folder</option>
+            ${folders.map(f=>`<option value="${escapeHtml(f)}" ${list.folder===f?'selected':''}>${escapeHtml(f)}</option>`).join('')}
+          </select>
+        ` : ''}
+        <button class="pin-list-btn ${isPinned?'active':''}" title="${isPinned?'Unpin from the side panel':'Pin to the side panel'}" onclick="togglePinList('${list.id}')">📌</button>
         ${doneCount>0 ? `<button class="icon-btn" title="Uncheck all items" onclick="uncheckAllListItems('${list.id}')">↺</button>` : ''}
+        ${list.items.length>0 ? `<button class="icon-btn" title="Remove all items" onclick="clearAllListItems('${list.id}')">🗑</button>` : ''}
+        <button class="icon-btn" title="Copy list as text" onclick="exportListAsText('${list.id}')">⧉</button>
         <button class="icon-btn" title="Delete list" onclick="deleteList('${list.id}')">✕</button>
       </span>
     </div>
     <div class="page-sub" style="margin-bottom:14px;">${doneCount}/${list.items.length} done</div>
     <div class="notebook-lines">
-      ${list.items.map(item=>`
-        <div class="notebook-line ${item.done?'done':''}">
-          <button class="li-check ${item.done?'checked':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>
-          <span class="li-text" onclick="editListItemText('${list.id}','${item.id}')" title="Click to edit" style="cursor:pointer;">${escapeHtml(item.text)}</span>
+      ${list.items.map((item,idx)=>`
+        <div class="notebook-line ${item.done?'done':''} ${_justReorderedListId===list.id?'settle':''}" draggable="true" data-index="${idx}"
+             ondragstart="onListItemDragStart(event,'${list.id}')" ondragover="onListItemDragOver(event)" ondrop="onListItemDragDrop(event,'${list.id}')" ondragend="onListItemDragEnd(event)">
+          <span class="drag-handle-sm" title="Drag to reorder">⠿</span>
+          <button class="li-check ${item.done?'checked':''} ${item.id===_justCompletedListItemId?'pop':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>${item.id===state.editingListItemId
+            ? `<input type="text" class="li-edit-input" id="editItemInput_${item.id}" value="${escapeHtml(item.text)}"
+                 onkeydown="if(event.key==='Enter'){this.blur();} else if(event.key==='Escape'){this.dataset.cancelled='1'; this.blur();}"
+                 onblur="if(this.dataset.cancelled==='1'){cancelEditListItem();}else{commitEditListItem('${list.id}','${item.id}', this.value);}">`
+            : `<span class="li-text" onclick="startEditListItem('${list.id}','${item.id}')" title="Click to edit" style="cursor:pointer;">${escapeHtml(item.text)}</span>`}
           ${item.category ? `<span class="li-cat">${escapeHtml(item.category)}</span>` : ''}
-          <button class="icon-btn" style="width:18px;height:18px;font-size:11px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
+          <button class="icon-btn" style="width:18px;height:18px;font-size:11px;margin-top:8px;" onclick="deleteListItem('${list.id}','${item.id}')">✕</button>
         </div>
-      `).join('') || `<div class="page-sub" style="padding:8px 0;">No items yet — start writing below.</div>`}
+      `).join('') || `<div class="page-sub" style="padding:8px 0 8px 32px;">No items yet — start writing below.</div>`}
       <div class="notebook-line add-line">
         <span class="li-check" style="opacity:.3;">+</span>
         <input type="text" id="addItemInput_${list.id}" placeholder="Add item…" onkeydown="if(event.key==='Enter'){addListItem('${list.id}', this.value); this.value='';}">
@@ -3832,19 +4494,67 @@ async function toggleListItem(listId, itemId){
   const item = list?.items.find(i=>i.id===itemId);
   if(!item) return;
   item.done = !item.done;
+  if(item.done) _justCompletedListItemId = itemId;
   await saveLists();
   renderMain();
+  _justCompletedListItemId = null;
 }
-async function editListItemText(listId, itemId){
+let listItemDragFromIndex = null;
+let listItemDragListId = null;
+function onListItemDragStart(e, listId){
+  listItemDragFromIndex = Number(e.currentTarget.dataset.index);
+  listItemDragListId = listId;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onListItemDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+async function onListItemDragDrop(e, listId){
+  e.preventDefault();
+  if(listItemDragListId !== listId) return; // dragged from a different list somehow — ignore
+  const toIndex = Number(e.currentTarget.dataset.index);
+  if(listItemDragFromIndex === null || listItemDragFromIndex === toIndex) return;
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  const [moved] = list.items.splice(listItemDragFromIndex, 1);
+  list.items.splice(toIndex, 0, moved);
+  _justReorderedListId = listId;
+  await saveLists();
+  renderMain();
+  _justReorderedListId = null;
+}
+function onListItemDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  listItemDragFromIndex = null;
+  listItemDragListId = null;
+}
+// Inline edit-in-place (replaces the old prompt()-based editListItemText):
+// clicking an item's text swaps it for a text input in the same spot.
+// Enter or clicking away saves; Escape cancels without saving.
+function startEditListItem(listId, itemId){
+  state.editingListItemId = itemId;
+  renderMain();
+  setTimeout(()=>{
+    const el = document.getElementById(`editItemInput_${itemId}`);
+    if(el){ el.focus(); el.select(); }
+  }, 0);
+}
+function cancelEditListItem(){
+  state.editingListItemId = null;
+  renderMain();
+}
+async function commitEditListItem(listId, itemId, value){
+  state.editingListItemId = null;
   const list = state.lists.find(l=>l.id===listId);
   const item = list?.items.find(i=>i.id===itemId);
-  if(!item) return;
-  const newText = prompt('Edit item:', item.text);
-  if(newText === null) return; // cancelled
-  const trimmed = newText.trim();
-  if(!trimmed) return;
-  item.text = trimmed;
-  await saveLists();
+  if(!item){ renderMain(); return; }
+  const trimmed = (value||'').trim();
+  if(trimmed && trimmed !== item.text){
+    item.text = trimmed;
+    await saveLists();
+  }
   renderMain();
 }
 async function uncheckAllListItems(listId){
@@ -3854,6 +4564,22 @@ async function uncheckAllListItems(listId){
   await saveLists();
   renderMain();
   showToast('All items unchecked');
+}
+async function clearAllListItems(listId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list || !list.items.length) return;
+  if(!confirm(`Remove all ${list.items.length} item${list.items.length===1?'':'s'} from "${list.title}"? This can't be undone.`)) return;
+  const removedIds = list.items.map(i=>i.id);
+  diagLogEvent('activity', `Cleared all items from list "${list.title}"`, { listId, count: removedIds.length });
+  list.items = [];
+  await saveLists();
+  if(syncConfigured()){
+    await enqueueSync(()=> runSyncSteps(
+      removedIds.map(id => ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(id)}`))
+    ));
+  }
+  renderMain();
+  showToast('All items removed');
 }
 async function deleteListItem(listId, itemId){
   const list = state.lists.find(l=>l.id===listId);
@@ -3882,6 +4608,61 @@ async function addListItem(listId, text){
   const inp = document.getElementById(`addItemInput_${listId}`);
   if(inp){ inp.focus(); }
 }
+function buildListExportText(list){
+  const doneCount = list.items.filter(i=>i.done).length;
+  const lines = [
+    list.title,
+    '='.repeat(list.title.length),
+    '',
+    `${doneCount}/${list.items.length} done — exported ${todayStr()}`,
+    '',
+  ];
+  if(list.items.length){
+    list.items.forEach((item,idx)=>{
+      const cat = item.category ? ` (${item.category})` : '';
+      lines.push(`${idx+1}. ${item.text}${cat}`);
+    });
+  } else {
+    lines.push('(no items)');
+  }
+  return lines.join('\n');
+}
+function exportListAsText(listId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  const text = buildListExportText(list);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'listExportOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:480px;">
+      <h3>Export "${escapeHtml(list.title)}"</h3>
+      <div class="modal-sub">Select all is done for you — just hit Copy, or select manually.</div>
+      <div class="field">
+        <textarea id="listExportText" rows="12" readonly style="font-family:var(--font-mono); font-size:12.5px;" onclick="this.select();">${escapeHtml(text)}</textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('listExportOverlay').remove();">Close</button>
+        <button class="btn brass" onclick="copyListExportText()">Copy</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  diagLogEvent('activity', `Opened export popup for list "${list.title}"`);
+  setTimeout(()=>{
+    const ta = document.getElementById('listExportText');
+    if(ta){ ta.focus(); ta.select(); }
+  }, 50);
+}
+function copyListExportText(){
+  const ta = document.getElementById('listExportText');
+  if(!ta) return;
+  navigator.clipboard.writeText(ta.value).then(
+    ()=> showToast('Copied to clipboard'),
+    ()=>{ ta.select(); showToast('Could not auto-copy — text is selected, try Ctrl/Cmd+C'); }
+  );
+}
 async function deleteList(listId){
   if(!confirm('Delete this entire list?')) return;
   const listTitle = state.lists.find(l=>l.id===listId)?.title;
@@ -3899,8 +4680,15 @@ async function deleteList(listId){
 async function addNewList(){
   const title = prompt('Name this list:');
   if(!title || !title.trim()) return;
-  state.lists.push({ id: newId('list'), title: title.trim(), items: [] });
+  state.lists.push({ id: newId('list'), title: title.trim(), folder: null, items: [] });
   diagLogEvent('activity', `Created list "${title.trim()}"`);
+  await saveLists();
+  renderMain();
+}
+async function setListFolder(listId, folder){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  list.folder = folder || null;
   await saveLists();
   renderMain();
 }
@@ -4171,6 +4959,7 @@ async function deleteMetricDef(metricId){
     : `Remove "${def.name}"? Past logged values stay in your history, you just won't see an input for it going forward.`;
   if(!confirm(msg)) return;
   state.healthMetricDefs = state.healthMetricDefs.filter(m=>m.id!==metricId);
+  pendingMetricDefDeletes.push(metricId);
   await saveHealthMetricDefs();
   renderMain();
 }
@@ -4433,17 +5222,43 @@ function renderTrainingExerciseLogRow(date, block, index){
       ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
       ${!isSessionLevel && ex && ex.videoUrl ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Form guide</a>` : ''}
       <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
-        <div class="toggle-switch ${log&&log.completed?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
-        <div class="radio-pills" id="${rowId}_diff">
-          ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${log&&log.difficulty===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v})">${v}</button>`).join('')}
+        <div class="toggle-switch ${log&&log.completed?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); updateTrainingDayAggPreview();"><div class="knob"></div></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="page-sub" style="text-transform:uppercase; font-size:10.5px; letter-spacing:0.03em;">Difficulty</span>
+          <div class="radio-pills" id="${rowId}_diff">
+            ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${log&&log.difficulty===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v})">${v}</button>`).join('')}
+          </div>
         </div>
       </div>
-      <textarea id="${rowId}_notes" rows="2" style="margin-top:8px;" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…">${escapeHtml(log&&log.notes?log.notes:'')}</textarea>
+      <div class="field" style="margin-top:8px; margin-bottom:0;">
+        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…">${escapeHtml(log&&log.notes?log.notes:'')}</textarea>
+      </div>
     </div>
   `;
 }
 function pickTrainingExDifficultyUI(rowId, val){
   document.querySelectorAll(`#${rowId}_diff .radio-pill`).forEach(b=> b.classList.toggle('active', Number(b.dataset.val)===val));
+  updateTrainingDayAggPreview();
+}
+// Live preview of the header aggregate as you toggle/rate exercises, before
+// hitting Save — the saved-state recompute on save already worked, but
+// leaving the header stale until Save felt broken (reported: "counter next
+// to the session name does not update"). This reads current DOM state, not
+// saved state, purely for instant feedback; Save still writes the real data.
+function updateTrainingDayAggPreview(){
+  const badge = document.getElementById('trainingDayAggBadge');
+  if(!badge) return;
+  const rowEls = document.querySelectorAll('#trainingExerciseRows [data-row-id]');
+  let completed = 0, diffSum = 0, diffCount = 0;
+  rowEls.forEach(rowEl=>{
+    const rowId = rowEl.dataset.rowId;
+    const doneEl = document.getElementById(`${rowId}_done`);
+    if(doneEl && doneEl.classList.contains('on')) completed++;
+    const diffEl = document.querySelector(`#${rowId}_diff .radio-pill.active`);
+    if(diffEl){ diffSum += Number(diffEl.dataset.val); diffCount++; }
+  });
+  const avg = diffCount ? Math.round((diffSum/diffCount)*10)/10 : null;
+  badge.textContent = `${completed}/${rowEls.length} done${avg!=null?` · avg difficulty ${avg}`:''}`;
 }
 
 function renderTrainingDayCard(date){
@@ -4463,14 +5278,24 @@ function renderTrainingDayCard(date){
   const typeColors = { strength:'var(--brass)', walk:'var(--teal)', rest:'var(--slate-light)' };
   const typeColor = typeColors[session.type] || 'var(--slate)';
   const hasLogs = getTrainingLogsForDate(date).length > 0;
+  const moveFormOpen = state.trainingMoveFormDate === date;
   return `
     <div class="card" style="padding:18px; margin-bottom:20px;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
         <span style="width:10px;height:10px;border-radius:50%;background:${typeColor};display:inline-block;"></span>
         <h2 style="margin:0; font-family:var(--font-display);">${escapeHtml(session.name)}</h2>
-        ${agg ? `<span class="page-sub" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
+        ${agg ? `<span class="page-sub" id="trainingDayAggBadge" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
+        <button class="icon-btn" title="Move to another date" onclick="toggleMoveDateForm('${date}')">⇄</button>
         <button class="icon-btn" title="Clear this day's mapping" onclick="clearTrainingDayMapping('${date}')">✕</button>
       </div>
+      ${moveFormOpen ? `
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px; padding:8px 10px; background:var(--paper-dim); border-radius:8px;">
+          <span class="page-sub">Move to:</span>
+          <input type="date" id="moveDateInput_${date}" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
+          <button class="btn brass sm" onclick="moveTrainingDayMapping('${date}', document.getElementById('moveDateInput_${date}').value)">Move</button>
+          <button class="btn ghost sm" onclick="toggleMoveDateForm('${date}')">Cancel</button>
+        </div>
+      ` : ''}
       ${session.format ? `<div class="page-sub" style="margin-bottom:8px;">${escapeHtml(session.format)}</div>` : ''}
 
       <div id="trainingExerciseRows">
@@ -4600,6 +5425,12 @@ function renderTrainingCalendarSubpage(){
         ${renderTrainingDayCard(expanded)}
       </div>
     ` : ''}
+
+    <div class="danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="page-sub" style="margin-bottom:10px;">Unmaps every day on the calendar. Your session library, exercise library, and logged history are each cleared independently — this only touches the plan/schedule.</div>
+      <button class="btn danger sm" onclick="confirmClearTrainingPlan()">Clear Training Plan</button>
+    </div>
   `;
 }
 function shiftTrainingCalMonth(delta){
@@ -4662,6 +5493,12 @@ function renderTrainingHistorySubpage(){
         `;
       }).join('') : `<div class="card empty-state"><span class="glyph">☺</span>No training logged yet.</div>`}
     </div>
+
+    <div class="danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="page-sub" style="margin-bottom:10px;">Permanently deletes every logged exercise entry across every day. Your plan (sessions, exercises, calendar) is not affected.</div>
+      <button class="btn danger sm" onclick="confirmClearTrainingLogs()">Clear All Logs</button>
+    </div>
   `;
 }
 
@@ -4669,15 +5506,26 @@ function renderTrainingHistorySubpage(){
 function renderTrainingSessionsSubpage(){
   return `
     <div class="section">
-      <div class="section-head"><h2>Session Library</h2></div>
+      <div class="section-head">
+        <h2>Session Library</h2>
+        <button class="btn brass sm" onclick="openTrainingSessionBuilder()">+ New Session</button>
+      </div>
       <div class="card" style="padding:4px 16px;">
         ${state.training.sessions.length ? state.training.sessions.map(s=>`
           <div class="metric-manage-row">
             <span class="metric-manage-name">${escapeHtml(s.name)} <span class="page-sub">(${escapeHtml(s.type||'strength')}${s.blocks&&s.blocks.length?`, ${s.blocks.length} exercise${s.blocks.length===1?'':'s'}`:''})</span></span>
+            <button class="btn ghost sm" onclick="openTrainingAssignDatesModal('${s.id}')">Assign to Dates</button>
+            <button class="icon-btn" title="Edit" onclick="openTrainingSessionBuilder('${s.id}')">✎</button>
             <button class="icon-btn" title="Delete" onclick="deleteTrainingSession('${s.id}')">✕</button>
           </div>
-        `).join('') : `<div class="page-sub" style="padding:10px 0;">No sessions yet — import a plan to get started.</div>`}
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No sessions yet — import a plan, or build one manually with "+ New Session".</div>`}
       </div>
+    </div>
+
+    <div class="danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="page-sub" style="margin-bottom:10px;">Permanently deletes every session in your library. Sessions, exercises, calendar, and logs are each cleared independently — this only touches sessions.</div>
+      <button class="btn danger sm" onclick="confirmClearTrainingSessions()">Clear All Sessions</button>
     </div>
   `;
 }
@@ -4701,7 +5549,10 @@ function renderTrainingExercisesSubpage(){
   const sorted = [...state.training.exercises].sort((a,b)=> a.name.localeCompare(b.name));
   return `
     <div class="section">
-      <div class="section-head"><h2>Exercise Library</h2></div>
+      <div class="section-head">
+        <h2>Exercise Library</h2>
+        <button class="btn brass sm" onclick="openAddExerciseModal()">+ Add Exercise</button>
+      </div>
       <div class="card" style="padding:4px 16px;">
         ${sorted.length ? sorted.map(ex=>`
           <div class="metric-manage-row">
@@ -4709,8 +5560,14 @@ function renderTrainingExercisesSubpage(){
             ${ex.videoUrl ? `<a class="btn ghost sm" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Video</a>` : ''}
             <button class="icon-btn" title="Delete" onclick="deleteTrainingExercise('${ex.id}')">✕</button>
           </div>
-        `).join('') : `<div class="page-sub" style="padding:10px 0;">No exercises yet.</div>`}
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No exercises yet — add one with "+ Add Exercise", or import a plan.</div>`}
       </div>
+    </div>
+
+    <div class="danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="page-sub" style="margin-bottom:10px;">Permanently deletes every exercise in your library. Sessions, calendar, and logs are each cleared independently — this only touches exercises.</div>
+      <button class="btn danger sm" onclick="confirmClearTrainingExercises()">Clear All Exercises</button>
     </div>
   `;
 }
@@ -4931,6 +5788,454 @@ function submitTrainingPasteImport(){
   if(overlay) overlay.remove();
 }
 
+/* ---------- Danger Zone: reusable type-to-confirm modal ---------- */
+let _dangerConfirmCallback = null;
+function openDangerConfirmModal(title, disclaimerHtml, confirmWord, callback){
+  _dangerConfirmCallback = callback;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'dangerConfirmOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay){ overlay.remove(); _dangerConfirmCallback=null; } };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3 style="color:var(--flag);">⚠ ${escapeHtml(title)}</h3>
+      <div class="modal-sub">${disclaimerHtml}</div>
+      <div class="field">
+        <label>Type "${escapeHtml(confirmWord)}" to confirm</label>
+        <input type="text" id="dangerConfirmInput" placeholder="${escapeHtml(confirmWord)}"
+          oninput="document.getElementById('dangerConfirmBtn').disabled = this.value.trim().toUpperCase() !== '${confirmWord.toUpperCase()}';">
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('dangerConfirmOverlay').remove(); _dangerConfirmCallback=null;">Cancel</button>
+        <button class="btn danger" id="dangerConfirmBtn" disabled onclick="runDangerConfirm();">Confirm — This Can't Be Undone</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('dangerConfirmInput'); if(el) el.focus(); }, 50);
+}
+function runDangerConfirm(){
+  const cb = _dangerConfirmCallback;
+  const overlay = document.getElementById('dangerConfirmOverlay');
+  if(overlay) overlay.remove();
+  _dangerConfirmCallback = null;
+  if(cb) cb();
+}
+
+/* ---------- Danger Zone: the four clear actions ---------- */
+function confirmClearTrainingPlan(){
+  if(!state.training.calendar.length){ showToast('Nothing to clear — no days are mapped'); return; }
+  openDangerConfirmModal(
+    'Clear Training Plan',
+    `This removes all <b>${state.training.calendar.length}</b> calendar day mapping(s) — every day goes back to unmapped. Your session library, exercise library, and logged history are <b>not</b> affected. Export first if you want a backup.`,
+    'CLEAR PLAN',
+    clearTrainingPlan
+  );
+}
+async function clearTrainingPlan(){
+  const count = state.training.calendar.length;
+  state.training.calendar.forEach(c=> pendingTrainingDeletes.push({ table:'training_calendar', match:{ cal_date:c.date } }));
+  state.training.calendar = [];
+  await saveTraining();
+  diagLogEvent('activity', 'Cleared entire training plan (calendar)', { count });
+  renderMain();
+  showToast(`Cleared ${count} calendar day(s)`);
+}
+
+function confirmClearTrainingLogs(){
+  if(!state.training.logs.length){ showToast('Nothing to clear — no logs yet'); return; }
+  openDangerConfirmModal(
+    'Clear All Training Logs',
+    `This permanently deletes all <b>${state.training.logs.length}</b> logged exercise entries (completed/difficulty/notes), across every day. Your plan (sessions, exercises, calendar) is <b>not</b> affected. Export first if you want a backup for AI tailoring later.`,
+    'CLEAR LOGS',
+    clearTrainingLogs
+  );
+}
+async function clearTrainingLogs(){
+  const count = state.training.logs.length;
+  state.training.logs.forEach(l=> pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:l.date, exercise_id:l.exerciseId } }));
+  state.training.logs = [];
+  await saveTraining();
+  diagLogEvent('activity', 'Cleared all training logs', { count });
+  renderMain();
+  showToast(`Cleared ${count} log entr${count===1?'y':'ies'}`);
+}
+
+function confirmClearTrainingSessions(){
+  if(!state.training.sessions.length){ showToast('Nothing to clear — no sessions yet'); return; }
+  const usedByCalendar = state.training.calendar.length;
+  openDangerConfirmModal(
+    'Clear Session Library',
+    `This permanently deletes all <b>${state.training.sessions.length}</b> session(s) from your library.${usedByCalendar?` Your ${usedByCalendar} calendar day mapping(s) will start pointing at nothing — use "Clear Wrong Mappings" afterward to clean those up, or re-import.`:''} Your exercise library and logged history are <b>not</b> affected. Export first if you want a backup.`,
+    'CLEAR SESSIONS',
+    clearTrainingSessions
+  );
+}
+async function clearTrainingSessions(){
+  const count = state.training.sessions.length;
+  state.training.sessions.forEach(s=> pendingTrainingDeletes.push({ table:'training_sessions', match:{ id:s.id } }));
+  state.training.sessions = [];
+  await saveTraining();
+  diagLogEvent('activity', 'Cleared session library', { count });
+  renderMain();
+  showToast(`Cleared ${count} session(s)`);
+}
+
+function confirmClearTrainingExercises(){
+  if(!state.training.exercises.length){ showToast('Nothing to clear — no exercises yet'); return; }
+  openDangerConfirmModal(
+    'Clear Exercise Library',
+    `This permanently deletes all <b>${state.training.exercises.length}</b> exercise(s) from your library. Any session blocks referencing them will show as missing — use "Clear Wrong Mappings" afterward to clean those up, or re-import. Your sessions, calendar, and logged history are <b>not</b> affected. Export first if you want a backup.`,
+    'CLEAR EXERCISES',
+    clearTrainingExercises
+  );
+}
+async function clearTrainingExercises(){
+  const count = state.training.exercises.length;
+  state.training.exercises.forEach(e=> pendingTrainingDeletes.push({ table:'training_exercises', match:{ id:e.id } }));
+  state.training.exercises = [];
+  await saveTraining();
+  diagLogEvent('activity', 'Cleared exercise library', { count });
+  renderMain();
+  showToast(`Cleared ${count} exercise(s)`);
+}
+
+/* ---------- #6: Move a single day's session to a different date ---------- */
+function toggleMoveDateForm(date){
+  state.trainingMoveFormDate = state.trainingMoveFormDate === date ? null : date;
+  renderMain();
+}
+async function moveTrainingDayMapping(oldDate, newDate){
+  if(!newDate){ showToast('Pick a date first'); return; }
+  if(oldDate === newDate){ showToast('That\'s the same date'); return; }
+  const cal = getTrainingCalEntry(oldDate);
+  if(!cal) return;
+  const existingAtNew = getTrainingCalEntry(newDate);
+  const logsAtOld = getTrainingLogsForDate(oldDate);
+  let msg = `Move this session from ${humanDate(oldDate)} to ${humanDate(newDate)}?`;
+  if(existingAtNew) msg += `\n\n${humanDate(newDate)} already has a session mapped — it will be replaced.`;
+  if(logsAtOld.length) msg += `\n\nNote: ${logsAtOld.length} already-logged exercise(s) for ${humanDate(oldDate)} stay attached to that original date — they don't move with it.`;
+  if(!confirm(msg)) return;
+
+  pendingTrainingDeletes.push({ table:'training_calendar', match:{ cal_date: oldDate } });
+  state.training.calendar = state.training.calendar.filter(c=> c.date!==oldDate && c.date!==newDate);
+  state.training.calendar.push({ date:newDate, sessionId:cal.sessionId });
+  state.trainingMoveFormDate = null;
+  await saveTraining();
+  diagLogEvent('activity', `Moved training session from ${oldDate} to ${newDate}`);
+  if(state.trainingSelectedDate === oldDate) state.trainingSelectedDate = newDate;
+  renderMain();
+  showToast('Session moved');
+}
+
+/* ---------- #1/#2: Manual session builder with searchable exercise picker ---------- */
+let trainingSessionDraft = null; // {id, isNew, name, type, format, blocks:[{exerciseId,reps,sets,notes}]}
+
+function openTrainingSessionBuilder(existingId){
+  const existing = existingId ? getTrainingSessionById(existingId) : null;
+  trainingSessionDraft = existing
+    ? { id: existing.id, isNew:false, name: existing.name, type: existing.type||'strength', format: existing.format||'', blocks: (existing.blocks||[]).map(b=>Object.assign({},b)) }
+    : { id: newId('sess'), isNew:true, name:'', type:'strength', format:'', blocks:[] };
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'sessionBuilderOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeTrainingSessionBuilder(); };
+  document.body.appendChild(overlay);
+  renderSessionBuilderModalBody();
+}
+function closeTrainingSessionBuilder(){
+  const overlay = document.getElementById('sessionBuilderOverlay');
+  if(overlay) overlay.remove();
+  trainingSessionDraft = null;
+}
+function syncSessionDraftFromDom(){
+  if(!trainingSessionDraft) return;
+  const nameEl = document.getElementById('sessBuilderName');
+  const formatEl = document.getElementById('sessBuilderFormat');
+  if(nameEl) trainingSessionDraft.name = nameEl.value;
+  if(formatEl) trainingSessionDraft.format = formatEl.value;
+  trainingSessionDraft.blocks.forEach((b,i)=>{
+    const repsEl = document.getElementById(`sessBlockReps_${i}`);
+    const setsEl = document.getElementById(`sessBlockSets_${i}`);
+    const notesEl = document.getElementById(`sessBlockNotes_${i}`);
+    if(repsEl) b.reps = repsEl.value;
+    if(setsEl) b.sets = setsEl.value ? Number(setsEl.value) : null;
+    if(notesEl) b.notes = notesEl.value;
+  });
+}
+function renderSessionBuilderModalBody(){
+  const overlay = document.getElementById('sessionBuilderOverlay');
+  if(!overlay || !trainingSessionDraft) return;
+  const d = trainingSessionDraft;
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:620px;">
+      <h3>${d.isNew?'New':'Edit'} Session</h3>
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="sessBuilderName" value="${escapeHtml(d.name)}" placeholder="e.g. Full Body A">
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <div class="radio-pills">
+          ${['strength','walk','rest'].map(t=>`<button type="button" class="radio-pill ${d.type===t?'active':''}" onclick="setSessionDraftType('${t}')">${t}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Format (optional)</label>
+        <input type="text" id="sessBuilderFormat" value="${escapeHtml(d.format)}" placeholder="e.g. 3 sets, 60-90s rest">
+      </div>
+      <div class="field">
+        <label>Exercises</label>
+        <div id="sessBuilderBlocks">
+          ${d.blocks.map((b,i)=> renderSessionBuilderBlockRow(b,i)).join('') || `<div class="page-sub" style="padding:6px 0;">No exercises yet — that's fine for walk/rest sessions.</div>`}
+        </div>
+        <button class="btn secondary sm" style="margin-top:4px;" onclick="addSessionDraftBlock()">+ Add Exercise</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeTrainingSessionBuilder()">Cancel</button>
+        <button class="btn brass" onclick="saveSessionDraft()">${d.isNew?'Create':'Save'} Session</button>
+      </div>
+    </div>
+  `;
+}
+function renderSessionBuilderBlockRow(b, idx){
+  const selectedEx = b.exerciseId ? getTrainingExerciseById(b.exerciseId) : null;
+  return `
+    <div class="card" style="padding:10px 12px; margin-bottom:8px; background:var(--paper-dim);">
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <div style="flex:1; position:relative;">
+          <input type="text" class="ex-picker-input" id="sessBlockExInput_${idx}"
+                 placeholder="Search exercises…" value="${escapeHtml(selectedEx?selectedEx.name:'')}"
+                 oninput="filterExercisePicker(${idx})" onfocus="filterExercisePicker(${idx})"
+                 onblur="setTimeout(()=>hideExercisePickerResults(${idx}), 200)">
+          <input type="hidden" id="sessBlockExValue_${idx}" value="${escapeHtml(b.exerciseId||'')}">
+          <div id="sessBlockExResults_${idx}" class="ex-picker-results" style="display:none;"></div>
+        </div>
+        <button class="icon-btn" title="Remove this exercise" onclick="removeSessionDraftBlock(${idx})">✕</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <input type="text" id="sessBlockReps_${idx}" placeholder="Reps (e.g. 12 or 8-10)" value="${escapeHtml(b.reps||'')}" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink);">
+        <input type="number" id="sessBlockSets_${idx}" placeholder="Sets" value="${b.sets||''}" style="width:80px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink);">
+      </div>
+      <input type="text" id="sessBlockNotes_${idx}" placeholder="Notes (optional)" value="${escapeHtml(b.notes||'')}" style="width:100%; margin-top:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink); box-sizing:border-box;">
+    </div>
+  `;
+}
+function setSessionDraftType(t){
+  syncSessionDraftFromDom();
+  trainingSessionDraft.type = t;
+  renderSessionBuilderModalBody();
+}
+function addSessionDraftBlock(){
+  syncSessionDraftFromDom();
+  trainingSessionDraft.blocks.push({ exerciseId:'', reps:'', sets:null, notes:'' });
+  renderSessionBuilderModalBody();
+}
+function removeSessionDraftBlock(idx){
+  syncSessionDraftFromDom();
+  trainingSessionDraft.blocks.splice(idx,1);
+  renderSessionBuilderModalBody();
+}
+function filterExercisePicker(idx){
+  syncSessionDraftFromDom();
+  const inputEl = document.getElementById(`sessBlockExInput_${idx}`);
+  const resultsEl = document.getElementById(`sessBlockExResults_${idx}`);
+  if(!inputEl || !resultsEl) return;
+  const q = inputEl.value.trim().toLowerCase();
+  const matches = [...state.training.exercises].sort((a,b)=>a.name.localeCompare(b.name)).filter(e=> !q || e.name.toLowerCase().includes(q)).slice(0,8);
+  resultsEl.innerHTML = matches.length
+    ? matches.map(e=>`<div class="ex-picker-result-item" data-idx="${idx}" data-ex-id="${escapeHtml(e.id)}" data-ex-name="${escapeHtml(e.name)}" onmousedown="selectExercisePickerResultFromEl(this)">${escapeHtml(e.name)}</div>`).join('')
+    : `<div class="ex-picker-result-item" style="color:var(--slate-light); cursor:default;">No matches — add it in the Exercise Library first</div>`;
+  resultsEl.style.display = 'block';
+}
+function hideExercisePickerResults(idx){
+  const resultsEl = document.getElementById(`sessBlockExResults_${idx}`);
+  if(resultsEl) resultsEl.style.display = 'none';
+}
+function selectExercisePickerResultFromEl(el){
+  const idx = Number(el.dataset.idx);
+  const exId = el.dataset.exId;
+  const exName = el.dataset.exName;
+  if(!trainingSessionDraft || !trainingSessionDraft.blocks[idx]) return;
+  trainingSessionDraft.blocks[idx].exerciseId = exId;
+  const inputEl = document.getElementById(`sessBlockExInput_${idx}`);
+  const valueEl = document.getElementById(`sessBlockExValue_${idx}`);
+  if(inputEl) inputEl.value = exName;
+  if(valueEl) valueEl.value = exId;
+  hideExercisePickerResults(idx);
+}
+async function saveSessionDraft(){
+  syncSessionDraftFromDom();
+  const d = trainingSessionDraft;
+  const name = (d.name||'').trim();
+  if(!name){ showToast('Give the session a name'); return; }
+  d.name = name;
+  const incomplete = d.blocks.filter(b=> !b.exerciseId);
+  if(incomplete.length && !confirm(`${incomplete.length} exercise row(s) don't have an exercise selected and will be dropped. Continue?`)) return;
+  const cleanBlocks = d.blocks.filter(b=> b.exerciseId).map(b=> ({ exerciseId:b.exerciseId, reps:b.reps||'', sets:b.sets||null, notes:b.notes||'' }));
+
+  const existing = state.training.sessions.find(s=>s.id===d.id);
+  const wasNew = !existing;
+  if(existing){
+    existing.name = d.name; existing.type = d.type; existing.format = d.format; existing.blocks = cleanBlocks;
+  } else {
+    state.training.sessions.push({ id:d.id, name:d.name, type:d.type, format:d.format, blocks:cleanBlocks });
+  }
+  await saveTraining();
+  closeTrainingSessionBuilder();
+  diagLogEvent('activity', `${wasNew?'Created':'Updated'} session "${d.name}" manually`);
+  renderMain();
+  showToast(`Session ${wasNew?'created':'updated'}`);
+}
+
+/* ---------- #1: Manual exercise add (so the whole workflow can start from scratch) ---------- */
+function openAddExerciseModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'addExerciseOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Add Exercise</h3>
+      <div class="field"><label>Name</label><input type="text" id="newExName" placeholder="e.g. Bulgarian Split Squat"></div>
+      <div class="field"><label>Video URL (optional)</label><input type="text" id="newExVideo" placeholder="https://..."></div>
+      <div class="field"><label>Notes (optional)</label><input type="text" id="newExNotes"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('addExerciseOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitAddExercise()">Add</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('newExName'); if(el) el.focus(); }, 50);
+}
+async function submitAddExercise(){
+  const name = (document.getElementById('newExName').value||'').trim();
+  if(!name){ showToast('Name required'); return; }
+  const video = (document.getElementById('newExVideo').value||'').trim();
+  const notes = (document.getElementById('newExNotes').value||'').trim();
+  state.training.exercises.push({ id:newId('ex'), name, videoUrl:video, notes });
+  await saveTraining();
+  const overlay = document.getElementById('addExerciseOverlay');
+  if(overlay) overlay.remove();
+  diagLogEvent('activity', `Added exercise "${name}" manually`);
+  renderMain();
+  showToast('Exercise added');
+}
+
+/* ---------- #1: Assign an existing session to several dates at once ---------- */
+let trainingAssignDraft = null; // { sessionId, dates: [] }
+function openTrainingAssignDatesModal(sessionId){
+  trainingAssignDraft = { sessionId, dates: [] };
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'assignDatesOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeTrainingAssignDatesModal(); };
+  document.body.appendChild(overlay);
+  renderAssignDatesModalBody();
+}
+function closeTrainingAssignDatesModal(){
+  const overlay = document.getElementById('assignDatesOverlay');
+  if(overlay) overlay.remove();
+  trainingAssignDraft = null;
+}
+function renderAssignDatesModalBody(){
+  const overlay = document.getElementById('assignDatesOverlay');
+  if(!overlay || !trainingAssignDraft) return;
+  const session = getTrainingSessionById(trainingAssignDraft.sessionId);
+  const dates = trainingAssignDraft.dates;
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:540px;">
+      <h3>Assign "${escapeHtml(session?session.name:'')}" to Dates</h3>
+      <div class="modal-sub">Pick individual dates, or generate a range on specific weekdays.</div>
+
+      <div class="field">
+        <label>Add a single date</label>
+        <div style="display:flex; gap:8px;">
+          <input type="date" id="assignSingleDate" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink);">
+          <button class="btn secondary sm" onclick="addSingleAssignDate()">Add</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Or generate a range on specific weekdays</label>
+        <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+          <input type="date" id="assignRangeStart" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink);">
+          <span class="page-sub">to</span>
+          <input type="date" id="assignRangeEnd" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink);">
+        </div>
+        <div class="radio-pills" id="assignWeekdayPicker">
+          ${DOW_ABBR.map((d,i)=>`<button type="button" class="radio-pill" data-dow="${i}" onclick="this.classList.toggle('active')">${d}</button>`).join('')}
+        </div>
+        <button class="btn secondary sm" style="margin-top:8px;" onclick="generateAssignDateRange()">Generate Dates</button>
+      </div>
+
+      <div class="field">
+        <label>Dates to assign (${dates.length})</label>
+        <div style="max-height:180px; overflow-y:auto;">
+          ${dates.length ? dates.slice().sort().map(d=>`
+            <div class="metric-manage-row">
+              <span class="metric-manage-name">${humanDate(d)}${getTrainingCalEntry(d)?' <span class="page-sub">(replaces existing)</span>':''}</span>
+              <button class="icon-btn" onclick="removeAssignDate('${d}')">✕</button>
+            </div>
+          `).join('') : `<div class="page-sub">No dates added yet.</div>`}
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeTrainingAssignDatesModal()">Cancel</button>
+        <button class="btn brass" onclick="submitAssignDates()" ${dates.length?'':'disabled'}>Assign ${dates.length} Date${dates.length===1?'':'s'}</button>
+      </div>
+    </div>
+  `;
+}
+function addSingleAssignDate(){
+  const val = document.getElementById('assignSingleDate').value;
+  if(!val) return;
+  if(!trainingAssignDraft.dates.includes(val)) trainingAssignDraft.dates.push(val);
+  renderAssignDatesModalBody();
+}
+function removeAssignDate(d){
+  trainingAssignDraft.dates = trainingAssignDraft.dates.filter(x=>x!==d);
+  renderAssignDatesModalBody();
+}
+function generateAssignDateRange(){
+  const start = document.getElementById('assignRangeStart').value;
+  const end = document.getElementById('assignRangeEnd').value;
+  if(!start || !end){ showToast('Pick a start and end date'); return; }
+  const activeDows = [...document.querySelectorAll('#assignWeekdayPicker .radio-pill.active')].map(b=>Number(b.dataset.dow));
+  if(!activeDows.length){ showToast('Pick at least one weekday'); return; }
+  let cur = parseDate(start);
+  const endD = parseDate(end);
+  let added = 0;
+  while(cur <= endD){
+    const dow = cur.getDay();
+    if(activeDows.includes(dow)){
+      const ds = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+      if(!trainingAssignDraft.dates.includes(ds)){ trainingAssignDraft.dates.push(ds); added++; }
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  renderAssignDatesModalBody();
+  showToast(`Added ${added} date(s)`);
+}
+async function submitAssignDates(){
+  const { sessionId, dates } = trainingAssignDraft;
+  if(!dates.length){ showToast('Add at least one date'); return; }
+  const replacing = dates.filter(d=> getTrainingCalEntry(d)).length;
+  if(replacing && !confirm(`${replacing} of these date(s) already have a session mapped — they'll be replaced. Continue?`)) return;
+  dates.forEach(d=>{
+    const existing = state.training.calendar.find(c=>c.date===d);
+    if(existing) existing.sessionId = sessionId;
+    else state.training.calendar.push({ date:d, sessionId });
+  });
+  await saveTraining();
+  diagLogEvent('activity', `Assigned session to ${dates.length} date(s) manually`);
+  closeTrainingAssignDatesModal();
+  renderMain();
+  showToast(`Assigned to ${dates.length} date(s)`);
+}
+
 
 /* =========================================================
    RENDER: SETTINGS VIEW
@@ -5041,6 +6346,25 @@ function renderSettingsGeneral(){
         </div>
       </div>
     </div>
+
+    <div class="section">
+      <div class="section-head"><h2>List Folders</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">Group your Lists (Travel, Shopping, Gifts, etc.) — assign a folder to each list from the Lists page.</div>
+        <div class="tag-editor">
+          ${(state.settings.listFolders||[]).map(f=>`
+            <span class="tag-editable">${escapeHtml(f)}
+              <button onclick="renameListFolder('${escapeHtml(f)}')" title="Rename">✎</button>
+              <button onclick="removeListFolder('${escapeHtml(f)}')" title="Remove">✕</button>
+            </span>
+          `).join('') || '<span class="page-sub">No folders yet.</span>'}
+        </div>
+        <div class="add-item-row" style="max-width:320px;">
+          <input type="text" placeholder="New folder…" id="newListFolderInput" onkeydown="if(event.key==='Enter'){addTag('listFolders', this.value); this.value='';}">
+          <button class="btn secondary sm" onclick="const i=document.getElementById('newListFolderInput'); addTag('listFolders', i.value); i.value='';">Add</button>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -5131,7 +6455,7 @@ create table if not exists task_completions (
   primary key (pin, task_id, completed_date)
 );
 create table if not exists lists (
-  id text primary key, pin text not null, title text not null,
+  id text primary key, pin text not null, title text not null, folder text,
   sort_order int default 0, updated_at timestamptz default now()
 );
 create table if not exists list_items (
@@ -5156,7 +6480,7 @@ create table if not exists health_metric_defs (
 );
 create table if not exists app_settings (
   pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
-  last_active_date date
+  list_folders jsonb default '[]', last_active_date date
 );
 create table if not exists training_exercises (
   pin text not null, id text not null, name text not null,
@@ -5189,6 +6513,8 @@ alter table health_logs add column if not exists weight numeric;
 alter table health_logs add column if not exists custom_metrics jsonb default '{}';
 alter table health_metric_defs add column if not exists core boolean default false;
 alter table health_metric_defs add column if not exists visible boolean default true;
+alter table app_settings add column if not exists list_folders jsonb default '[]';
+alter table lists add column if not exists folder text;
 
 -- BREAKING CHANGE (v3.0.0): training_logs moved from one row per DAY to one
 -- row per EXERCISE per day, so it needs an exercise_id column as part of its
@@ -5259,6 +6585,21 @@ function renderSettingsAppearance(){
       <div class="section-head"><h2>Appearance</h2></div>
       <div class="card" style="padding:16px;">
         <div class="field">
+          <label>Color Theme</label>
+          <div class="page-sub" style="margin-bottom:10px;">Changes the whole app's palette — cards, backgrounds, task colors, everything.</div>
+          <div class="theme-swatch-row">
+            ${COLOR_THEMES.map(t=>`
+              <button class="theme-swatch ${((state.settings.colorTheme||'warm')===t.key)?'selected':''}" onclick="setColorTheme('${t.key}')">
+                <span class="theme-swatch-preview" style="background:${t.previewBg};">
+                  <span style="background:${t.previewAccent};"></span>
+                </span>
+                <span class="theme-swatch-label">${t.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="field">
           <label>Accent Color</label>
           <div class="swatch-row">
             ${ACCENT_PRESETS.map(c=>`<div class="swatch ${state.settings.accentColor===c?'selected':''}" style="background:${c};" onclick="setAccentColor('${c}')"></div>`).join('')}
@@ -5286,6 +6627,23 @@ function renderSettingsAppearance(){
             <div class="toggle-switch ${state.settings.darkMode?'on':''}" onclick="toggleDarkMode()"><div class="knob"></div></div>
             <span>${state.settings.darkMode?'On':'Off'} — also toggleable anytime from the ${state.settings.darkMode?'☀':'☾'} icon in the sidebar</span>
           </div>
+        </div>
+
+        <div class="field">
+          <label>Content Width</label>
+          <div class="radio-pills" style="margin-bottom:10px;">
+            <button type="button" class="radio-pill ${state.settings.contentWidthMode!=='manual'?'active':''}" onclick="setContentWidthMode('auto')">Automatic (based on screen size)</button>
+            <button type="button" class="radio-pill ${state.settings.contentWidthMode==='manual'?'active':''}" onclick="setContentWidthMode('manual')">Manual</button>
+          </div>
+          ${state.settings.contentWidthMode==='manual' ? `
+            <select onchange="setContentWidthPreset(this.value)" style="width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; background:var(--paper); color:var(--ink);">
+              <option value="compact" ${state.settings.contentWidthPreset==='compact'?'selected':''}>Compact (980px)</option>
+              <option value="standard" ${state.settings.contentWidthPreset==='standard'?'selected':''}>Standard (1240px, default)</option>
+              <option value="wide" ${state.settings.contentWidthPreset==='wide'?'selected':''}>Wide (1600px)</option>
+              <option value="xwide" ${state.settings.contentWidthPreset==='xwide'?'selected':''}>Extra Wide (1920px)</option>
+              <option value="full" ${state.settings.contentWidthPreset==='full'?'selected':''}>Full Width (no limit)</option>
+            </select>
+          ` : `<div class="page-sub">Content area sizes itself to your window, same as it always has.</div>`}
         </div>
       </div>
     </div>
@@ -5677,6 +7035,33 @@ async function renameTag(field, oldValue){
   await saveTasks();
   renderMain();
   showToast(`Renamed to "${trimmed}" — updated on all matching tasks`);
+}
+
+async function removeListFolder(name){
+  const usedBy = state.lists.filter(l=>l.folder===name).length;
+  const msg = usedBy
+    ? `Remove the "${name}" folder? ${usedBy} list(s) using it will become unfoldered — they're not deleted.`
+    : `Remove the "${name}" folder?`;
+  if(!confirm(msg)) return;
+  state.settings.listFolders = (state.settings.listFolders||[]).filter(f=>f!==name);
+  state.lists.forEach(l=>{ if(l.folder===name) l.folder = null; });
+  await saveSettings();
+  await saveLists();
+  renderMain();
+  showToast('Folder removed');
+}
+async function renameListFolder(oldName){
+  const newValue = prompt(`Rename "${oldName}" to:`, oldName);
+  if(!newValue || !newValue.trim() || newValue.trim() === oldName) return;
+  const trimmed = newValue.trim();
+  const idx = (state.settings.listFolders||[]).indexOf(oldName);
+  if(idx === -1) return;
+  state.settings.listFolders[idx] = trimmed;
+  state.lists.forEach(l=>{ if(l.folder===oldName) l.folder = trimmed; });
+  await saveSettings();
+  await saveLists();
+  renderMain();
+  showToast(`Renamed to "${trimmed}" — updated on all matching lists`);
 }
 
 function copySql(){
@@ -6147,15 +7532,11 @@ async function confirmNewDay(forDate){
 /* =========================================================
    INIT
    ========================================================= */
-function setLoadingText(text){
-  const el = document.querySelector('#loadingScreen div:last-child');
-  if(el) el.textContent = text;
-}
-
 // Full-screen overlay shown while the background sync reconciles local vs
 // remote data. Intercepts every click (so nothing can be changed mid-sync)
 // and shows a short "still syncing" toast if someone tries.
 function renderSyncBlockOverlay(){
+  if(state.splashActive) return; // the splash screen owns this phase — don't also pop the older overlay behind/over it
   let el = document.getElementById('syncBlockOverlay');
   if(state.initialSyncBlocking){
     if(!el){
@@ -6177,6 +7558,8 @@ function renderSyncBlockOverlay(){
 function setSyncBlockText(text){
   const el = document.getElementById('syncBlockText');
   if(el) el.textContent = text;
+  const splashEl = document.getElementById('splashStatus');
+  if(splashEl) splashEl.textContent = text;
 }
 
 /* =========================================================
@@ -6372,22 +7755,167 @@ async function init(){
   diagLogEvent('app', `Starting — v${APP_VERSION}, storage: ${usingNativeAppStorage?'Claude':'browser'}`);
   await runPasscodeGate();
   await loadSettingsOnly(); // pick up anything the gate just wrote (pin/passcode), fully
+  applyColorTheme(); // before the splash shows, so it reflects the chosen theme from the first frame
   document.getElementById('loadingScreen').classList.remove('hidden');
+  state.splashActive = true;
   await loadAll(); // local data only now — fast, no network wait
-  document.getElementById('loadingScreen').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  render();
-  // keep the "Synced Xm ago" label fresh without requiring an interaction
-  setInterval(updateSyncBadge, 30000);
-  if(!usingNativeAppStorage){
-    setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
+
+  let bypassTimer = null;
+  let offlineListener = null;
+  const clearBypassWatchers = ()=>{
+    if(bypassTimer){ clearTimeout(bypassTimer); bypassTimer = null; }
+    if(offlineListener){ window.removeEventListener('offline', offlineListener); offlineListener = null; }
+  };
+  const revealApp = ()=>{
+    if(!state.splashActive) return; // idempotent — only reveal once, whichever path gets there first
+    state.splashActive = false;
+    clearBypassWatchers();
+    hideSplashBypassButton();
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    render();
+    setInterval(updateSyncBadge, 30000);
+    if(!usingNativeAppStorage){
+      setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
+    }
+  };
+
+  if(syncConfigured()){
+    // The splash now covers the full wait — local load AND the initial
+    // Supabase reconciliation — per request: no need to interact with the
+    // app while it's loading. But a hung/very slow connection shouldn't
+    // trap the person on a splash screen forever, so a bypass appears if
+    // either: it's taken longer than 30s, or the browser reports no
+    // internet connection at all (checked immediately, and again if
+    // connectivity drops mid-wait — no need to sit through the full 30s
+    // if we already know there's no network).
+    let bypassShown = false;
+    const maybeBypass = ()=>{ if(!bypassShown){ bypassShown = true; showSplashBypassButton(revealApp); } };
+    bypassTimer = setTimeout(maybeBypass, 30000);
+    if(navigator.onLine === false) maybeBypass(); // offline from the start — don't make them wait 30s to find out
+    offlineListener = ()=> maybeBypass();
+    window.addEventListener('offline', offlineListener);
+    // runBackgroundSync() itself is unchanged — still resolves (success or
+    // internally-handled failure) on its own, still drives the New Day
+    // check on ITS OWN completion (not on bypass), preserving the existing
+    // safety property that New Day review never shows before a real sync
+    // attempt has actually resolved.
+    runBackgroundSync().then(()=>{
+      revealApp();
+    }).then(()=> maybeShowNewDayModal());
+  } else {
+    revealApp();
+    maybeShowNewDayModal();
   }
-  // The app itself stays fully non-blocking (runBackgroundSync isn't awaited
-  // here), but the New Day review specifically waits for it to resolve —
-  // showing it before a cross-device sync completes risks displaying stale
-  // "not done" status for something you actually finished on another device.
-  runBackgroundSync().then(()=> maybeShowNewDayModal());
 }
+function showSplashBypassButton(onClick){
+  const status = document.getElementById('splashStatus');
+  if(status) status.textContent = 'Taking longer than usual — you may be offline.';
+  const btn = document.getElementById('splashBypassBtn');
+  if(btn){
+    btn.classList.remove('hidden');
+    btn.onclick = onClick;
+  }
+}
+function hideSplashBypassButton(){
+  const btn = document.getElementById('splashBypassBtn');
+  if(btn) btn.classList.add('hidden');
+}
+
+/* =========================================================
+   COMMAND PALETTE (Cmd/Ctrl+K) — jump to a page, list, or task
+   ========================================================= */
+let cmdPaletteOpen = false;
+let cmdPaletteQuery = '';
+let cmdPaletteIndex = 0;
+
+function openCommandPalette(){
+  cmdPaletteOpen = true;
+  cmdPaletteQuery = '';
+  cmdPaletteIndex = 0;
+  renderCommandPalette();
+}
+function closeCommandPalette(){
+  cmdPaletteOpen = false;
+  const el = document.getElementById('cmdPaletteOverlay');
+  if(el) el.remove();
+}
+function getCommandPaletteResults(){
+  const q = cmdPaletteQuery.trim().toLowerCase();
+  const results = [];
+  const PAGES = [
+    ['dashboard','▣','Dashboard'], ['overdue','⚑','Overdue'], ['tasks','☰','All Tasks'],
+    ['calendar','▦','Calendar'], ['lists','▤','Lists'], ['health','♥','Health Log'],
+    ['training','⛊','Training'], ['settings','⚙','Settings'],
+  ];
+  PAGES.forEach(([key,icon,label])=>{
+    if(!q || label.toLowerCase().includes(q)){
+      results.push({ icon, label, sub:'Page', action:()=>{ setView(key); closeCommandPalette(); } });
+    }
+  });
+  if(q){
+    state.lists.forEach(l=>{
+      if(l.title.toLowerCase().includes(q)){
+        results.push({ icon:'▤', label:l.title, sub:'List', action:()=>{ setView('lists'); selectList(l.id); closeCommandPalette(); } });
+      }
+    });
+    state.tasks.oneTime.forEach(t=>{
+      if(!t.done && t.name.toLowerCase().includes(q)){
+        results.push({ icon:'☐', label:t.name, sub:'One-Time Task', action:()=>{ closeCommandPalette(); openTaskModal('oneTime', t.id); } });
+      }
+    });
+    state.tasks.recurring.forEach(t=>{
+      if(t.name.toLowerCase().includes(q)){
+        results.push({ icon:'↻', label:t.name, sub:'Recurring Task', action:()=>{ closeCommandPalette(); openTaskModal('recurring', t.id); } });
+      }
+    });
+  }
+  return results.slice(0,10);
+}
+function renderCommandPalette(){
+  const results = getCommandPaletteResults();
+  if(cmdPaletteIndex >= results.length) cmdPaletteIndex = Math.max(0, results.length-1);
+  let overlay = document.getElementById('cmdPaletteOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.className = 'modal-overlay cmd-overlay';
+    overlay.id = 'cmdPaletteOverlay';
+    overlay.onclick = (e)=>{ if(e.target===overlay) closeCommandPalette(); };
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div class="cmd-palette" onclick="event.stopPropagation();">
+      <input type="text" id="cmdPaletteInput" value="${escapeHtml(cmdPaletteQuery)}" placeholder="Jump to a page, list, or task…"
+             class="cmd-palette-input"
+             oninput="cmdPaletteQuery=this.value; cmdPaletteIndex=0; renderCommandPalette();"
+             onkeydown="handleCmdPaletteKey(event)">
+      <div class="cmd-palette-results">
+        ${results.length ? results.map((r,i)=>`
+          <div class="cmd-palette-item ${i===cmdPaletteIndex?'active':''}" onmousedown="getCommandPaletteResults()[${i}].action()">
+            <span class="cmd-palette-icon">${r.icon}</span>
+            <span class="cmd-palette-label">${escapeHtml(r.label)}</span>
+            <span class="cmd-palette-sub">${escapeHtml(r.sub)}</span>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:16px 18px;">No matches</div>`}
+      </div>
+    </div>
+  `;
+  const input = document.getElementById('cmdPaletteInput');
+  if(input){ input.focus(); const v=input.value; input.value=''; input.value=v; }
+}
+function handleCmdPaletteKey(e){
+  const results = getCommandPaletteResults();
+  if(e.key==='ArrowDown'){ e.preventDefault(); cmdPaletteIndex=Math.min(results.length-1, cmdPaletteIndex+1); renderCommandPalette(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); cmdPaletteIndex=Math.max(0, cmdPaletteIndex-1); renderCommandPalette(); }
+  else if(e.key==='Enter'){ e.preventDefault(); if(results[cmdPaletteIndex]) results[cmdPaletteIndex].action(); }
+  else if(e.key==='Escape'){ closeCommandPalette(); }
+}
+document.addEventListener('keydown', (e)=>{
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){
+    e.preventDefault();
+    if(cmdPaletteOpen) closeCommandPalette(); else openCommandPalette();
+  }
+});
 
 init();
 
