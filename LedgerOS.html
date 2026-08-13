@@ -58,7 +58,8 @@ button{cursor:pointer}
 .tbtn{background:var(--chip);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px}
 .tbtn:hover{background:var(--line)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px}
-.cards .kpi{opacity:0;animation:kpiFadeIn .35s ease forwards;transition:transform .15s ease,box-shadow .15s ease}
+.cards .kpi{transition:transform .15s ease,box-shadow .15s ease}
+.cards .kpi.fade-in{opacity:0;animation:kpiFadeIn .35s ease forwards}
 .cards .kpi:nth-child(1){animation-delay:.03s}
 .cards .kpi:nth-child(2){animation-delay:.08s}
 .cards .kpi:nth-child(3){animation-delay:.13s}
@@ -82,6 +83,14 @@ button{cursor:pointer}
 
 table{width:100%;border-collapse:collapse;font-size:13px}
 .sticky-table{border-collapse:separate;border-spacing:0}
+/* Sticky cells can show a hairline sliver of the content scrolling behind them, due to sub-pixel
+   rounding in how browsers position sticky elements during scroll. Masking each sticky cell's
+   right edge with a same-background pseudo-element that extends 2px past its own boundary hides
+   that seam permanently, at any scroll position. Applies app-wide to every sticky column. */
+.sticky-table th[style*="position:sticky"],
+.sticky-table td[style*="position:sticky"]{position:sticky}
+.sticky-table th[style*="position:sticky"]::after,
+.sticky-table td[style*="position:sticky"]::after{content:'';position:absolute;top:0;bottom:0;right:-2px;width:2px;background-color:inherit}
 th{text-align:left;color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:8px 9px;border-bottom:1px solid var(--line)}
 tr.click{cursor:pointer} tr.click:hover td{background:var(--panel2)}
@@ -113,7 +122,7 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none}
 .empty{padding:40px 20px;text-align:center;color:var(--muted)}
 .empty .big{font-size:30px;margin-bottom:8px}
 
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#173a29;border:1px solid var(--green);color:#c9f2dd;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:80vw;z-index:100}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#173a29;border:1px solid var(--green);color:#c9f2dd;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:80vw;z-index:100}
 .toast.show{opacity:1} .toast.bad{background:#3a1c19;border-color:var(--red);color:#ffd6d0}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
@@ -122,7 +131,7 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none}
 .modal-in{animation:modalPopIn .18s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes modalPopIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 .panel-fade-in{animation:panelFadeIn .2s ease}
-.glow-highlight{animation:glowHighlight 1.8s ease}
+.glow-highlight{animation:glowHighlight 0.6s ease infinite}
 @keyframes glowHighlight{0%{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);background:color-mix(in srgb, var(--accent) 18%, var(--panel))}100%{box-shadow:0 0 0 0 transparent;background:var(--panel)}}
 #splashScreen{position:fixed;inset:0;z-index:9999;background:var(--head),radial-gradient(600px 600px at 50% 20%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity .35s ease,visibility .35s ease}
 #splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -197,7 +206,76 @@ main{padding:22px;max-width:var(--content-max-width);margin:0;min-height:100vh;f
     var(--bg);
 }
 @media print{#sidebar,.noprint{display:none!important} body{background:#fff;color:#000} main{max-width:none}}
-@media(max-width:760px){.app-shell{flex-direction:column} #sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center} #sidebar .brand{padding:10px 14px} nav{flex-direction:row;flex-wrap:wrap;padding:6px 10px} .sidebar-footer{flex-direction:row;border-top:none;border-left:1px solid var(--line);margin-left:auto} .grid2,.grid3{grid-template-columns:1fr}}
+.mobile-topbar{display:none}
+.mobile-nav-toggle{display:none}
+.mobile-nav-close{display:none}
+.mobile-nav-scrim{display:none}
+.alloc-unalloc-table .col-check{width:30px}
+.alloc-unalloc-table .col-jv{width:80px}
+.alloc-unalloc-table .col-date{width:110px}
+.alloc-unalloc-table .col-amt{width:130px}
+.themeBtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:760px){
+  .alloc-unalloc-table .col-jv,.alloc-unalloc-table .col-date{width:1%;white-space:nowrap}
+  .alloc-unalloc-table .col-amt{width:auto}
+  .app-shell{flex-direction:column}
+  .mobile-topbar{
+    display:flex;align-items:center;gap:10px;
+    position:sticky;top:0;z-index:30;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    background:var(--sidebar-bg);border-bottom:1px solid var(--sidebar-line);
+  }
+  .mobile-nav-toggle{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:8px;border:1px solid var(--sidebar-line);
+    background:rgba(255,255,255,0.06);color:var(--sidebar-text);font-size:16px;cursor:pointer;flex-shrink:0;
+  }
+  .mobile-topbar-title{color:var(--sidebar-text);font-weight:700;font-size:15px}
+  .mobile-nav-scrim{
+    display:block;position:fixed;inset:0;background:rgba(0,0,0,0.45);
+    z-index:39;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .mobile-nav-scrim.show{opacity:1;pointer-events:auto}
+  #sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:min(82vw,300px);height:100vh;
+    flex-direction:column;flex-wrap:nowrap;align-items:stretch;
+    transform:translateX(-100%);transition:transform .22s ease;
+    z-index:40;overflow-y:auto;
+    padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left);
+    box-shadow:2px 0 24px rgba(0,0,0,0.25);
+  }
+  #sidebar.open{transform:translateX(0)}
+  #sidebar .brand{padding:10px 14px}
+  .mobile-nav-close{
+    display:flex;align-items:center;justify-content:center;
+    position:absolute;top:calc(10px + env(safe-area-inset-top));right:10px;
+    width:32px;height:32px;border-radius:8px;border:1px solid var(--sidebar-line);
+    background:rgba(255,255,255,0.06);color:var(--sidebar-text);font-size:14px;cursor:pointer;z-index:1;
+  }
+  nav{flex-direction:column;padding:6px 10px}
+  .sidebar-footer{flex-direction:column;border-top:1px solid var(--sidebar-line);border-left:none;margin-left:0}
+  .grid2,.grid3{grid-template-columns:1fr}
+  main#app{padding-left:calc(22px + env(safe-area-inset-left));padding-right:calc(22px + env(safe-area-inset-right));padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+
+  /* Pin override: when sidebarPinned is on, force the full desktop sidebar layout back on
+     regardless of window width, instead of the collapsed drawer treatment above. */
+  body.sidebar-pinned .app-shell{flex-direction:row}
+  body.sidebar-pinned .mobile-topbar{display:none}
+  body.sidebar-pinned .mobile-nav-scrim{display:none;opacity:0;pointer-events:none}
+  body.sidebar-pinned .mobile-nav-close{display:none}
+  body.sidebar-pinned #sidebar{
+    position:sticky;top:0;left:auto;bottom:auto;width:230px;height:100vh;
+    flex-direction:column;flex-wrap:nowrap;align-items:stretch;
+    transform:none;transition:none;z-index:20;overflow-y:auto;
+    padding-top:0;padding-bottom:0;padding-left:0;
+    box-shadow:none;
+  }
+  body.sidebar-pinned #sidebar .brand{padding:16px}
+  body.sidebar-pinned nav{flex-direction:column;padding:8px}
+  body.sidebar-pinned .sidebar-footer{flex-direction:column;border-top:1px solid var(--sidebar-line);border-left:none;margin-left:0}
+  body.sidebar-pinned main#app{padding-left:22px;padding-right:22px;padding-bottom:22px}
+}
 </style>
 </head>
 <body>
@@ -211,12 +289,19 @@ main{padding:22px;max-width:var(--content-max-width);margin:0;min-height:100vh;f
   <button class="splash-bypass" id="splashBypassBtn" style="display:none" onclick="useCachedDataNow()">Use local copy for now</button>
 </div>
 <div class="app-shell">
+  <div class="mobile-topbar noprint">
+    <button class="mobile-nav-toggle" onclick="openMobileNav()" aria-label="Open menu">☰</button>
+    <span class="mobile-topbar-title" id="mobileTopbarTitle">Dashboard</span>
+  </div>
+  <div class="mobile-nav-scrim" id="mobileNavScrim" onclick="closeMobileNav()"></div>
   <aside id="sidebar">
+    <button class="mobile-nav-close noprint" onclick="closeMobileNav()" aria-label="Close menu">✕</button>
     <div class="brand"><div class="mark">₪</div><h1>LedgerOS</h1><span class="mut" style="font-size:9.5px;margin-left:4px" id="sidebarVersionTag"></span></div>
     <div style="padding:0 10px 8px" class="noprint"><button class="tbtn" style="width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between" onclick="openCmdPalette()">🔍 Search<span class="mut" style="font-size:10.5px">Ctrl+K</span></button></div>
     <nav id="nav"></nav>
     <div class="sidebar-footer noprint">
       <div class="cloud" id="cloudBtn" onclick="openSettings()"><span class="dot" id="dot"></span><span id="statusTxt">Local only</span></div>
+      <button class="themeBtn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Pin sidebar open on narrow windows">📌</button>
       <button class="themeBtn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
     </div>
   </aside>
@@ -234,12 +319,50 @@ const SEED = {"accounts":[],"ledger":[],"budget":[],"templates":[],"categories":
 <script>
 /* ============================= STATE ============================= */
 // Bump this on every shipped change (major.minor.patch). Shown in Settings.
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.6.1';
 // STANDING CONVENTION (as of v3.6.1, applies to every release from here on):
 // every time APP_VERSION is bumped, add a matching entry to CHANGELOG below —
 // version, date (YYYY-MM-DD), and a short bullet list of what changed. This is
 // shown to the person in Settings → Change Log. Do not skip this step.
 const CHANGELOG = [
+  {version:'4.6.1', date:'2026-08-13', changes:[
+    'New: a 📌 pin toggle next to the theme button, off by default — when turned on, it forces the full desktop sidebar to stay visible even if the browser window is narrow (a smaller monitor, split-screen, etc.), instead of collapsing into the mobile drawer treatment. Saved locally per device.',
+    'Fixed a real bug from the last release: the mobile-only CSS block (nav drawer, top bar, safe-area padding) had its braces accidentally split while adding the Allocations table fix, so those rules were applying at every screen width instead of only under 760px — could have caused layout issues on desktop depending on browser/zoom. Verified the stylesheet\'s braces now balance correctly and re-ran the full test suite.',
+  ]},
+  {version:'4.6.0', date:'2026-08-13', changes:[
+    'Mobile: replaced the old mobile nav (which unrolled the entire desktop sidebar — logo, search, all 10 page links, sync status, theme toggle — into one long wrapping block above your content) with a real collapsible menu. A compact top bar with a menu button now sits above the page; tapping it slides in a proper nav drawer over a dimmed background, closes on selecting a page, tapping outside, or pressing Escape.',
+    'Mobile: fixed content rendering underneath the phone\'s status bar (clock/signal/battery icons overlapping table rows). The app was telling iOS to draw edge-to-edge under the notch (viewport-fit=cover) without ever padding for it — added proper safe-area padding to the new top bar, the nav drawer, the main content area, and the toast notification.',
+    'Mobile: the Dashboard\'s Bank Accounts reconciliation table and the Allocations \u2192 Unallocated table are now properly scrollable with the account name staying visible (sticky), instead of the Statement Balance input overflowing off-screen or descriptions getting squeezed into 4-5 wrapped lines. A broader pass across every other table in the app is a good candidate for a future round if this is still cramped in places.',
+  ]},
+  {version:'4.5.0', date:'2026-08-12', changes:[
+    'New: Historical Account Name. Every JV posted from now on freezes the account name it was posted against — renaming an account later no longer rewrites how old transactions display, in the Ledger, JV views, allocation views, and the Budget category drill-down. Older transactions (posted before this existed) keep showing the live name, same as always, unless corrected via the new Bulk Editor below.',
+    'New: Ledger Bulk Editor (Settings → Import CSV → 🛠 Ledger Bulk Editor). Export your entire ledger to CSV, edit any field — including moving transactions between accounts, re-grouping JV#s, correcting a Historical Name, or deleting rows via a Delete column — then re-import. Every row is matched by its Row ID, never by JV#/account/date. Nothing is applied until the whole file passes validation: if any JV would stop balancing to zero, or any previously-closed allocation would break, the entire import is blocked and you get a report of exactly which rows caused it, with nothing changed.',
+    'Dashboard: fixed the Short Term Equity / Cash Bank Account / Long Term Equity breakdown popups showing a different total than the card itself (Bank Accounts was including the internal "Working Capital" rollup account in the popup while excluding it from the card). All of these now share one calculation, so the card and its popup can never drift apart again.',
+    'Dashboard: KPI cards no longer replay their entrance animation every time you save a bank statement balance (reconciliation) or otherwise re-render the page while already on it — only a genuine navigation to the Dashboard animates them in now.',
+    'Ledger: the search box now also matches amounts (partial match, same style as the existing account search) — searching "500" finds 1,500.00, 500.25, etc.',
+  ]},
+  {version:'4.4.0', date:'2026-08-12', changes:[
+    'New feature: Drift Detection. Flags Provisions lines and fixed-value Smart Rules whose planned amount has consistently stopped matching what\'s actually posting (e.g. an insurance premium that renewed at a higher rate but the provision was never updated) — surfaced as a "📉 Drift Alerts" card on the Dashboard, plus inline badges on the Provisions grid and the Smart Rules table.',
+    'Drift threshold (default 15%) and how many consecutive months of drift are required before flagging (default 2) are both configurable in Settings → Drift Detection. Kept local to this device only, not synced.',
+    'Each flag can be dismissed — dismissal holds until a new month closes and enters the comparison window, at which point it\'s freshly re-evaluated against current numbers rather than staying muted forever or reappearing every day.',
+    'Fully local computation — no server calls, no cost, recomputed live whenever the Dashboard, Provisions, or Smart Rules pages render.',
+  ]},
+  {version:'4.3.2', date:'2026-08-12', changes:[
+    'Fixed content peeking out from behind sticky (fixed) columns while scrolling right — a sub-pixel rendering seam let a sliver of the scrolling column show through past the sticky column\'s edge. Fixed once, app-wide, everywhere a sticky column is used (Forecast Grid, Provisions, Cash Position, Budget grid).',
+    'Hardened Provisions line descriptions against a narrow case where an edit could be dropped without saving if a sync happened to be in flight at that exact moment — the local edit now always applies immediately, with only the remote write ever deferred (and queued for retry, never lost).',
+    'Cash Position / Forecast drill-through flash is now 3x faster per flash, with the total flash held to a precise 4 seconds.',
+    'Smart Rule creation page: the account search dropdown now supports arrow-key navigation (Up/Down to highlight, Enter to pick), matching every other account picker in the app. Also fixed a real bug where changing any other field (Applies At, Source, etc.) would silently clear the Rule Name you\'d just typed — the name field wasn\'t being kept in sync with the in-memory draft, so every re-render reverted it.',
+    'Smart Rules: added a "Freeze months after the target as 0" toggle. When on, every month after the rule\'s target month is forced to 0 and locked from editing — but only while that month is still blank; anything already manually typed in is left untouched. Requires a small schema migration — see migration_freeze_after_target.sql (additive only, no RLS changes needed).',
+    'Forecast page: every category section header ("Income ▾ Collapse" etc.) now stays fixed in place while scrolling its table right, instead of scrolling away with it — same fix as the Cash Position panel from the last release.',
+    'Fixed a real regression from the last release: separating the Cash Position panel\'s header from its table had accidentally dropped that panel out of the page-wide horizontal scroll-sync group, since the sync logic was looking for a specific panel+style combination that no longer matched. Replaced that lookup with a dedicated class used consistently by every scrollable table on the Forecast page, which also covers the new sticky section headers above.',
+  ]},
+  {version:'4.3.1', date:'2026-08-11', changes:[
+    'Budget page: account names now stay fixed (sticky) while scrolling right through the grid, matching the Forecast Grid behavior.',
+    'Cash Position panel ("💰 Bank Accounts — Projected Cash Position"): the whole header — title, "Anchor to real balance" toggle, description text, and the reversed-sign warning — now stays in place while scrolling the table right, instead of scrolling away with it. Only the table itself scrolls now.',
+    'Cash Position drill-through: the glow-highlight on the destination cell now flashes 5 times instead of once, making it easier to spot after the page jumps there.',
+    'Fixed a real bug: saving a bank statement balance on the Dashboard (reconciliation) could leave the KPI tiles stuck showing 0 until you navigated away and back. Root cause — the KPI tiles always rendered "0" first and relied entirely on the one-shot entrance animation to ever show the real number, so any re-render after that animation had already played (like the one triggered by saving a statement balance) left them stuck. KPI tiles now show the real value immediately whenever a fresh entrance animation isn\'t about to play.',
+    'Fixed a real bug: clicking "Post JV" twice quickly (e.g. a mis-click) could post the same journal voucher twice under two different JV numbers, since the draft wasn\'t cleared until after the sync calls finished. Added a guard so a second click during posting is ignored instead of creating a duplicate.',
+  ]},
   {version:'4.3.0', date:'2026-08-10', changes:[
     'Fixed Dashboard showing zero on first open, requiring a navigate-away-and-back to fix: a real regression from the last redesign session, where the initial sync flow was calling go(\'dashboard\') twice on success, silently breaking the KPI count-up animation\'s one-shot guard.',
     'Cash Position panel: category labels are now sticky while scrolling right, matching the Forecast Grid fix from before.',
@@ -512,6 +635,7 @@ let statementAcc = null;
 let allocSelected = new Set();
 let allocTab = 'unalloc';
 let reconcileAcc = null;
+let jvPosting = false; // reentrancy guard: postJV() is async and jvDraft isn't cleared until after all syncWrite calls finish, so a fast double-click could otherwise post the same JV twice under two different JV numbers
 
 /* ============================= UTIL ============================= */
 function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -538,6 +662,10 @@ function monthOf(d){ return (d||'').slice(0,7); }
 function toast(msg,bad){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(bad?' bad':''); clearTimeout(window._tt); window._tt=setTimeout(()=>t.className='toast', bad?7000:2200); }
 function accName(id){ const a=ACC_BY_ID[id]; return a? (a.id+' — '+(a.name? a.name.replace(/^\d+\s*-\s*/,'') : a.descr)) : (id!==null&&id!==undefined? (id+' — (unknown)') : '(none)'); }
 function accShort(id){ const a=ACC_BY_ID[id]; return a? (a.name? a.name.replace(/^\d+\s*-\s*/,'') : a.descr) : '(unknown)'; }
+// For an actual posted ledger transaction specifically (not a plan/forecast figure), prefer the
+// name that was captured at posting time — so a later account rename doesn't rewrite history.
+// Falls back to the live name for older rows posted before this existed (no snapshot recorded).
+function ledgerAccName(l){ return l.accNameSnapshot || accShort(l.acc); }
 function rebuildIndex(){ ACC_BY_ID={}; D.accounts.forEach(a=>ACC_BY_ID[a.id]=a); }
 function postableAccounts(){ return D.accounts.filter(a=>(a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted' && a.status!=='Inactive').sort((a,b)=>a.id-b.id); }
 function filterableAccounts(){ return D.accounts.filter(a=>(a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted').sort((a,b)=>a.id-b.id); }
@@ -665,6 +793,7 @@ function useCachedDataNow(){
 async function boot(){
   applyTheme(localStorage.getItem('uiTheme') || 'light');
   applyContentWidth();
+  applySidebarPinState();
   showSplash();
   loadActivityLog();
   syncQueue = loadSyncQueue();
@@ -995,7 +1124,7 @@ function applyServerRowToD(table, serverRow, pkVal){
   if(table==='pd_ledger'){
     if(!serverRow){ D.ledger = D.ledger.filter(l=>l.id!==pkVal); return; }
     const idx = D.ledger.findIndex(l=>l.id===serverRow.id);
-    const mapped = {id:serverRow.id, jv:serverRow.jv, date:serverRow.entry_date, acc:serverRow.acc, descr:serverRow.descr, amt:Number(serverRow.amt), alloc:serverRow.alloc, allocatable:serverRow.allocatable, updated_at:serverRow.updated_at||null};
+    const mapped = {id:serverRow.id, jv:serverRow.jv, date:serverRow.entry_date, acc:serverRow.acc, descr:serverRow.descr, amt:Number(serverRow.amt), alloc:serverRow.alloc, allocatable:serverRow.allocatable, accNameSnapshot:serverRow.acc_name_snapshot||null, updated_at:serverRow.updated_at||null};
     if(idx>=0) D.ledger[idx]=mapped; else D.ledger.push(mapped);
   } else if(table==='pd_accounts'){
     if(!serverRow) return;
@@ -1109,7 +1238,7 @@ async function fetchAllFromCloud(forceFullLedger){
   const tp = (p) => p.then(r=>{ completedSources++; updateSplashProgress(Math.round(completedSources/TOTAL_SOURCES*100)); return r; });
   const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats] = await Promise.all([
     tp(fetchAllRows('pd_accounts','id')),
-    tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress)),
+    tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress)),
     tp(fetchAllRows('pd_budget','id')),
     tp(fetchAllRows('pd_templates','id')),
     tp(fetchAllRows('pd_categories','digit')),
@@ -1127,7 +1256,7 @@ async function fetchAllFromCloud(forceFullLedger){
   ]);
   if(acc.error||led.error||bud.error||tpl.error){ toast('Cloud load error',true); return; }
   D.accounts = acc.data.map(a=>({id:a.id, descr:a.descr, balance:a.balance, direction:a.direction, acc_type:a.acc_type, name:a.name, cf_type:a.cf_type, category:a.category, status:a.status, is_savings:!!a.is_savings, is_allocatable:!!a.is_allocatable, is_credit_card:!!a.is_credit_card, credit_limit:a.credit_limit, stmt_balance:a.stmt_balance, stmt_available:a.stmt_available, stmt_date:a.stmt_date||null, forecast_category:a.forecast_category||null, updated_at:a.updated_at||null}));
-  D.ledger = led.data.map(l=>({id:l.id, jv:l.jv, date:l.entry_date, acc:l.acc, descr:l.descr, amt:Number(l.amt), alloc:l.alloc, allocatable:l.allocatable, updated_at:l.updated_at||null}));
+  D.ledger = led.data.map(l=>({id:l.id, jv:l.jv, date:l.entry_date, acc:l.acc, descr:l.descr, amt:Number(l.amt), alloc:l.alloc, allocatable:l.allocatable, accNameSnapshot:l.acc_name_snapshot||null, updated_at:l.updated_at||null}));
   D.budget = bud.data.map(b=>({id:b.id, date:b.entry_date, acc:b.acc, descr:b.descr, amt:Number(b.amt), updated_at:b.updated_at||null}));
   D.templates = tpl.data.map(t=>({id:t.id, name:t.name, lines:t.lines, updated_at:t.updated_at||null}));
   D.categories = cat.error? (SEED.categories||[]).map(c=>({...c})) : cat.data.map(c=>({digit:c.digit, name:c.name}));
@@ -1140,7 +1269,7 @@ async function fetchAllFromCloud(forceFullLedger){
   if(!nameTr.error && nameTr.data.length){ D.nameTranslations = nameTr.data[0].names||{}; }
   if(!descrTr.error && descrTr.data.length){ D.descrTranslations = descrTr.data[0].translations||{}; }
   if(!reBuild.error){ D.realEstateBuildings = reBuild.data.map(b=>({id:b.id, name:b.name, apartmentAccountIds:b.apartment_account_ids||[], expenseAccountIds:b.expense_account_ids||[], updated_at:b.updated_at||null})); }
-  if(!farules.error){ D.forecastAccountRules = farules.data.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, targetOffset:r.target_offset||0, updated_at:r.updated_at||null})); }
+  if(!farules.error){ D.forecastAccountRules = farules.data.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, targetOffset:r.target_offset||0, freezeAfterTarget:!!r.freeze_after_target, updated_at:r.updated_at||null})); }
   if(!customCats.error){ D.customForecastCategories = customCats.data.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior, updated_at:c.updated_at||null})); }
   syncCustomForecastCategories();
   if(serverLedgerMarker) safeSetItem('ledgerLastChanged', serverLedgerMarker);
@@ -1179,7 +1308,7 @@ async function seedCloud(){
   const BATCH=250;
   const failedBatches = [];
   for(let i=0;i<D.ledger.length;i+=BATCH){
-    const chunk = D.ledger.slice(i,i+BATCH).map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable}));
+    const chunk = D.ledger.slice(i,i+BATCH).map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null}));
     const r = await insertWithRetry('pd_ledger', chunk);
     if(r.error){ console.error('Ledger batch permanently failed at row '+i+':', r.error); failedBatches.push(i); }
     setStatus('Seeding cloud… '+Math.min(i+BATCH,D.ledger.length)+'/'+D.ledger.length);
@@ -1218,6 +1347,8 @@ document.addEventListener('keydown', (ev)=>{
   } else if(cmdPaletteOpen && ev.key==='Escape'){
     ev.preventDefault();
     closeCmdPalette();
+  } else if(!cmdPaletteOpen && ev.key==='Escape' && document.getElementById('sidebar')?.classList.contains('open')){
+    closeMobileNav();
   } else if(cmdPaletteOpen && ev.key==='ArrowDown'){
     ev.preventDefault();
     cmdPaletteHi = Math.min(cmdPaletteHi+1, cmdPaletteResults.length-1);
@@ -1288,6 +1419,28 @@ function selectCmdPaletteResult(i){
   const r = cmdPaletteResults[i];
   if(r) r.action();
 }
+let sidebarPinned = localStorage.getItem('sidebarPinned')==='1';
+function applySidebarPinState(){
+  document.body.classList.toggle('sidebar-pinned', sidebarPinned);
+  const btn = document.getElementById('sidebarPinBtn');
+  if(btn){ btn.classList.toggle('on', sidebarPinned); btn.title = sidebarPinned? 'Sidebar pinned open — click to allow it to collapse on narrow windows' : 'Pin sidebar open on narrow windows'; }
+}
+function toggleSidebarPin(){
+  sidebarPinned = !sidebarPinned;
+  safeSetItemWarn('sidebarPinned', sidebarPinned? '1':'0');
+  applySidebarPinState();
+  if(sidebarPinned) closeMobileNav(); // pinned mode shows the sidebar inline — no need for the drawer/scrim
+}
+function openMobileNav(){
+  const sb = document.getElementById('sidebar'); const scrim = document.getElementById('mobileNavScrim');
+  if(sb) sb.classList.add('open');
+  if(scrim) scrim.classList.add('show');
+}
+function closeMobileNav(){
+  const sb = document.getElementById('sidebar'); const scrim = document.getElementById('mobileNavScrim');
+  if(sb) sb.classList.remove('open');
+  if(scrim) scrim.classList.remove('show');
+}
 function renderNav(){
   const vEl = document.getElementById('sidebarVersionTag');
   if(vEl && !vEl.textContent) vEl.textContent = 'v'+APP_VERSION;
@@ -1303,6 +1456,9 @@ function go(s){
   if(screen) pageScrollPositions[screen] = window.scrollY;
   if(s==='dashboard' && screen!=='dashboard') dashboardNeedsCountUp = true;
   screen = s; renderNav();
+  closeMobileNav();
+  const titleEl = document.getElementById('mobileTopbarTitle');
+  if(titleEl){ const found = SCREENS.find(([id])=>id===s); titleEl.textContent = found? found[1] : (s==='settings'?'Settings':s==='statement'?'Statement':s==='forecastSettings'?'Forecast Settings':'LedgerOS'); }
   const fn = {dashboard:renderDashboard,newjv:renderNewJV,ledger:renderLedger,accounts:renderAccounts,
     budget:renderBudget,pnl:renderPnL,alloc:renderAlloc,statement:renderStatement,settings:renderSettings,provisions:renderProvisions,jamiah:renderJamiahPage,forecast:renderForecastPage,forecastSettings:renderForecastSettingsPage,realestate:renderRealEstatePage}[s];
   if(fn) fn();
@@ -1382,13 +1538,22 @@ function smartRuleExprLabel(expr){
   if(expr.type==='ref') return 'Same as line '+(Number(expr.ref)+1)+sign;
   return '';
 }
+// Single source of truth for "which accounts count toward this total" — used by BOTH the card's
+// own number AND its click-through breakdown popup, so the two can never drift apart the way
+// Bank Accounts vs. its popup did (10199 "Working Capital" is an internal rollup account, not a
+// real bank balance, and was being excluded from the card total but not from the popup).
+function categoryAccountIds(catName){
+  if(catName==='__savings__') return new Set(D.accounts.filter(a=>a.is_savings).map(a=>a.id));
+  if(catName==='Bank Accounts') return new Set(D.accounts.filter(a=>a.category==='Bank Accounts' && a.id!==10199).map(a=>a.id));
+  return new Set(D.accounts.filter(a=>a.category===catName).map(a=>a.id));
+}
 function categoryBalance(cat){
-  const ids = new Set(D.accounts.filter(a=>a.category===cat).map(a=>a.id));
+  const ids = categoryAccountIds(cat);
   return sumAcc(l=>ids.has(l.acc));
 }
 // 10199 "Working Capital" is an internal rollup account, not a real bank balance — exclude it from Bank Accounts totals
 function bankBalance(){
-  const ids = new Set(D.accounts.filter(a=>a.category==='Bank Accounts' && a.id!==10199).map(a=>a.id));
+  const ids = categoryAccountIds('Bank Accounts');
   return sumAcc(l=>ids.has(l.acc));
 }
 function firstDigit(accId){ return Math.floor(accId/10000); }
@@ -1800,6 +1965,102 @@ function budgetPlanFor(accId, monthKey){
   return rows.reduce((s,b)=>s+Number(b.amt),0);
 }
 
+/* ============================= DRIFT DETECTION ============================= */
+// Flags Provisions lines and fixed-value Smart Rules whose planned amounts have quietly stopped
+// matching what's actually posting — e.g. an insurance premium that renewed at a higher rate but
+// the provision was never updated. Fully local computation, no server involvement.
+function getDriftSettings(){
+  const defaults = {thresholdPct:15, minMonths:2};
+  try{ const v = JSON.parse(localStorage.getItem('driftSettings')||'{}'); return {...defaults, ...v}; }
+  catch(e){ return defaults; }
+}
+function setDriftSettings(s){ return safeSetItemWarn('driftSettings', JSON.stringify(s)); }
+function getDriftDismissals(){
+  try{ const v = JSON.parse(localStorage.getItem('driftDismissals')||'{}'); return (v&&typeof v==='object')? v : {}; }
+  catch(e){ return {}; }
+}
+// A dismissal is stamped with the "anchor month" (the most recent fully-past month in the
+// comparison window) at the moment you dismissed it. It stays silenced only until a newer month
+// closes and enters that window — at which point it's stale and the flag is freshly re-evaluated
+// against current numbers, rather than staying permanently muted or nagging every single day.
+function setDriftDismissed(key, anchorMonth){
+  const d = getDriftDismissals(); d[key] = anchorMonth;
+  return safeSetItemWarn('driftDismissals', JSON.stringify(d));
+}
+function driftLookbackMonths(n){
+  const currentMonth = todayStr().slice(0,7);
+  const months = [];
+  let mk = currentMonth;
+  for(let i=0;i<n;i++){ mk = prevMonthKey(mk); months.unshift(mk); }
+  return months; // oldest first; last entry is the most recent fully-past month (the "anchor")
+}
+function computeDriftFlags(){
+  const settings = getDriftSettings();
+  const dismissals = getDriftDismissals();
+  const months = driftLookbackMonths(Math.max(1, settings.minMonths));
+  const anchorMonth = months[months.length-1];
+  const flags = [];
+
+  D.provisionGroups.forEach(g=>{
+    ensureLineIds(g);
+    g.lines.forEach(line=>{
+      const key = 'provision:'+g.id+':'+line.lineId;
+      if(dismissals[key] && dismissals[key]>=anchorMonth) return;
+      let allDrifted = true, sumPlan=0, sumActual=0, validCount=0;
+      months.forEach(mk=>{
+        const raw = (g.months[mk]||{})[line.lineId];
+        const plan = (raw===undefined||raw===null||raw==='')? null : Number(raw);
+        if(plan===null || plan===0){ allDrifted=false; return; } // nothing planned that month — can't compare, so not "drifted"
+        const actual = forecastActual(line.acc, mk);
+        const pct = Math.abs(actual-plan)/Math.abs(plan)*100;
+        if(pct < settings.thresholdPct) allDrifted=false;
+        sumPlan += plan; sumActual += actual; validCount++;
+      });
+      if(allDrifted && validCount===months.length){
+        flags.push({key, kind:'provision', groupId:g.id, groupName:g.name, lineId:line.lineId, acc:line.acc, avgPlan:sumPlan/validCount, avgActual:sumActual/validCount, months});
+      }
+    });
+  });
+
+  D.forecastAccountRules.forEach(rule=>{
+    if(rule.rule.type!=='fixed') return; // account_balance / account_period_sum already derive from live data — nothing independent to drift from
+    const key = 'smartrule:'+rule.id;
+    if(dismissals[key] && dismissals[key]>=anchorMonth) return;
+    const plan = Number(rule.rule.value)||0;
+    if(plan===0) return;
+    let allDrifted = true, sumActual=0;
+    months.forEach(mk=>{
+      const actual = forecastActual(rule.account, mk);
+      sumActual += actual;
+      const pct = Math.abs(actual-plan)/Math.abs(plan)*100;
+      if(pct < settings.thresholdPct) allDrifted=false;
+    });
+    if(allDrifted){
+      flags.push({key, kind:'smartrule', ruleId:rule.id, ruleName:rule.name, acc:rule.account, avgPlan:plan, avgActual:sumActual/months.length, months});
+    }
+  });
+
+  return flags;
+}
+function dismissDriftFlag(key){
+  const settings = getDriftSettings();
+  const months = driftLookbackMonths(Math.max(1, settings.minMonths));
+  setDriftDismissed(key, months[months.length-1]);
+  go(screen);
+}
+function saveDriftSettings(){
+  const pct = Number(document.getElementById('driftThresholdInput').value);
+  const minMonths = Number(document.getElementById('driftMinMonthsInput').value);
+  if(!pct || pct<=0){ toast('Enter a threshold percentage greater than 0', true); return; }
+  if(!minMonths || minMonths<1){ toast('Consecutive months must be at least 1', true); return; }
+  setDriftSettings({thresholdPct:pct, minMonths:Math.round(minMonths)});
+  toast('Drift Detection settings saved ✓');
+  renderSettings();
+}
+function driftFlagsFor(kind, id){
+  return computeDriftFlags().filter(f=> kind==='provision'? (f.kind==='provision' && f.groupId===id) : (f.kind==='smartrule' && f.ruleId===id));
+}
+
 function shiftMonthKey(mk, delta){
   let [y,m]=mk.split('-').map(Number);
   m += delta;
@@ -2084,6 +2345,10 @@ function computeForecastCell(a, monthKey, currentMonth){
         const actual = forecastActual(a.id, monthKey);
         return {plan:0, actual, variance: actual, editable:false, locked:true, source:'smart_rule', smartRuleName:rule.name};
       }
+      if(monthKey>targetMonth && rule.freezeAfterTarget && getManualPlan(a.id, monthKey)===null){
+        const actual = forecastActual(a.id, monthKey);
+        return {plan:0, actual, variance: actual, editable:false, locked:true, source:'smart_rule', smartRuleName:rule.name};
+      }
     }
   }
   const behavior = FORECAST_CATEGORIES[getForecastCategory(a)]?.behavior;
@@ -2151,7 +2416,7 @@ function computeForecastCell(a, monthKey, currentMonth){
 function absMoney(n){ return money(Math.abs(Number(n)||0)); }
 
 function savingsBalance(){
-  const ids = new Set(D.accounts.filter(a=>a.is_savings).map(a=>a.id));
+  const ids = categoryAccountIds('__savings__');
   return sumAcc(l=>ids.has(l.acc));
 }
 // Liability subtotal rows are normally negative (a genuine liability, shown as a magnitude in
@@ -2246,19 +2511,11 @@ function netWorthPanels(){
   return `<div class="grid3">${t1}${t2}${t3}</div>`;
 }
 function viewCategoryAccounts(catName){
-  if(catName==='__savings__'){
-    const accs = D.accounts.filter(a=>a.is_savings && (a.acc_type==='Individual Account'||a.acc_type==='Accrual Account'));
-    const total = accs.reduce((s,a)=>s+accountBalance(a.id),0);
-    showModal(`<h3>Savings Accounts</h3>
-      <table><thead><tr><th>Acc#</th><th>Account</th><th class="num">Balance</th></tr></thead>
-      <tbody>${accs.map(a=>`<tr class="click" onclick="closeModal(); openStatement(${a.id})"><td class="mono">${a.id}</td><td>${esc(accShort(a.id))}</td><td class="num mono ${moneyClass(accountBalance(a.id))}">${money(accountBalance(a.id))}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">No savings accounts flagged</td></tr>'}</tbody>
-      <tfoot><tr><td colspan="2">Total</td><td class="num mono ${moneyClass(total)}">${money(total)}</td></tr></tfoot></table>
-      <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" onclick="closeModal()">Close</button></div>`);
-    return;
-  }
-  const accs = D.accounts.filter(a=>a.category===catName && (a.acc_type==='Individual Account'||a.acc_type==='Accrual Account'));
+  const ids = categoryAccountIds(catName);
+  const accs = D.accounts.filter(a=>ids.has(a.id));
   const total = accs.reduce((s,a)=>s+accountBalance(a.id),0);
-  showModal(`<h3>${esc(catName)}</h3>
+  const title = catName==='__savings__'? 'Savings Accounts' : catName;
+  showModal(`<h3>${esc(title)}</h3>
     <table><thead><tr><th>Acc#</th><th>Account</th><th class="num">Balance</th></tr></thead>
     <tbody>${accs.map(a=>`<tr class="click" onclick="closeModal(); openStatement(${a.id})"><td class="mono">${a.id}</td><td>${esc(accShort(a.id))}</td><td class="num mono ${moneyClass(accountBalance(a.id))}">${money(accountBalance(a.id))}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">No accounts in this category</td></tr>'}</tbody>
     <tfoot><tr><td colspan="2">Total</td><td class="num mono ${moneyClass(total)}">${money(total)}</td></tr></tfoot></table>
@@ -2266,7 +2523,12 @@ function viewCategoryAccounts(catName){
 }
 
 function kpiValue(raw, cls, fmtName){
-  return `<div class="v ${cls||''}" data-count-target="${raw}" data-count-fmt="${fmtName||'money'}">${(fmtName==='absMoney'?absMoney:money)(0)}</div>`;
+  const fmtFn = fmtName==='absMoney'?absMoney:money;
+  // Only start at 0 (to be animated by animateKpiCountUps) when a real count-up is about to play.
+  // Otherwise — e.g. a re-render triggered while already on the dashboard, such as saving a
+  // statement balance — show the real value immediately so KPIs never get stuck displaying 0.
+  const initial = dashboardNeedsCountUp ? fmtFn(0) : fmtFn(raw);
+  return `<div class="v ${cls||''}" data-count-target="${raw}" data-count-fmt="${fmtName||'money'}">${initial}</div>`;
 }
 function animateKpiCountUps(){
   if(!dashboardNeedsCountUp) return;
@@ -2287,6 +2549,28 @@ function animateKpiCountUps(){
     requestAnimationFrame(frame);
   });
 }
+function driftAlertsCard(){
+  const flags = computeDriftFlags();
+  if(!flags.length) return '';
+  return `<div class="panel" style="border-color:var(--amber, #b58900)">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:0">📉 Drift Alerts</h3>
+      <span class="mut" style="font-size:11px">Planned vs. actual, last ${getDriftSettings().minMonths} month(s)</span>
+    </div>
+    <div class="mut" style="font-size:11.5px;margin:6px 0 10px">These have consistently posted differently than planned — might be worth updating the plan to match reality.</div>
+    ${flags.map(f=>{
+      const label = f.kind==='provision'? esc(accShort(f.acc))+' — '+esc(f.groupName) : esc(f.ruleName)+' ('+esc(accShort(f.acc))+')';
+      const jump = f.kind==='provision'? `go('provisions')` : `goSmartRulesSettings()`;
+      return `<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
+        <div>
+          <span class="click" style="cursor:pointer;color:var(--accent);font-weight:600" onclick="${jump}">${label}</span>
+          <div class="mut mono" style="font-size:11px;margin-top:2px">Planned ${money(f.avgPlan)} vs. actual ${money(f.avgActual)} (avg)</div>
+        </div>
+        <button class="btn ghost sm" onclick="dismissDriftFlag('${f.key}')" title="Silence until a new month closes">Dismiss</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
 function renderDashboard(){
   const allBankAccs = D.accounts.filter(a=>a.category==='Bank Accounts' && a.id!==10199 && (a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted').sort((a,b)=>a.id-b.id);
   const bankAccs = allBankAccs.filter(a=>a.status!=='Inactive'); // reconciliation table: Inactive accounts aren't reconciled, so they're left off this list entirely
@@ -2296,16 +2580,19 @@ function renderDashboard(){
   const expenseMTD = sumAcc(l=>firstDigit(l.acc)===6, ym+'-01', ym+'-31');
   const netCashflow = Math.abs(incomeMTD) - Math.abs(expenseMTD);
 
+  const kpiAnim = dashboardNeedsCountUp ? ' fade-in' : '';
   document.getElementById('app').innerHTML = `
     <div class="cards">
-      <div class="kpi"><div class="l">Bank Accounts Balance</div>${kpiValue(bankTotal, '', 'absMoney')}</div>
-      <div class="kpi"><div class="l">This Month Income</div>${kpiValue(incomeMTD, '', 'absMoney')}</div>
-      <div class="kpi"><div class="l">This Month Expense</div>${kpiValue(expenseMTD, '', 'absMoney')}</div>
-      <div class="kpi"><div class="l">This Month Net Cashflow</div>${kpiValue(netCashflow, moneyClass(netCashflow), 'money')}</div>
+      <div class="kpi${kpiAnim}"><div class="l">Bank Accounts Balance</div>${kpiValue(bankTotal, '', 'absMoney')}</div>
+      <div class="kpi${kpiAnim}"><div class="l">This Month Income</div>${kpiValue(incomeMTD, '', 'absMoney')}</div>
+      <div class="kpi${kpiAnim}"><div class="l">This Month Expense</div>${kpiValue(expenseMTD, '', 'absMoney')}</div>
+      <div class="kpi${kpiAnim}"><div class="l">This Month Net Cashflow</div>${kpiValue(netCashflow, moneyClass(netCashflow), 'money')}</div>
     </div>
+    ${driftAlertsCard()}
     <div class="panel"><h3>Bank Accounts (10101 – 10198)</h3>
       <div class="mut" style="font-size:11.5px;margin-bottom:8px">Enter each account's balance from your latest bank statement to see what's still unreconciled. For credit cards, enter the card's <b>available limit</b> instead — the balance owed is calculated for you. Press Enter to move to the next account. Click a non-zero variance to jump into a New JV and work it off.</div>
-      <table><thead><tr><th>Acc#</th><th>Account</th><th class="num">Ledger Balance</th><th class="num" style="width:150px">Statement Balance</th><th class="num">Variance</th></tr></thead>
+      <div style="overflow-x:auto">
+      <table class="sticky-table" style="min-width:600px"><thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--panel)">Acc#</th><th style="position:sticky;left:52px;z-index:2;background:var(--panel)">Account</th><th class="num">Ledger Balance</th><th class="num" style="width:150px">Statement Balance</th><th class="num">Variance</th></tr></thead>
       <tbody>${bankAccs.map((a,i)=>{
         const ledgerBal = accountBalance(a.id);
         const isCC = !!a.is_credit_card;
@@ -2317,8 +2604,8 @@ function renderDashboard(){
         const nextId = bankAccs[i+1]? bankAccs[i+1].id : null;
         const reconciledToday = reconciled && a.stmt_date===todayStr();
         return `<tr>
-          <td class="mono click" onclick="openStatement(${a.id})">${a.id}</td>
-          <td class="click" onclick="openStatement(${a.id})">${esc(accShort(a.id))}${isCC?' <span class="badge">credit card</span>':''}</td>
+          <td class="mono click" style="position:sticky;left:0;z-index:1;background:var(--panel)" onclick="openStatement(${a.id})">${a.id}</td>
+          <td class="click" style="position:sticky;left:52px;z-index:1;background:var(--panel)" onclick="openStatement(${a.id})">${esc(accShort(a.id))}${isCC?' <span class="badge">credit card</span>':''}</td>
           <td class="num mono ${isCC? moneyClass(ledgerBal):''}">${isCC? money(ledgerBal) : absMoney(ledgerBal)}</td>
           <td class="num noprint">${noLimit? `<input disabled class="num" style="width:130px" placeholder="set limit first" title="Set a credit limit for this account in Accounts → edit">` : `
           <input id="stmtBal_${a.id}" type="text" inputmode="decimal" class="num" style="width:130px" value="${hasStmt? fmt2(typedVal) : ''}" placeholder="${isCC?'avail. limit':'—'}" data-raw="${hasStmt? typedVal : ''}"
@@ -2328,10 +2615,11 @@ function renderDashboard(){
           <td class="num mono">${!hasStmt? '<span class="mut">—</span>' : (reconciled? `<span style="font-weight:600;color:${reconciledToday?'var(--green)':'var(--red)'}">Reconciled – ${fmtDateShort(a.stmt_date)}</span>` : `<span style="cursor:pointer;text-decoration:underline;color:var(--red)" onclick="startReconcile(${a.id})">${money(variance)}</span>`)}</td>
           </tr>`;
       }).join('') || '<tr><td colspan="5" class="empty">No bank accounts found</td></tr>'}</tbody>
-      <tfoot><tr><td colspan="2">Total</td><td class="num mono">${absMoney(bankTotal)}</td>
+      <tfoot><tr><td colspan="2" style="position:sticky;left:0;z-index:1;background:var(--panel)">Total</td><td class="num mono">${absMoney(bankTotal)}</td>
         <td class="num mono">${absMoney(bankAccs.reduce((s,a)=> s+(a.stmt_balance!=null&&a.stmt_balance!==''? Number(a.stmt_balance):0),0))}</td>
         <td class="num mono ${moneyClass(bankAccs.reduce((s,a)=> s+((a.stmt_balance!=null&&a.stmt_balance!=='')? Number(a.stmt_balance)-accountBalance(a.id):0),0))}">${money(bankAccs.reduce((s,a)=> s+((a.stmt_balance!=null&&a.stmt_balance!=='')? Number(a.stmt_balance)-accountBalance(a.id):0),0))}</td>
       </tr></tfoot></table>
+      </div>
     </div>
     ${netWorthPanels()}`;
   animateKpiCountUps();
@@ -2418,7 +2706,7 @@ function renderNewJV(){
           <div class="mut" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em">Total (must be zero)</div>
           <div class="num" id="jvTotalDisp" style="font-size:20px;font-weight:700;color:${jvBalanced()?'var(--green)':'var(--red)'}">${money(jvTotal())}</div>
         </div>
-        <button class="btn pri" id="jvPostBtn" ${jvBalanced()&&!syncInProgress?'':'disabled'} onclick="postJV()">Post JV</button>
+        <button class="btn pri" id="jvPostBtn" ${jvBalanced()&&!syncInProgress&&!jvPosting?'':'disabled'} onclick="postJV()">Post JV</button>
       </div>
     </div>`;
 }
@@ -2899,6 +3187,7 @@ async function deleteDraft(id){
 
 async function postJV(){
   if(blockIfSyncing()) return;
+  if(jvPosting) return; // already posting this exact JV — ignore a fast double-click rather than posting it twice
   const nonBlank = jvDraft.lines.filter(l=>!jvIsBlankLine(l));
   const incomplete = nonBlank.filter(l=>!jvIsCompleteLine(l));
   if(incomplete.length){ toast('Every line needs an account, a description, and an amount — fill in or remove the incomplete line(s)', true); return; }
@@ -2912,22 +3201,28 @@ async function postJV(){
   const total = lines.reduce((s,l)=>s+(Number(l.amt)||0),0);
   if(Math.abs(total)>=0.005){ toast('Lines must net to zero before posting',true); return; }
   if(lines.length<2){ toast('Add at least two lines',true); return; }
-  const jv = nextJV();
-  let id = nextLedgerId();
-  const rows = lines.map(l=>({id:id++, jv, date:jvDraft.date, acc:Number(l.acc), descr:l.descr||'', amt:Number(l.amt), alloc:null, allocatable:false}));
-  D.ledger.push(...rows);
-  persistLocal();
-  for(const r of rows){
-    await syncWrite('pd_ledger', 'upsert', {id:r.id, jv:r.jv, entry_date:r.date, acc:r.acc, descr:r.descr, amt:r.amt, alloc:r.alloc, allocatable:r.allocatable}, null);
+  jvPosting = true;
+  const postBtn = document.getElementById('jvPostBtn'); if(postBtn) postBtn.disabled = true;
+  try{
+    const jv = nextJV();
+    let id = nextLedgerId();
+    const rows = lines.map(l=>({id:id++, jv, date:jvDraft.date, acc:Number(l.acc), descr:l.descr||'', amt:Number(l.amt), alloc:null, allocatable:false, accNameSnapshot:accShort(Number(l.acc))}));
+    D.ledger.push(...rows);
+    persistLocal();
+    for(const r of rows){
+      await syncWrite('pd_ledger', 'upsert', {id:r.id, jv:r.jv, entry_date:r.date, acc:r.acc, descr:r.descr, amt:r.amt, alloc:r.alloc, allocatable:r.allocatable, acc_name_snapshot:r.accNameSnapshot}, null);
+    }
+    toast('JV #'+jv+' posted ✓'+(syncQueue.length? ' (queued for sync)':''));
+    logActivity('action', 'Posted JV #'+jv+' ('+lines.length+' lines, net '+money(total)+')');
+    resetJVDraft();
+    ledgerFilter = {acc:'', from:'', to:'', q:'', jv:'', preset:'', specificMonth:'', unallocOnly:false};
+    ledgerPage = 0;
+    if(jvReturnScreen){ const dest = jvReturnScreen; jvReturnScreen = null; go(dest); }
+    else if(reconcileAcc){ reconcileAcc = null; go('dashboard'); }
+    else go('ledger');
+  } finally {
+    jvPosting = false;
   }
-  toast('JV #'+jv+' posted ✓'+(syncQueue.length? ' (queued for sync)':''));
-  logActivity('action', 'Posted JV #'+jv+' ('+lines.length+' lines, net '+money(total)+')');
-  resetJVDraft();
-  ledgerFilter = {acc:'', from:'', to:'', q:'', jv:'', preset:'', specificMonth:'', unallocOnly:false};
-  ledgerPage = 0;
-  if(jvReturnScreen){ const dest = jvReturnScreen; jvReturnScreen = null; go(dest); }
-  else if(reconcileAcc){ reconcileAcc = null; go('dashboard'); }
-  else go('ledger');
 }
 
 /* ============================= LEDGER ============================= */
@@ -2939,8 +3234,9 @@ function filteredLedger(){
     if(ledgerFilter.to && l.date > ledgerFilter.to) return false;
     if(ledgerFilter.jv && String(l.jv)!==String(ledgerFilter.jv)) return false;
     if(ledgerFilter.q){
-      const q=ledgerFilter.q.toLowerCase();
-      if(!(String(l.descr||'').toLowerCase().includes(q) || String(l.acc).includes(q) || accShort(l.acc).toLowerCase().includes(q))) return false;
+      const q=ledgerFilter.q.toLowerCase().replace(/,/g,'');
+      const amtStr = absMoney(l.amt).replace(/,/g,'').toLowerCase();
+      if(!(String(l.descr||'').toLowerCase().includes(q) || String(l.acc).includes(q) || accShort(l.acc).toLowerCase().includes(q) || (l.accNameSnapshot||'').toLowerCase().includes(q) || amtStr.includes(q))) return false;
     }
     return true;
   }).sort((a,b)=> (b.date||'').localeCompare(a.date||'') || b.jv-a.jv);
@@ -2976,7 +3272,7 @@ function exportLedgerCSV(){
   const rows = filteredLedger();
   const header = ['JV#','Date','Account#','Account Name','Description','Amount','Alloc#'];
   const lines = [header.join(',')];
-  rows.forEach(l=> lines.push([l.jv, l.date, l.acc, accShort(l.acc), l.descr, l.amt, l.alloc? pad5(l.alloc):''].map(csvEscape).join(',')));
+  rows.forEach(l=> lines.push([l.jv, l.date, l.acc, ledgerAccName(l), l.descr, l.amt, l.alloc? pad5(l.alloc):''].map(csvEscape).join(',')));
   const blob = new Blob([lines.join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ledgerExportFilename(); a.click();
   toast('Exported '+rows.length.toLocaleString()+' rows to CSV');
@@ -3010,7 +3306,7 @@ function renderLedger(){
         <div style="width:150px"><label class="fl">From</label><input type="date" value="${ledgerFilter.from}" onchange="ledgerFilter.from=this.value; ledgerFilter.preset=''; ledgerPage=0; renderLedgerResults()"></div>
         <div style="width:150px"><label class="fl">To</label><input type="date" value="${ledgerFilter.to}" onchange="ledgerFilter.to=this.value; ledgerFilter.preset=''; ledgerPage=0; renderLedgerResults()"></div>
         <div style="width:110px"><label class="fl">JV#</label><input value="${esc(ledgerFilter.jv)}" onchange="ledgerFilter.jv=this.value; ledgerPage=0; renderLedgerResults()"></div>
-        <div style="flex:1;min-width:180px"><label class="fl">Search description</label><input id="ledgerQInput" value="${esc(ledgerFilter.q)}" oninput="filterLedgerDescr(this.value)" placeholder="Search…"></div>
+        <div style="flex:1;min-width:180px"><label class="fl">Search description, account, or amount</label><input id="ledgerQInput" value="${esc(ledgerFilter.q)}" oninput="filterLedgerDescr(this.value)" placeholder="Search…"></div>
         <div><label class="fl">&nbsp;</label><label style="display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12.5px;color:var(--muted);height:34px"><input type="checkbox" class="chk" ${ledgerFilter.unallocOnly?'checked':''} onchange="ledgerFilter.unallocOnly=this.checked; ledgerPage=0; renderLedgerResults()"> Unallocated only</label></div>
         <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="clearLedgerFilters()">Clear</button></div>
         <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="exportLedgerCSV()">⬇ Export CSV</button></div>
@@ -3063,7 +3359,7 @@ function renderLedgerResults(){
       <table><thead><tr><th>JV#</th><th>Date</th><th>Account</th><th>Description</th><th class="num">Amount</th><th>Alloc</th></tr></thead>
       <tbody>${pageRows.map(l=>`<tr class="click" onclick="viewJV(${l.jv})">
         <td class="mono">#${l.jv}</td><td class="mono">${esc(l.date)}</td>
-        <td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(accShort(l.acc))}</div></td>
+        <td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(ledgerAccName(l))}</div></td>
         <td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td>
         <td>${l.alloc? '<span class="badge">'+pad5(l.alloc)+'</span>':''}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No transactions match these filters</td></tr>'}</tbody>
       <tfoot><tr><td colspan="4">Filtered total (${rows.length.toLocaleString()} lines)</td><td class="num mono ${moneyClass(total)}">${money(total)}</td><td></td></tr></tfoot>
@@ -3081,7 +3377,7 @@ function viewJV(jv){
   showModal(`
     <h3>Journal Voucher #${jv}</h3>
     <table><thead><tr><th>Account</th><th>Description</th><th class="num">Amount</th></tr></thead>
-    <tbody>${lines.map(l=>`<tr><td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(accShort(l.acc))}</div></td><td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('')}</tbody>
+    <tbody>${lines.map(l=>`<tr><td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(ledgerAccName(l))}</div></td><td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total</td><td class="num mono">${money(total)}</td></tr></tfoot></table>
     <div class="row" style="margin-top:16px;justify-content:flex-end">
       <button class="btn ghost" onclick="startEditJV(${jv})">✎ Edit</button>
@@ -3264,14 +3560,16 @@ async function saveJVEdit(){
     if(l.id==null){
       // a line added during this edit session — a genuinely new ledger row
       if(nextId==null) nextId = nextLedgerId();
-      const row = {id: nextId++, jv: d.jv, date: jvDate||todayStr(), acc: Number(l.acc), descr: l.descr, amt: Number(l.amt), alloc: null, allocatable: false};
+      const row = {id: nextId++, jv: d.jv, date: jvDate||todayStr(), acc: Number(l.acc), descr: l.descr, amt: Number(l.amt), alloc: null, allocatable: false, accNameSnapshot: accShort(Number(l.acc))};
       D.ledger.push(row);
       touched.push(row);
       return;
     }
     const row = D.ledger.find(x=>x.id===l.id);
     if(!row) return;
+    const accChanged = row.acc !== Number(l.acc);
     row.acc = Number(l.acc); row.descr = l.descr; row.amt = Number(l.amt); row.date = jvDate;
+    if(accChanged) row.accNameSnapshot = accShort(row.acc); // moved to a different account — treat like a fresh assignment
     touched.push(row);
   });
   persistLocal();
@@ -3280,7 +3578,7 @@ async function saveJVEdit(){
   const dateChanged = d.origDate && d.origDate!==jvDate;
   logActivity('action', 'Edited JV #'+d.jv+' ('+touched.length+' line(s) changed'+(removedRows.length? ', '+removedRows.length+' line(s) deleted':'')+(dateChanged? ', date changed '+d.origDate+' → '+jvDate:'')+')');
   for(const row of touched){
-    await syncWrite('pd_ledger', 'upsert', {id:row.id, jv:row.jv, entry_date:row.date, acc:row.acc, descr:row.descr, amt:row.amt, alloc:row.alloc, allocatable:row.allocatable}, row.updated_at||null);
+    await syncWrite('pd_ledger', 'upsert', {id:row.id, jv:row.jv, entry_date:row.date, acc:row.acc, descr:row.descr, amt:row.amt, alloc:row.alloc, allocatable:row.allocatable, acc_name_snapshot:row.accNameSnapshot||null}, row.updated_at||null);
   }
   for(const row of removedRows){
     await syncWrite('pd_ledger', 'delete', {id:row.id}, row.updated_at||null);
@@ -3294,7 +3592,7 @@ function exportJVCSV(jv){
   const lines = D.ledger.filter(l=>l.jv===jv).sort((a,b)=>a.id-b.id);
   const header = ['JV#','Date','Account#','Account Name','Description','Amount'];
   const rows = [header.join(',')];
-  lines.forEach(l=> rows.push([l.jv,l.date,l.acc,accShort(l.acc),l.descr,l.amt].map(csvEscape).join(',')));
+  lines.forEach(l=> rows.push([l.jv,l.date,l.acc,ledgerAccName(l),l.descr,l.amt].map(csvEscape).join(',')));
   const blob = new Blob([rows.join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'jv-'+jv+'.csv'; a.click();
   toast('JV #'+jv+' exported to CSV');
@@ -3818,16 +4116,16 @@ function renderBudgetCategorySection(cat, accs, months, currentMonth){
       <h3 style="margin:0">${esc(cat)}</h3>
       <span class="mut" style="font-size:12px">${collapsed?'▸ Expand':'▾ Collapse'}</span>
     </div>
-    <table style="min-width:${FORECAST_LABEL_COL_WIDTH+months.length*FORECAST_MONTH_COL_WIDTH}px;margin-top:8px;table-layout:fixed">
+    <table style="min-width:${FORECAST_LABEL_COL_WIDTH+months.length*FORECAST_MONTH_COL_WIDTH}px;margin-top:8px;table-layout:fixed" class="sticky-table">
       <colgroup><col style="width:${FORECAST_ACCOUNT_COL_WIDTH}px"><col style="width:${FORECAST_BALANCE_COL_WIDTH}px">${months.map(()=>`<col style="width:${FORECAST_MONTH_COL_WIDTH}px">`).join('')}</colgroup>
-      <thead><tr><th>Account</th><th class="num">Current Balance</th>${months.map(m=>`<th class="num" style="${m===currentMonth?'background:var(--chip)':''}">${esc(monthLabel(m))}</th>`).join('')}</tr></thead>
+      <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--panel)">Account</th><th class="num">Current Balance</th>${months.map(m=>`<th class="num" style="${m===currentMonth?'background:var(--chip)':''}">${esc(monthLabel(m))}</th>`).join('')}</tr></thead>
       <tbody>${collapsed? '' : visibleAccs.map(a=>`<tr>
-        <td>${esc(accShort(a.id))}</td>
+        <td style="position:sticky;left:0;z-index:1;background:var(--panel)">${esc(accShort(a.id))}</td>
         <td class="num mono">${money(accountBalance(a.id))}</td>
         ${months.map(m=>renderBudgetCell(a, m, m===currentMonth)).join('')}
       </tr>`).join('')}</tbody>
       <tfoot><tr style="font-weight:700">
-        <td>Total</td><td class="num mono">${money(balanceTotal)}</td>
+        <td style="position:sticky;left:0;z-index:1;background:var(--panel);font-weight:700">Total</td><td class="num mono">${money(balanceTotal)}</td>
         ${totals.map((t,i)=>`<td class="num mono ${moneyClass(t)}" style="${months[i]===currentMonth?'background:var(--chip)':''}">${money(t)}</td>`).join('')}
       </tr></tfoot>
     </table>
@@ -3871,7 +4169,7 @@ function openBudgetCategoryBreakdown(category, monthKey){
       <div><div class="mut" style="font-size:10.5px;text-transform:uppercase">Variance</div><div class="mono ${budgetVarClass(diff)}" style="font-size:17px;font-weight:600">${money(diff)}</div></div>
     </div>
     <table><thead><tr><th>Date</th><th>Account</th><th>Description</th><th class="num">Amount</th></tr></thead>
-    <tbody>${txns.map(l=>`<tr><td class="mono">${esc(l.date)}</td><td>${esc(accShort(l.acc))}</td><td class="mut">${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No transactions this month</td></tr>'}</tbody></table>
+    <tbody>${txns.map(l=>`<tr><td class="mono">${esc(l.date)}</td><td>${esc(ledgerAccName(l))}</td><td class="mut">${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No transactions this month</td></tr>'}</tbody></table>
     <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
 }
 function renderBudgetCharts(){
@@ -4620,17 +4918,20 @@ function provisionLineSummary(g, line){
 }
 function renderProvisionGrid(g){
   const months = provisionsVisibleMonthKeys(g);
+  const drift = driftFlagsFor('provision', g.id);
   return `
     <div id="provGridWrap_${g.id}" style="overflow-x:auto;margin-top:12px">
     <table style="min-width:700px" class="sticky-table">
       <thead><tr><th style="width:32px;position:sticky;left:0;z-index:2;background:var(--panel)"></th><th style="min-width:280px;position:sticky;left:32px;z-index:2;background:var(--panel)">Account</th>${months.map(k=>`<th id="provMonthTh_${g.id}_${k}" class="num">${esc(monthLabel(k))}</th>`).join('')}</tr></thead>
       <tbody>${g.lines.map((line,li)=>{
         const sum = provisionLineSummary(g, line);
+        const lineDrift = drift.find(f=>f.lineId===line.lineId);
         return `<tr>
         <td style="position:sticky;left:0;z-index:1;background:var(--panel);text-align:center"><button class="x" title="Remove account" onclick="removeProvisionLine(${g.id},${li})">✕</button></td>
         <td style="position:sticky;left:32px;z-index:1;background:var(--panel)">
           <div class="mono click" style="font-size:12.5px;cursor:pointer;color:var(--accent);font-weight:600" onclick="jumpToLedgerForAccount(${line.acc})" title="View this account's transactions in the Ledger">${esc(accShort(line.acc))}</div>
           <div class="mut" id="provLineDescr_${g.id}_${li}" style="font-size:11px;margin-top:2px;cursor:pointer" onclick="startEditProvisionLineDescr(${g.id},${li})" title="Click to edit this line's description">${line.descrBase && line.descrBase!==accShort(line.acc)? esc(line.descrBase) : '<span style="opacity:.55">+ Add description</span>'}</div>
+          ${lineDrift? `<div style="margin-top:4px"><span class="badge neg" style="font-size:9px;cursor:pointer" onclick="go('dashboard')" title="Planned ${money(lineDrift.avgPlan)} vs. actual ${money(lineDrift.avgActual)} (avg) — see Dashboard">📉 drifted</span></div>` : ''}
           <div class="mut" style="font-size:10.5px;margin-top:4px;line-height:1.6">
             Current Balance: <span class="mono">${money(sum.current)}</span><br>
             Sum of Planned Months: <span class="mono">${money(sum.plannedSum)}</span><br>
@@ -4670,7 +4971,6 @@ function startEditProvisionLineDescr(gid, li){
   if(input){ input.focus(); input.select(); }
 }
 async function saveProvisionLineDescr(gid, li, val){
-  if(blockIfSyncing()) return;
   const g = findProvisionGroup(gid); if(!g) return;
   const line = g.lines[li]; if(!line) return;
   const clean = String(val).trim();
@@ -4684,6 +4984,10 @@ async function saveProvisionLineDescr(gid, li, val){
     const isCustom = line.descrBase && line.descrBase!==accShort(line.acc);
     el.innerHTML = isCustom? esc(line.descrBase) : '<span style="opacity:.55">+ Add description</span>';
   }
+  // The local edit above always applies and is saved to localStorage regardless of sync state —
+  // only the remote write is gated, and even then syncWrite() queues it for retry rather than
+  // dropping it, so a description is never lost just because a sync happened to be in flight.
+  if(blockIfSyncing()) { persistLocal(); return; }
   await persistProvisionGroup(g);
 }
 function provCellKey(ev, gid, li, mi, monthCount){
@@ -5067,7 +5371,8 @@ function nextForecastAccountRuleId(){ let m=0; D.forecastAccountRules.forEach(r=
 function goSmartRulesSettings(){ settingsTab='smartrules'; go('settings'); }
 function openForecastAccountRuleModal(id){
   const existing = id? D.forecastAccountRules.find(r=>r.id===id) : null;
-  window._sraDraft = existing? {id:existing.id, name:existing.name, account:existing.account, rule:{...existing.rule}, targetOffset:existing.targetOffset||0} : {id:null, name:'', account:'', rule:{type:'account_balance', sign:-1}, targetOffset:0};
+  window._sraDraft = existing? {id:existing.id, name:existing.name, account:existing.account, rule:{...existing.rule}, targetOffset:existing.targetOffset||0, freezeAfterTarget:!!existing.freezeAfterTarget} : {id:null, name:'', account:'', rule:{type:'account_balance', sign:-1}, targetOffset:0, freezeAfterTarget:false};
+  window._sraDraft._matches = []; window._sraDraft._hi = -1;
   renderForecastAccountRuleModal();
 }
 function renderForecastAccountRuleModal(){
@@ -5079,10 +5384,10 @@ function renderForecastAccountRuleModal(){
     <h3>${d.id?'Edit':'New'} Smart Rule — Forecast Override</h3>
     <div class="mut" style="font-size:11.5px;margin-bottom:12px">${offset===0? "Overrides this account's CURRENT MONTH forecast plan only — every other month keeps its normal category behavior." : `Every month from the current month through +${offset-1} month(s) is forced to 0. The target month (+${offset}) shows the live-computed value. Months after that are untouched — like a quarterly sweep where nothing happens in between.`}</div>
     <label class="fl">Rule Name</label>
-    <input id="sraName" value="${esc(d.name)}" placeholder="e.g. Short & Over — clear monthly" style="margin-bottom:12px">
+    <input id="sraName" value="${esc(d.name)}" placeholder="e.g. Short & Over — clear monthly" style="margin-bottom:12px" oninput="window._sraDraft.name=this.value">
     <label class="fl">Account</label>
     <div class="autoc" style="position:relative;margin-bottom:12px"><input id="sraAccInput" placeholder="Search account…" value="${d.account?esc(accName(Number(d.account))):''}"
-      oninput="sraAccInput(this.value)" onfocus="sraAccInput(this.value)" onblur="setTimeout(()=>closeSraAcDrop(),150)">
+      oninput="sraAccInput(this.value)" onfocus="sraAccInput(this.value)" onkeydown="sraAccKey(event)" onblur="setTimeout(()=>closeSraAcDrop(),150)">
       <div class="acdrop" id="sraAcDrop"></div></div>
     <label class="fl">Applies at</label>
     <select onchange="window._sraDraft.targetOffset=Number(this.value); renderForecastAccountRuleModal()" style="margin-bottom:12px">
@@ -5103,7 +5408,11 @@ function renderForecastAccountRuleModal(){
     ${r.type==='fixed'? `
       <label class="fl">Value</label>
       <input type="number" step="0.01" value="${r.value!==undefined?r.value:''}" oninput="window._sraDraft.rule.value=this.value" style="margin-bottom:12px">` : ''}
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer"><input type="checkbox" class="chk" ${r.sign===-1?'checked':''} onchange="window._sraDraft.rule.sign=this.checked?-1:1"> Reverse sign</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer"><input type="checkbox" class="chk" ${r.sign===-1?'checked':''} onchange="window._sraDraft.rule.sign=this.checked?-1:1"> Reverse sign</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer"><input type="checkbox" class="chk" ${d.freezeAfterTarget?'checked':''} onchange="window._sraDraft.freezeAfterTarget=this.checked; renderForecastAccountRuleModal()"> Freeze months after the target as 0</label>
+    <div class="mut" style="font-size:11.5px;margin-bottom:16px">${d.freezeAfterTarget
+      ? `Every month after the target (+${offset}) is forced to 0 and locked from editing, so nothing gets planned there by mistake. Only applies to months that are currently blank — anything you've already typed a value into is left as-is.`
+      : `Leave unchecked to keep every month after the target open for normal planning, same as today.`}</div>
     <div class="row" style="justify-content:flex-end">
       ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteForecastAccountRule(${d.id})">Delete</button>` : ''}
       <button class="btn ghost" onclick="closeModal()">Cancel</button>
@@ -5111,15 +5420,33 @@ function renderForecastAccountRuleModal(){
     </div>`);
 }
 function sraAccInput(v){
+  const d = window._sraDraft;
   const q = v.toLowerCase();
   const matches = postableAccounts().filter(a=>String(a.id).includes(q)||(a.name||'').toLowerCase().includes(q)).slice(0,20);
+  d._matches = matches; d._hi = -1;
+  renderSraAcDrop();
+}
+function renderSraAcDrop(){
+  const d = window._sraDraft;
+  const matches = d._matches||[];
   const drop = document.getElementById('sraAcDrop');
   if(!drop) return;
-  drop.className = 'acdrop show';
-  drop.innerHTML = matches.map(a=>`<div class="acopt" onmousedown="pickSraAcc(${a.id})">${esc(accName(a.id))}</div>`).join('');
+  const html = matches.map((a,idx)=>`<div class="acopt ${idx===d._hi?'hi':''}" onmousedown="pickSraAcc(${a.id})">${esc(accName(a.id))}</div>`).join('');
+  drop.innerHTML = html;
+  drop.className = html? 'acdrop show' : 'acdrop';
+}
+function sraAccKey(ev){
+  const d = window._sraDraft;
+  const matches = d._matches||[];
+  if(ev.key==='ArrowDown'){ if(matches.length){ ev.preventDefault(); d._hi = Math.min(matches.length-1, d._hi+1); renderSraAcDrop(); } }
+  else if(ev.key==='ArrowUp'){ if(matches.length){ ev.preventDefault(); d._hi = Math.max(0, d._hi-1); renderSraAcDrop(); } }
+  else if(ev.key==='Enter'){
+    if(matches.length && d._hi>=0){ ev.preventDefault(); pickSraAcc(matches[d._hi].id); }
+  }
 }
 function pickSraAcc(id){
-  window._sraDraft.account = id;
+  const d = window._sraDraft;
+  d.account = id; d._matches = []; d._hi = -1;
   const el = document.getElementById('sraAccInput');
   if(el) el.value = accName(id);
   closeSraAcDrop();
@@ -5138,12 +5465,12 @@ async function saveForecastAccountRuleModal(){
   const id = d.id || nextForecastAccountRuleId();
   const existing = D.forecastAccountRules.find(x=>x.id===id);
   const base = existing? existing.updated_at||null : null;
-  const obj = {id, name, account:Number(d.account), rule:r, targetOffset:d.targetOffset||0};
+  const obj = {id, name, account:Number(d.account), rule:r, targetOffset:d.targetOffset||0, freezeAfterTarget:!!d.freezeAfterTarget};
   if(existing) Object.assign(existing, obj); else D.forecastAccountRules.push(obj);
   persistLocal(); closeModal(); renderSettings();
   toast('Smart Rule saved ✓');
   logActivity('action', (existing?'Edited':'Created')+' Smart Rule "'+name+'" for '+accShort(Number(d.account)));
-  await syncWrite('pd_forecast_account_rules', 'upsert', {id, name, account:obj.account, rule:r, target_offset:obj.targetOffset}, base);
+  await syncWrite('pd_forecast_account_rules', 'upsert', {id, name, account:obj.account, rule:r, target_offset:obj.targetOffset, freeze_after_target:obj.freezeAfterTarget}, base);
 }
 async function deleteForecastAccountRule(id){
   if(blockIfSyncing()) return;
@@ -6200,7 +6527,7 @@ function renderCashFlowPanel(months, currentMonth){
   const anchored = getCashPositionAnchorToActual();
   const catRow = (catKey) => `<tr><td class="mut click" style="position:sticky;left:0;z-index:1;background:var(--panel);padding-left:10px;cursor:pointer" onclick="jumpToForecastSection('${catKey}')" title="Jump to this section below">${esc(FORECAST_CATEGORIES[catKey].label)}${categorySignMultiplier(catKey)===-1?' <span class="badge neg" style="font-size:9px">reversed</span>':''}</td>${rows.map(r=>`<td class="num mono ${moneyClass(r.subrows[catKey])} click" style="cursor:pointer" title="Click to see the source below" onclick="jumpToForecastCategoryMonth('${catKey}','${r.month}')">${money0(r.subrows[catKey])}</td>`).join('')}</tr>`;
   const signWarning = anyForecastSignFlipActive()? `<div class="mut" style="font-size:11.5px;margin-bottom:8px;color:var(--red)">⚠ One or more categories have a reversed sign convention active (Forecast Settings → Cash Position Sign Conventions) — this affects every column for that category, historical and current included, and flows through to Closing Balance.</div>` : '';
-  return `<div class="panel" style="overflow-x:auto">
+  return `<div class="panel">
     <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <h3 style="margin:0">💰 Bank Accounts — Projected Cash Position</h3>
       <label class="noprint" style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;font-weight:normal">
@@ -6213,6 +6540,7 @@ function renderCashFlowPanel(months, currentMonth){
       : 'Every month here is Starting + Inflows + Outflows, chained from your earliest ledger activity, with no correction for any historical gaps.'}
       Click any month's total for a full cash-flow breakdown. Numbers are rounded to whole units here — the export keeps full decimal precision.</div>
     ${signWarning}
+    <div class="forecast-scroll" style="overflow-x:auto">
     <table style="min-width:${FORECAST_LABEL_COL_WIDTH+months.length*FORECAST_MONTH_COL_WIDTH}px;table-layout:fixed" class="sticky-table">
       <colgroup><col style="width:${FORECAST_LABEL_COL_WIDTH}px">${months.map(()=>`<col style="width:${FORECAST_MONTH_COL_WIDTH}px">`).join('')}</colgroup>
       <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--panel)"></th>${months.map(m=>`<th class="num" style="${m===currentMonth?'background:var(--chip)':''}">${esc(monthLabel(m))}</th>`).join('')}</tr></thead>
@@ -6226,6 +6554,7 @@ function renderCashFlowPanel(months, currentMonth){
         <tr style="font-weight:700;background:var(--chip)"><td style="position:sticky;left:0;z-index:1;background:var(--chip);font-weight:700">Closing Balance</td>${rows.map(r=>`<td class="num mono ${moneyClass(r.closing)} click" style="cursor:pointer" onclick="openCashPositionBreakdown('${r.month}')">${money0(r.closing)}</td>`).join('')}</tr>
       </tbody>
     </table>
+    </div>
   </div>`;
 }
 function renderForecastCell(a, m, currentMonth, noDecimals, opts){
@@ -6288,6 +6617,7 @@ function jumpToForecastCategoryMonth(catKey, monthKey){
         void cell.offsetWidth;
         cell.classList.add('glow-highlight');
         cell.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+        setTimeout(()=>{ cell.classList.remove('glow-highlight'); }, 4000);
       }
     }, 350);
   });
@@ -6323,11 +6653,12 @@ function renderForecastCategorySection(catKey, catDef, accs, months, currentMont
   // their current balance doesn't contribute to the Current Balance total shown here.
   const visibleAccs = accs.filter(a=>a.status!=='Inactive');
   const balanceTotal = visibleAccs.reduce((s,a)=>s+accountBalance(a.id),0) * (reversed?-1:1);
-  return `<div class="panel" style="overflow-x:auto" id="forecastSection_${catKey}">
+  return `<div class="panel" id="forecastSection_${catKey}">
     <div class="row click" style="cursor:pointer" onclick="toggleForecastSectionCollapse('${catKey}')">
       <h3 style="margin:0">${esc(catDef.label)}${reversed?' <span class="badge neg" style="font-size:9px">reversed</span>':''}</h3>
       <span class="mut" style="font-size:12px">${collapsed?'▸ Expand':'▾ Collapse'}</span>
     </div>
+    <div class="forecast-scroll" style="overflow-x:auto">
     <table style="min-width:${FORECAST_LABEL_COL_WIDTH+months.length*FORECAST_MONTH_COL_WIDTH}px;margin-top:8px;table-layout:fixed" class="sticky-table">
       <colgroup><col style="width:${FORECAST_ACCOUNT_COL_WIDTH}px"><col style="width:${FORECAST_BALANCE_COL_WIDTH}px">${months.map(()=>`<col style="width:${FORECAST_MONTH_COL_WIDTH}px">`).join('')}</colgroup>
       <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--panel)">Account</th><th class="num" style="position:sticky;left:${FORECAST_ACCOUNT_COL_WIDTH}px;z-index:2;background:var(--panel)">Current Balance</th>${months.map(m=>`<th class="num" style="${m===currentMonth?'background:var(--chip)':''}">${esc(monthLabel(m))}</th>`).join('')}</tr></thead>
@@ -6341,6 +6672,7 @@ function renderForecastCategorySection(catKey, catDef, accs, months, currentMont
         ${totals.map((t,i)=>`<td class="num mono ${moneyClass(t)}" id="forecastSectionTotal_${catKey}_${months[i]}">${money0(t)}</td>`).join('')}
       </tr></tfoot>
     </table>
+    </div>
   </div>`;
 }
 // Keeps every horizontally-scrollable table on the Forecast page (Cash Position + each category
@@ -6349,7 +6681,7 @@ function renderForecastCategorySection(catKey, catDef, accs, months, currentMont
 function syncForecastScrollContainers(){
   const body = document.getElementById('forecastBody');
   if(!body) return;
-  const containers = Array.from(body.querySelectorAll('.panel')).filter(p=>p.style.overflowX==='auto');
+  const containers = Array.from(body.querySelectorAll('.forecast-scroll'));
   let syncing = false;
   containers.forEach(c=>{
     c.addEventListener('scroll', ()=>{
@@ -6367,7 +6699,7 @@ function renderForecastBody(){
   // capturing scroll position from any one existing container before an edit-triggered rebuild
   // is enough to restore the whole page's horizontal position afterward — without this, editing
   // any cell would silently snap the view back to the leftmost column.
-  const existingScroller = Array.from(el.querySelectorAll('.panel')).find(p=>p.style.overflowX==='auto');
+  const existingScroller = el.querySelector('.forecast-scroll');
   const savedScrollLeft = existingScroller ? existingScroller.scrollLeft : 0;
   beginForecastFastPath();
   try{
@@ -6396,7 +6728,7 @@ function renderForecastBody(){
     `;
     syncForecastScrollContainers();
     if(savedScrollLeft){
-      const first = Array.from(el.querySelectorAll('.panel')).find(p=>p.style.overflowX==='auto');
+      const first = el.querySelector('.forecast-scroll');
       if(first) first.scrollLeft = savedScrollLeft;
     }
   } finally {
@@ -6465,11 +6797,13 @@ function renderAllocUnallocResults(){
           <button class="btn ghost sm" onclick="openSettlementStatement(${acc})">📄 Arabic Statement</button>
         </div>
       </div>
-      <table><thead><tr><th style="width:30px"></th><th style="width:80px">JV#</th><th style="width:110px">Date</th><th>Description</th><th class="num" style="width:130px">Amount</th></tr></thead>
+      <div style="overflow-x:auto">
+      <table class="alloc-unalloc-table"><thead><tr><th class="col-check"></th><th class="col-jv">JV#</th><th class="col-date">Date</th><th>Description</th><th class="num col-amt">Amount</th></tr></thead>
       <tbody>${byAcc[acc].map(l=>`<tr>
-        <td style="vertical-align:middle"><input type="checkbox" class="chk" ${allocSelected.has(l.id)?'checked':''} onchange="toggleAllocSel(${l.id},${acc})"></td>
-        <td class="mono click" onclick="viewJV(${l.jv})">#${l.jv}</td>
-        <td class="mono">${esc(l.date)}</td><td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('')}</tbody></table>
+        <td style="vertical-align:middle" class="col-check"><input type="checkbox" class="chk" ${allocSelected.has(l.id)?'checked':''} onchange="toggleAllocSel(${l.id},${acc})"></td>
+        <td class="mono click col-jv" onclick="viewJV(${l.jv})">#${l.jv}</td>
+        <td class="mono col-date">${esc(l.date)}</td><td>${esc(l.descr)}</td><td class="num mono col-amt ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('')}</tbody></table>
+      </div>
       ${accSelected.length? `
       <div class="row noprint" style="justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);background:var(--chip)">
         <div>Selected: <b>${accSelected.length}</b> lines &nbsp; Sum: <b class="mono ${moneyClass(selSum)}">${money(selSum)}</b>
@@ -6532,7 +6866,7 @@ async function assignAllocation(acc){
   const touched = [];
   ids.forEach(id=>{ const l = D.ledger.find(x=>x.id===id); if(l){ const base=l.updated_at||null; l.alloc = num; touched.push({row:l, base}); } });
   persistLocal();
-  for(const t of touched){ await syncWrite('pd_ledger', 'upsert', {id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable}, t.base); }
+  for(const t of touched){ await syncWrite('pd_ledger', 'upsert', {id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable, acc_name_snapshot:t.row.accNameSnapshot||null}, t.base); }
   toast('Allocation #'+pad5(num)+' created with '+ids.length+' lines ✓');
   allocSelected.clear();
   renderAlloc();
@@ -6570,7 +6904,7 @@ function viewAllocGroup(n){
   showModal(`<h3>Allocation #${pad5(n)}</h3>
     <div class="row" style="margin-bottom:14px"><label class="fl" style="margin:0">Renumber to</label><input id="allocRenumInput" style="width:130px" value="${pad5(n)}"><button class="btn ghost sm" onclick="renumberAllocation(${n})">Save number</button></div>
     <table><thead><tr><th style="width:70px">JV#</th><th>Date</th><th>Account</th><th>Description</th><th class="num">Amount</th><th></th></tr></thead>
-    <tbody>${lines.map(l=>`<tr><td class="mono click" onclick="viewJV(${l.jv})">#${l.jv}</td><td class="mono">${esc(l.date)}</td><td>${l.acc}<div class="mut" style="font-size:11px">${esc(accShort(l.acc))}</div></td><td>${esc(l.descr)}</td>
+    <tbody>${lines.map(l=>`<tr><td class="mono click" onclick="viewJV(${l.jv})">#${l.jv}</td><td class="mono">${esc(l.date)}</td><td>${l.acc}<div class="mut" style="font-size:11px">${esc(ledgerAccName(l))}</div></td><td>${esc(l.descr)}</td>
       <td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td><td><button class="x" title="Remove from allocation" onclick="unassignLine(${l.id},${n})">✕</button></td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="4">Net</td><td class="num mono ${moneyClass(total)}">${money(total)}</td><td></td></tr></tfoot></table>
     <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
@@ -6587,7 +6921,7 @@ async function renumberAllocation(oldNum){
   const touched = rows.map(l=>({row:l, base:l.updated_at||null}));
   rows.forEach(l=>{ l.alloc=newNum; });
   persistLocal();
-  for(const t of touched){ await syncWrite('pd_ledger', 'upsert', {id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable}, t.base); }
+  for(const t of touched){ await syncWrite('pd_ledger', 'upsert', {id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable, acc_name_snapshot:t.row.accNameSnapshot||null}, t.base); }
   toast('Renumbered to #'+pad5(newNum)+' ✓');
   viewAllocGroup(newNum);
   renderAlloc();
@@ -6599,7 +6933,7 @@ async function unassignLine(id,n){
     const base = l.updated_at||null;
     l.alloc=null;
     persistLocal();
-    await syncWrite('pd_ledger', 'upsert', {id:l.id, jv:l.jv, entry_date:l.date, acc:l.acc, descr:l.descr, amt:l.amt, alloc:l.alloc, allocatable:l.allocatable}, base);
+    await syncWrite('pd_ledger', 'upsert', {id:l.id, jv:l.jv, entry_date:l.date, acc:l.acc, descr:l.descr, amt:l.amt, alloc:l.alloc, allocatable:l.allocatable, acc_name_snapshot:l.accNameSnapshot||null}, base);
   }
   const remaining = D.ledger.filter(l=>l.alloc===n).length;
   if(remaining) viewAllocGroup(n); else closeModal();
@@ -6647,9 +6981,10 @@ function renderSettings(){
         <table><thead><tr><th>Name</th><th>Account</th><th>Rule</th><th>Applies At</th><th class="num">Live Value</th><th></th></tr></thead>
         <tbody>${D.forecastAccountRules.length? D.forecastAccountRules.map(r=>{
           const offset = r.targetOffset||0;
-          const offsetLabel = offset===0? 'Current month' : `+${offset} month(s)`;
+          const offsetLabel = (offset===0? 'Current month' : `+${offset} month(s)`) + (r.freezeAfterTarget? ' <span class="badge" style="font-size:9px" title="Months after the target are frozen at 0 when blank">freeze after</span>' : '');
+          const ruleDrift = driftFlagsFor('smartrule', r.id)[0];
           return `<tr>
-          <td>${esc(r.name)}</td>
+          <td>${esc(r.name)}${ruleDrift? ` <span class="badge neg" style="font-size:9px;cursor:pointer" onclick="go('dashboard')" title="Planned ${money(ruleDrift.avgPlan)} vs. actual ${money(ruleDrift.avgActual)} (avg) — see Dashboard">📉 drifted</span>` : ''}</td>
           <td class="mono click" style="cursor:pointer;color:var(--accent)" onclick="jumpToLedgerForAccount(${r.account})">${esc(accShort(r.account))}</td>
           <td class="mut" style="font-size:12px">${esc(smartRuleExprLabel({...r.rule,account:r.account}))}</td>
           <td class="mut" style="font-size:12px">${offsetLabel}</td>
@@ -6745,6 +7080,19 @@ function renderSettings(){
             <input type="checkbox" class="chk" ${!hidden.includes(id)?'checked':''} onchange="togglePageVisibility('${id}', this.checked)"> ${esc(label)}
           </label>`).join('')}
       </div>`},
+    driftdetection: {label:'📉 Drift Detection', html: `
+      <div class="panel">
+        <h3>📉 Drift Detection</h3>
+        <div class="mut" style="font-size:12.5px;margin-bottom:14px">Flags Provisions lines and fixed-value Smart Rules whose planned amount has consistently stopped matching what's actually posting — shown on the Dashboard, with badges on the source pages too.</div>
+        <label class="fl">Flag when drift exceeds</label>
+        <input type="number" id="driftThresholdInput" min="1" max="200" step="1" value="${getDriftSettings().thresholdPct}" style="margin-bottom:10px;width:100px"> %
+        <label class="fl" style="margin-top:10px">For at least this many consecutive months</label>
+        <input type="number" id="driftMinMonthsInput" min="1" max="12" step="1" value="${getDriftSettings().minMonths}" style="margin-bottom:10px;width:100px"> month(s)
+        <div class="row" style="margin-top:6px">
+          <button class="btn pri sm" onclick="saveDriftSettings()">Save</button>
+        </div>
+        <div class="mut" style="font-size:11px;margin-top:10px">Currently: flag anything more than <span class="mono">${getDriftSettings().thresholdPct}%</span> off for <span class="mono">${getDriftSettings().minMonths}</span> consecutive month(s). Kept locally on this device only, not synced.</div>
+      </div>`},
     gridexport: {label:'📅 Grid & Export End Month', html: `
       <div class="panel">
         <h3>📅 Grid & Export End Month</h3>
@@ -6836,6 +7184,15 @@ function renderSettings(){
         <div class="row"><button class="btn ghost sm" onclick="downloadTemplateCSV('coa')">⬇ Download template</button>
           <input type="file" accept=".csv" onchange="handleImportFile('coa', this)"></div>
         <div class="mut" style="font-size:11.5px;margin-top:4px">Columns: <b style="color:var(--accent)">Acc#</b>, <b style="color:var(--accent)">Name</b>, Category, Account Type, Cash Flow Type, Direction, Status — adds new accounts or updates existing ones by Acc#</div>
+      </div>`},
+    ledgereditor: {label:'🛠 Ledger Bulk Editor', html: `
+      <div class="panel" style="border-color:var(--amber, #b58900)">
+        <h3>🛠 Ledger Bulk Editor</h3>
+        <div class="mut" style="font-size:12.5px;margin-bottom:12px">Export your full ledger, edit any field in Excel — including moving transactions between accounts, re-grouping JV#s, correcting the Historical Name, or marking rows for deletion — then re-import. Every row is matched by its Row ID, never by JV#/account/date, so there's no ambiguity about which line you're changing.</div>
+        <div class="row"><button class="btn pri sm" onclick="exportLedgerEditorCSV()">⬇ Export full ledger for editing</button></div>
+        <div class="mut" style="font-size:11.5px;margin:10px 0 4px">To delete a row, type <span class="mono">DELETE</span> in its <b>Delete</b> column. Leave any other cell unchanged to keep it as-is.</div>
+        <div class="row" style="margin-top:6px"><input type="file" accept=".csv" onchange="handleImportFile('ledgereditor', this)"></div>
+        <div class="mut" style="font-size:11.5px;margin-top:10px">Nothing is applied until the whole file passes validation — if any JV would stop balancing to zero, or any previously-closed allocation would break, the entire import is blocked and you'll see exactly which rows caused it, with nothing changed.</div>
       </div>`},
     danger: {label:'⚠ Danger Zone', html: `
       <div class="panel" style="border-color:var(--red)">
@@ -6950,7 +7307,7 @@ async function restoreFromBackup(parsed){
   bump('Restoring Jamiahs');
   if(D.realEstateBuildings.length) await insertWithRetry('pd_real_estate_buildings', D.realEstateBuildings.map(b=>({id:b.id, name:b.name, apartment_account_ids:b.apartmentAccountIds, expense_account_ids:b.expenseAccountIds})));
   bump('Restoring Real Estate buildings');
-  if(D.forecastAccountRules.length) await insertWithRetry('pd_forecast_account_rules', D.forecastAccountRules.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, target_offset:r.targetOffset||0})));
+  if(D.forecastAccountRules.length) await insertWithRetry('pd_forecast_account_rules', D.forecastAccountRules.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, target_offset:r.targetOffset||0, freeze_after_target:!!r.freezeAfterTarget})));
   bump('Restoring Smart Rules');
   if(D.customForecastCategories.length) await insertWithRetry('pd_custom_forecast_categories', D.customForecastCategories.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior})));
   bump('Restoring Custom Categories');
@@ -6962,7 +7319,7 @@ async function restoreFromBackup(parsed){
   bump('Restoring description translations');
   const BATCH=250;
   for(let i=0;i<D.ledger.length;i+=BATCH){
-    const chunk = D.ledger.slice(i,i+BATCH).map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable}));
+    const chunk = D.ledger.slice(i,i+BATCH).map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null}));
     await insertWithRetry('pd_ledger', chunk);
     bump('Restoring ledger ('+Math.min(i+BATCH,D.ledger.length).toLocaleString()+'/'+D.ledger.length.toLocaleString()+')');
   }
@@ -7252,6 +7609,155 @@ function csvToObjects(text){
   const headers = rows[0].map(h=>h.trim().toLowerCase());
   return rows.slice(1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=(r[i]||'').trim()); return o; });
 }
+function exportLedgerEditorCSV(){
+  const header = ['Row ID','JV#','Date','Account#','Account Name (Current)','Historical Name','Description','Amount','Alloc#','Delete'];
+  const rows = [header.join(',')];
+  D.ledger.slice().sort((a,b)=>a.id-b.id).forEach(l=>{
+    rows.push([l.id, l.jv, l.date, l.acc, accShort(l.acc), l.accNameSnapshot||'', l.descr, l.amt, l.alloc?pad5(l.alloc):'', ''].map(csvEscape).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ledger-full-export-'+todayStr()+'.csv'; a.click();
+  toast('Full ledger exported — '+D.ledger.length.toLocaleString()+' row(s)');
+}
+function showBulkEditReport(title, lines){
+  showModal(`<h3>${esc(title)}</h3>
+    <div style="max-height:400px;overflow-y:auto;background:var(--chip);border-radius:8px;padding:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;white-space:pre-wrap;line-height:1.7">${esc(lines.join('\n'))}</div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
+}
+// Bulk edit/delete of EXISTING ledger rows via CSV, matched by Row ID (not JV#/account/date, which
+// can collide within a JV). Every field is editable, including moving a transaction to a different
+// account, re-grouping its JV#, and deleting rows outright via the Delete column. Nothing commits
+// until a full validation pass runs against a simulated copy of the ledger — if that pass finds any
+// JV that would no longer balance to zero, or any allocation group that was closed and would become
+// unbalanced, the WHOLE import is blocked and a report is shown; nothing is partially applied.
+async function importLedgerEditorCSV(rows){
+  if(blockIfSyncing()) return;
+  const parseErrors = [];
+  const staged = [];
+  const seenIds = new Set();
+
+  rows.forEach((r,idx)=>{
+    const csvRowNum = idx+2; // +2: header row + 1-indexing, so this matches the row number you'd see in Excel
+    const rowIdRaw = r['row id'];
+    const rowId = parseInt(rowIdRaw,10);
+    if(!rowIdRaw || isNaN(rowId)){ parseErrors.push('Row '+csvRowNum+': missing or invalid Row ID — skipped'); return; }
+    if(seenIds.has(rowId)){ parseErrors.push('Row '+csvRowNum+': duplicate Row ID '+rowId+' in this file — skipped'); return; }
+    seenIds.add(rowId);
+    const origRow = D.ledger.find(l=>l.id===rowId);
+    if(!origRow){ parseErrors.push('Row '+csvRowNum+' (Row ID '+rowId+'): no ledger row with this ID exists — skipped'); return; }
+
+    const deleteMarker = (r['delete']||'').trim().toLowerCase();
+    const isDelete = ['delete','y','yes','true','x'].includes(deleteMarker);
+    if(isDelete){ staged.push({rowId, origRow, action:'delete'}); return; }
+
+    const jv = r['jv#']!==undefined && r['jv#']!==''? parseInt(r['jv#'],10) : origRow.jv;
+    const date = r['date']!==undefined && r['date']!==''? r['date'] : origRow.date;
+    const acc = r['account#']!==undefined && r['account#']!==''? parseInt(r['account#'],10) : origRow.acc;
+    const descr = r['description']!==undefined? r['description'] : origRow.descr;
+    const amt = r['amount']!==undefined && r['amount']!==''? Number(String(r['amount']).replace(/,/g,'')) : origRow.amt;
+    const allocRaw = r['alloc#'];
+    const alloc = (allocRaw!==undefined && allocRaw!=='')? parseInt(allocRaw,10) : (allocRaw===''? null : origRow.alloc);
+    const histRaw = r['historical name'];
+    const accNameSnapshot = histRaw!==undefined? (histRaw.trim()||null) : (origRow.accNameSnapshot||null);
+
+    if(isNaN(jv) || !date || !acc || isNaN(amt)){ parseErrors.push('Row '+csvRowNum+' (Row ID '+rowId+'): invalid JV#, Date, Account#, or Amount — skipped'); return; }
+    if(!D.accounts.find(a=>a.id===acc)){ parseErrors.push('Row '+csvRowNum+' (Row ID '+rowId+'): Account# '+acc+' does not exist — skipped'); return; }
+
+    const changed = jv!==origRow.jv || date!==origRow.date || acc!==origRow.acc || descr!==origRow.descr || Math.abs(amt-origRow.amt)>=0.005 || alloc!==origRow.alloc || accNameSnapshot!==(origRow.accNameSnapshot||null);
+    if(!changed) return;
+    staged.push({rowId, origRow, action:'update', newFields:{jv, date, acc, descr, amt, alloc, accNameSnapshot}});
+  });
+
+  if(!staged.length){
+    if(parseErrors.length) showBulkEditReport('No changes applied', ['No valid changes were found.', ''].concat(parseErrors));
+    else toast('No changes detected in that file');
+    return;
+  }
+
+  // Simulate the whole batch against a working copy before touching the real ledger
+  const simMap = new Map(D.ledger.map(l=>[l.id, {...l}]));
+  staged.forEach(s=>{
+    if(s.action==='delete') simMap.delete(s.rowId);
+    else simMap.set(s.rowId, {...simMap.get(s.rowId), ...s.newFields});
+  });
+  const simLedger = [...simMap.values()];
+
+  // Validation 1: every JV touched by this import must still net to zero (or be fully removed)
+  const touchedJVs = new Set();
+  staged.forEach(s=>{ touchedJVs.add(s.origRow.jv); if(s.action==='update' && s.newFields.jv!==s.origRow.jv) touchedJVs.add(s.newFields.jv); });
+  const jvErrors = [];
+  touchedJVs.forEach(jv=>{
+    const survivingLines = simLedger.filter(l=>l.jv===jv);
+    if(!survivingLines.length) return; // fully deleted JV — a clean, intentional removal
+    const net = survivingLines.reduce((s,l)=>s+Number(l.amt),0);
+    if(Math.abs(net)>=0.005) jvErrors.push({jv, net, lineCount:survivingLines.length});
+  });
+
+  // Validation 2: an allocation group that was closed (net 0) before must not become unbalanced.
+  // A group that was already open stays out of scope — that's a normal, expected state, not something
+  // this import broke. A group emptied out entirely is also fine — nothing is left to be unbalanced.
+  const touchedAllocs = new Set();
+  staged.forEach(s=>{ if(s.origRow.alloc) touchedAllocs.add(s.origRow.alloc); if(s.action==='update' && s.newFields.alloc) touchedAllocs.add(s.newFields.alloc); });
+  const allocErrors = [];
+  touchedAllocs.forEach(alloc=>{
+    const beforeLines = D.ledger.filter(l=>l.alloc===alloc);
+    const beforeNet = beforeLines.reduce((s,l)=>s+Number(l.amt),0);
+    if(!(beforeLines.length>=1 && Math.abs(beforeNet)<0.005)) return;
+    const afterLines = simLedger.filter(l=>l.alloc===alloc);
+    if(!afterLines.length) return;
+    const afterNet = afterLines.reduce((s,l)=>s+Number(l.amt),0);
+    if(Math.abs(afterNet)>=0.005) allocErrors.push({alloc, afterNet, lineCount:afterLines.length});
+  });
+
+  if(jvErrors.length || allocErrors.length || parseErrors.length){
+    const lines = [];
+    if(jvErrors.length){
+      lines.push('⚠ '+jvErrors.length+' JV(s) would no longer balance to zero:');
+      jvErrors.forEach(e=> lines.push('  JV #'+e.jv+' — '+e.lineCount+' line(s) remaining, net '+money(e.net)+' (should be 0.00)'));
+      lines.push('');
+    }
+    if(allocErrors.length){
+      lines.push('⚠ '+allocErrors.length+' allocation group(s) that were balanced would become unbalanced:');
+      allocErrors.forEach(e=> lines.push('  Alloc #'+pad5(e.alloc)+' — was 0.00, would become '+money(e.afterNet)+' ('+e.lineCount+' line(s) remaining)'));
+      lines.push('');
+    }
+    if(parseErrors.length){
+      lines.push('⚠ '+parseErrors.length+' row(s) had errors and were skipped:');
+      parseErrors.forEach(e=> lines.push('  '+e));
+    }
+    showBulkEditReport('Import blocked — fix these and re-upload', lines);
+    return;
+  }
+
+  const updates = staged.filter(s=>s.action==='update').length;
+  const deletes = staged.filter(s=>s.action==='delete').length;
+  let confirmMsg = 'Ready to apply:\n'+updates+' row(s) will be updated\n'+deletes+' row(s) will be deleted';
+  if(parseErrors.length) confirmMsg += '\n\n('+parseErrors.length+' row(s) were skipped due to errors)';
+  if(!confirm(confirmMsg+'\n\nThis cannot be undone automatically. Continue?')) return;
+
+  showImportProgress('Applying bulk ledger edit…');
+  const syncOps = [];
+  staged.forEach(s=>{
+    if(s.action==='delete'){
+      D.ledger = D.ledger.filter(l=>l.id!==s.rowId);
+      syncOps.push({table:'pd_ledger', kind:'delete', row:{id:s.rowId}, base:s.origRow.updated_at||null});
+    } else {
+      const row = D.ledger.find(l=>l.id===s.rowId);
+      if(row){
+        Object.assign(row, s.newFields);
+        syncOps.push({table:'pd_ledger', kind:'upsert', row:{id:row.id, jv:row.jv, entry_date:row.date, acc:row.acc, descr:row.descr, amt:row.amt, alloc:row.alloc, allocatable:row.allocatable, acc_name_snapshot:row.accNameSnapshot||null}, base:row.updated_at||null});
+      }
+    }
+  });
+  persistLocal();
+  await syncWriteMany(syncOps, {concurrency:6, onProgress:(done,total)=>updateImportProgress(done,total,'Syncing')});
+  finishImportProgress('Bulk edit applied ✓ — '+updates+' updated, '+deletes+' deleted'+(parseErrors.length? '\n'+parseErrors.length+' row(s) skipped due to errors':''));
+  logActivity('action', 'Bulk ledger edit via CSV: '+updates+' row(s) updated, '+deletes+' row(s) deleted');
+  if(screen==='ledger') renderLedger();
+  else if(screen==='dashboard') renderDashboard();
+  else if(screen==='statement') renderStatement();
+  else if(screen==='alloc') renderAlloc();
+}
 function downloadTemplateCSV(kind){
   const templates = {
     ledger: 'JV#,Date,Account#,Description,Amount,Alloc#\n2900,2026-07-15,10101,Example cash deposit,500,\n2900,2026-07-15,10102,Example transfer out,-500,\n',
@@ -7268,6 +7774,7 @@ function handleImportFile(kind, inputEl){
     const rows = csvToObjects(reader.result);
     if(!rows.length){ toast('No rows found in that CSV', true); inputEl.value=''; return; }
     if(kind==='ledger') await importLedgerCSV(rows);
+    else if(kind==='ledgereditor') await importLedgerEditorCSV(rows);
     else if(kind==='allocations') await importAllocationsCSV(rows);
     else if(kind==='coa') await importCOACSV(rows);
     inputEl.value='';
@@ -7288,13 +7795,13 @@ async function importLedgerCSV(rows){
     if(accObj && accObj.status==='Inactive'){ skippedInactive++; return; }
     const jv = parseInt(r['jv#']||r['jv'],10) || nextJV()+newRows.length;
     const alloc = parseInt(r['alloc#']||r['alloc'],10) || null;
-    newRows.push({id: id++, jv, date: r['date']||todayStr(), acc, descr: r['description']||r['descr']||'', amt, alloc: alloc||null, allocatable:false});
+    newRows.push({id: id++, jv, date: r['date']||todayStr(), acc, descr: r['description']||r['descr']||'', amt, alloc: alloc||null, allocatable:false, accNameSnapshot: accShort(acc)});
   });
   D.ledger.push(...newRows);
   persistLocal();
   showImportProgress('Importing '+newRows.length.toLocaleString()+' ledger rows…');
   if(newRows.length){
-    const syncOps = newRows.map(l=>({table:'pd_ledger', kind:'upsert', row:{id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable}, base:null}));
+    const syncOps = newRows.map(l=>({table:'pd_ledger', kind:'upsert', row:{id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot}, base:null}));
     await syncWriteMany(syncOps, {concurrency:6, onProgress:(done,total)=>updateImportProgress(done,total,'Syncing')});
   }
   finishImportProgress('Imported '+newRows.length.toLocaleString()+' ledger rows ✓'+(skippedInactive? '\n'+skippedInactive.toLocaleString()+' row(s) skipped — posted against an Inactive account':''));
@@ -7316,7 +7823,7 @@ async function importAllocationsCSV(rows){
   persistLocal();
   showImportProgress('Applying '+touched.length.toLocaleString()+' allocation matches…');
   if(touched.length){
-    const syncOps = touched.map(t=>({table:'pd_ledger', kind:'upsert', row:{id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable}, base:t.base}));
+    const syncOps = touched.map(t=>({table:'pd_ledger', kind:'upsert', row:{id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable, acc_name_snapshot:t.row.accNameSnapshot||null}, base:t.base}));
     await syncWriteMany(syncOps, {concurrency:6, onProgress:(done,total)=>updateImportProgress(done,total,'Syncing')});
   }
   finishImportProgress('Allocations: '+matched.toLocaleString()+' matched, '+unmatched.toLocaleString()+' unmatched');
