@@ -344,12 +344,26 @@ const SEED = {"accounts":[],"ledger":[],"budget":[],"templates":[],"categories":
 <script>
 /* ============================= STATE ============================= */
 // Bump this on every shipped change (major.minor.patch). Shown in Settings.
-const APP_VERSION = '4.16.0';
+const APP_VERSION = '4.18.0';
 // STANDING CONVENTION (as of v3.6.1, applies to every release from here on):
 // every time APP_VERSION is bumped, add a matching entry to CHANGELOG below —
 // version, date (YYYY-MM-DD), and a short bullet list of what changed. This is
 // shown to the person in Settings → Change Log. Do not skip this step.
 const CHANGELOG = [
+  {version:'4.18.0', date:'2026-08-19', changes:[
+    'The offline cache has moved out of localStorage and into IndexedDB. localStorage is capped at roughly 5 MB PER DOMAIN — shared with every other app on the same hostname — and a full ledger history no longer fits. IndexedDB has its own far larger quota, stores structured data natively, and does not compete with other apps for that 5 MB.',
+    'The move runs once on your next load, with a progress screen. It is non-destructive: the old data is copied, read back, and verified record-by-record, and only then is the old key removed. If it is interrupted or fails verification, the original cache is left completely untouched and the move simply runs again next time.',
+    'Each collection is now stored as its own record instead of one large blob, so changing one thing no longer rewrites everything.',
+    'If IndexedDB is unavailable (private browsing, some embedded browsers), the cache falls back to localStorage but is trimmed to the last 6 months of history so it stays small. Older history remains available whenever you are online.',
+    'LedgerOS now checks its own share of the domain\'s localStorage on startup and warns you if it climbs above 25%, rather than leaving it to be discovered after another app has already lost data.',
+    'No database or SQL change is needed for any of this — it is entirely local to your browser.',
+  ]},
+  {version:'4.17.0', date:'2026-08-19', changes:[
+    'NEW: Settings → Local Storage. Shows every key stored by every app on this domain (not just LedgerOS), sorted largest first, with sizes, a usage bar against the ~5 MB per-domain limit, and a split between LedgerOS and other apps. Scanning the whole domain is the point: browsers share one 5 MB pool across every app on a hostname, so filtering to one app\'s own keys hides the app that is actually filling it.',
+    'The same screen breaks the offline cache down by collection — records, total size and bytes per record — so its size is an answer rather than a guess.',
+    'NEW: a guarded "Clear offline cache" action for immediate relief. The cache is a disposable mirror of cloud data, so clearing it loses nothing, but it is blocked while any change is still waiting to sync.',
+    'FIXED (data loss risk): a failed write to the pending-sync queue was swallowed by an empty catch block. That queue holds changes that have NOT reached the cloud yet, so when storage was full those changes disappeared on the next refresh with no warning. It now raises an urgent, visible alert.',
+  ]},
   {version:'4.16.0', date:'2026-08-19', changes:[
     'Investments → Owners: an owner can now be deleted from their edit window. Deletion is blocked while they are attributed units on any transaction, and the window tells you how many are in the way instead of just greying the button out.',
     'Account statements now open newest-first instead of oldest-first, and the sort choice is remembered on that device once you change it.',
@@ -862,7 +876,227 @@ function safeSetItem(key, value){
     return false;
   }
 }
-function persistLocal(){ safeSetItem('ledgerData_v1', JSON.stringify(D)); }
+/* ============================= LOCAL CACHE STORE =============================
+   The offline cache used to live in a single localStorage key. localStorage is capped at ~5 MB
+   PER DOMAIN, shared with every other app on the same hostname — so a full ledger history there
+   crowded out its neighbours and silently failed to save once the cap was reached.
+
+   IndexedDB is the right home for it: hundreds of MB to GB, structured storage, and a separate
+   quota from the localStorage pool. Each collection is stored as its own record rather than one
+   giant blob, so a change to one collection doesn't rewrite everything.
+
+   localStorage remains a FALLBACK for when IndexedDB is unavailable (private browsing, some
+   embedded webviews). In that mode the cache is trimmed to recent history so it stays small
+   rather than repeating the original problem.
+*/
+const IDB_NAME = 'LedgerOS';
+const IDB_STORE = 'cache';
+const IDB_VERSION = 1;
+const LS_CACHE_KEY = 'ledgerData_v1';           // legacy full-blob key, migrated then removed
+const LS_TRIMMED_KEY = 'ledgerCacheTrimmed_v1'; // fallback-only, deliberately small
+const TRIMMED_LEDGER_MONTHS = 6;
+let _idb = null, _idbUnavailable = false, _usingTrimmedFallback = false;
+
+function idbOpen(){
+  if(_idb) return Promise.resolve(_idb);
+  if(_idbUnavailable) return Promise.resolve(null);
+  return new Promise(resolve=>{
+    let settled = false;
+    const done = v => { if(!settled){ settled = true; resolve(v); } };
+    try{
+      if(typeof indexedDB==='undefined' || !indexedDB){ _idbUnavailable = true; return done(null); }
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+      };
+      req.onsuccess = () => { _idb = req.result; done(_idb); };
+      req.onerror = () => { _idbUnavailable = true; done(null); };
+      req.onblocked = () => { _idbUnavailable = true; done(null); };
+      // Private-browsing modes sometimes neither resolve nor error; don't hang the boot on it.
+      setTimeout(()=>{ if(!settled){ _idbUnavailable = true; done(null); } }, 4000);
+    }catch(e){ _idbUnavailable = true; done(null); }
+  });
+}
+function idbTx(mode){
+  return idbOpen().then(db=> db? db.transaction(IDB_STORE, mode).objectStore(IDB_STORE) : null);
+}
+function idbPut(key, value){
+  return idbTx('readwrite').then(store=> store? new Promise((resolve,reject)=>{
+    const r = store.put(value, key);
+    r.onsuccess = ()=>resolve(true);
+    r.onerror = ()=>reject(r.error || new Error('IndexedDB write failed'));
+  }) : false);
+}
+function idbGet(key){
+  return idbTx('readonly').then(store=> store? new Promise((resolve,reject)=>{
+    const r = store.get(key);
+    r.onsuccess = ()=>resolve(r.result);
+    r.onerror = ()=>reject(r.error || new Error('IndexedDB read failed'));
+  }) : undefined);
+}
+function idbKeys(){
+  return idbTx('readonly').then(store=> store? new Promise((resolve,reject)=>{
+    const r = store.getAllKeys();
+    r.onsuccess = ()=>resolve(r.result||[]);
+    r.onerror = ()=>reject(r.error || new Error('IndexedDB key listing failed'));
+  }) : []);
+}
+function idbClearAll(){
+  return idbTx('readwrite').then(store=> store? new Promise((resolve,reject)=>{
+    const r = store.clear();
+    r.onsuccess = ()=>resolve(true);
+    r.onerror = ()=>reject(r.error);
+  }) : false);
+}
+
+// Writes every collection of D as its own record, then records a manifest of counts used to
+// verify a migration actually landed.
+async function idbSaveD(){
+  const keys = Object.keys(D);
+  for(const k of keys) await idbPut(k, D[k]);
+  await idbPut('__meta', {savedAt: Date.now(), collections: keys, counts: cacheCounts(D)});
+  return true;
+}
+async function idbLoadD(){
+  const keys = await idbKeys();
+  if(!keys || !keys.length) return null;
+  const out = {};
+  for(const k of keys){
+    if(k==='__meta') continue;
+    out[k] = await idbGet(k);
+  }
+  return Object.keys(out).length? out : null;
+}
+// Per-collection record counts — the basis for verifying a migration rather than assuming it.
+function cacheCounts(obj){
+  const counts = {};
+  Object.keys(obj||{}).forEach(k=>{
+    const v = obj[k];
+    counts[k] = Array.isArray(v)? v.length : (v && typeof v==='object'? Object.keys(v).length : (v===undefined?0:1));
+  });
+  return counts;
+}
+function countsMatch(a, b){
+  const keys = Object.keys(a||{});
+  if(!keys.length) return false;
+  for(const k of keys){ if((b||{})[k] !== a[k]) return false; }
+  return true;
+}
+
+// Fallback cache: keep the shape but hold only recent ledger/budget history, so the localStorage
+// copy stays small instead of recreating the original problem.
+function buildTrimmedCache(source){
+  const cutoff = (function(){
+    const d = new Date(todayStr());
+    d.setMonth(d.getMonth() - TRIMMED_LEDGER_MONTHS);
+    return d.toISOString().slice(0,10);
+  })();
+  const out = {};
+  Object.keys(source||{}).forEach(k=>{ out[k] = source[k]; });
+  if(Array.isArray(source.ledger)) out.ledger = source.ledger.filter(l=>String(l.date||'') >= cutoff);
+  if(Array.isArray(source.budget)) out.budget = source.budget.filter(b=>String(b.date||'') >= cutoff);
+  out.__trimmed = {months: TRIMMED_LEDGER_MONTHS, cutoff};
+  return out;
+}
+
+// Single entry point for saving the cache. Never throws; reports failure so callers can react.
+let _cacheSaveTimer = null, _cacheSaveFailed = false;
+async function saveCacheNow(){
+  try{
+    if(!_idbUnavailable){
+      await idbSaveD();
+      _usingTrimmedFallback = false;
+      if(_cacheSaveFailed){ _cacheSaveFailed = false; }
+      return true;
+    }
+  }catch(e){
+    console.warn('IndexedDB cache write failed, falling back to localStorage', e);
+    _idbUnavailable = true;
+  }
+  // Fallback path
+  _usingTrimmedFallback = true;
+  const ok = safeSetItem(LS_TRIMMED_KEY, JSON.stringify(buildTrimmedCache(D)));
+  if(!ok && !_cacheSaveFailed){
+    _cacheSaveFailed = true;
+    if(typeof toast==='function') toast('Could not save the offline cache — browser storage is full. Your data is still safe in the cloud; see Settings → Local Storage.', true);
+  }
+  return ok;
+}
+// persistLocal() is called from dozens of places on every change, so the actual write is
+// debounced. A failure still surfaces rather than being swallowed.
+function persistLocal(){
+  if(_cacheSaveTimer) clearTimeout(_cacheSaveTimer);
+  _cacheSaveTimer = setTimeout(()=>{ _cacheSaveTimer = null; saveCacheNow(); }, 250);
+}
+
+// ---- Migration: localStorage blob -> IndexedDB ----
+// Non-destructive and resumable. The legacy key is only removed AFTER the new store has been
+// read back and verified, so an interruption at any point leaves the original intact and the
+// migration simply runs again next time.
+async function migrateCacheToIdb(onProgress){
+  const raw = (function(){ try{ return localStorage.getItem(LS_CACHE_KEY); }catch(e){ return null; } })();
+  if(!raw) return {migrated:false, reason:'nothing to migrate'};
+  let parsed;
+  try{ parsed = JSON.parse(raw); }
+  catch(e){ return {migrated:false, reason:'legacy cache could not be parsed', keepLegacy:true}; }
+  const db = await idbOpen();
+  if(!db) return {migrated:false, reason:'IndexedDB unavailable', keepLegacy:true};
+  const expected = cacheCounts(parsed);
+  const keys = Object.keys(parsed);
+  let i = 0;
+  for(const k of keys){
+    i++;
+    if(onProgress) onProgress(Math.round(i/(keys.length+1)*100), k);
+    await idbPut(k, parsed[k]);
+  }
+  await idbPut('__meta', {savedAt: Date.now(), collections: keys, counts: expected, migratedFrom:'localStorage'});
+  if(onProgress) onProgress(100, 'verifying');
+  // Verify by reading back from IndexedDB — not by trusting that the writes returned cleanly.
+  const readBack = await idbLoadD();
+  const actual = cacheCounts(readBack||{});
+  if(!countsMatch(expected, actual)){
+    return {migrated:false, reason:'verification failed — legacy cache left untouched', keepLegacy:true, expected, actual};
+  }
+  try{ localStorage.removeItem(LS_CACHE_KEY); }catch(e){}
+  return {migrated:true, counts:expected, freedBytes: raw.length + LS_CACHE_KEY.length};
+}
+// Load order: IndexedDB, then the trimmed fallback, then the legacy blob (present only if a
+// migration hasn't run or didn't verify).
+async function loadLocalCache(){
+  try{
+    const fromIdb = await idbLoadD();
+    if(fromIdb) return {data: fromIdb, source:'indexeddb'};
+  }catch(e){ console.warn('IndexedDB cache read failed', e); }
+  try{
+    const trimmed = localStorage.getItem(LS_TRIMMED_KEY);
+    if(trimmed){ _usingTrimmedFallback = true; return {data: JSON.parse(trimmed), source:'localstorage-trimmed'}; }
+  }catch(e){}
+  try{
+    const legacy = localStorage.getItem(LS_CACHE_KEY);
+    if(legacy) return {data: JSON.parse(legacy), source:'localstorage-legacy'};
+  }catch(e){}
+  return null;
+}
+// Guard against LedgerOS quietly crowding out other apps on this domain again.
+function checkLocalStorageFootprint(){
+  try{
+    let mine = 0, total = 0;
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      const size = k.length + (localStorage.getItem(k)||'').length;
+      total += size;
+      if(isLedgerOsKey(k)) mine += size;
+    }
+    const pct = mine / LS_ORIGIN_LIMIT_BYTES * 100;
+    if(pct > 25){
+      logActivity('error', 'LedgerOS is using '+fmtBytes(mine)+' of this domain\'s ~5 MB local storage ('+pct.toFixed(0)+'%), which can crowd out other apps on the same domain. See Settings → Local Storage.');
+      if(typeof toast==='function') toast('LedgerOS is using '+pct.toFixed(0)+'% of this domain\'s local storage — see Settings → Local Storage', true);
+    }
+    return {mine, total, pct};
+  }catch(e){ return null; }
+}
+
 // For a deliberate, one-off settings action (toggling a preference, picking a color, etc.) where
 // the person expects an immediate visible result — safeSetItem already logs a failure to the
 // Activity Log, but that's easy to miss right after clicking something. This adds an immediate
@@ -952,12 +1186,31 @@ async function boot(){
   jvDrafts = loadJVDrafts();
   const url = localStorage.getItem('sb_url'), key = localStorage.getItem('sb_key');
   if(url && key){
-    const local = localStorage.getItem('ledgerData_v1');
-    if(local){
+    // One-off move of the offline cache out of localStorage and into IndexedDB. Non-destructive:
+    // the legacy key is only deleted after the new store is read back and verified, so an
+    // interruption at any point leaves the original intact and this simply runs again.
+    try{
+      const hasLegacy = !!localStorage.getItem(LS_CACHE_KEY);
+      if(hasLegacy){
+        updateSplashStatus('Moving your offline data to better storage…');
+        const res = await migrateCacheToIdb((pct, what)=>{
+          updateSplashProgress(pct);
+          updateSplashStatus('Moving your offline data to better storage… '+(what==='verifying'?'verifying':what));
+        });
+        if(res.migrated){
+          logActivity('action', 'Moved the offline cache from localStorage to IndexedDB, freeing '+fmtBytes(res.freedBytes)+' of shared browser storage');
+        } else if(res.keepLegacy){
+          logActivity('error', 'Could not move the offline cache to IndexedDB ('+res.reason+'). Your data is unaffected — the previous cache is still in place.');
+        }
+      }
+    }catch(e){ console.warn('cache migration skipped', e); }
+
+    const loaded = await loadLocalCache();
+    if(loaded){
       // Load this device's cached copy so the app is ready the instant the splash comes down,
       // but — per explicit instruction — don't reveal it yet. The splash stays up and the app
       // stays blocked until the real sync below actually finishes, not just the local load.
-      D = JSON.parse(local);
+      D = loaded.data;
       if(!Array.isArray(D.categories)) D.categories = [];
       if(!Array.isArray(D.subcategories)) D.subcategories = [];
       if(!Array.isArray(D.provisionGroups)) D.provisionGroups = [];
@@ -997,6 +1250,7 @@ async function boot(){
         updateSyncBadge();
       }
       hideSplash();
+      checkLocalStorageFootprint();
       return;
     }
     // no local cache yet on this device — nothing to show instantly, so wait for the real connection
@@ -1081,7 +1335,18 @@ function disconnectCloud(){
 let syncQueue = [];
 let syncConflicts = [];
 function loadSyncQueue(){ try{ return JSON.parse(localStorage.getItem('syncQueue_v1')||'[]'); }catch(e){ return []; } }
-function saveSyncQueue(){ try{ safeSetItem('syncQueue_v1', JSON.stringify(syncQueue)); }catch(e){} }
+// The sync queue holds changes that have NOT reached Supabase yet. If this write fails, those
+// changes are lost on the next refresh with nothing to show for it — so unlike the offline
+// cache (which is disposable), a failure here is surfaced loudly and immediately. The previous
+// bare try/catch swallowed the error entirely.
+function saveSyncQueue(){
+  const ok = safeSetItem('syncQueue_v1', JSON.stringify(syncQueue));
+  if(!ok){
+    toast('⚠ URGENT: '+syncQueue.length+' unsaved change(s) could not be stored locally — browser storage is full. Do NOT close this tab until sync completes. See Settings → Local Storage.', true);
+    try{ console.error('syncQueue_v1 write failed — '+syncQueue.length+' pending change(s) at risk'); }catch(e){}
+  }
+  return ok;
+}
 function nowISO(){ return new Date().toISOString(); }
 // ===== Activity & Error Log — local-only (this device), for sharing with Claude when diagnosing
 // a bug. Deliberately NOT synced to Supabase (it's a diagnostic tool, not app data) and capped in
@@ -1558,6 +1823,150 @@ async function savePageOrder(ids){
   await syncWrite('pd_ui_prefs','upsert',{id:1, page_order:ids}, base);
   persistLocal();
 }
+/* ============================= LOCAL STORAGE EXPLORER =============================
+   localStorage is capped at roughly 5 MB PER ORIGIN — shared by every app served from the same
+   hostname, not per app. LedgerOS and CalendarOS are both on the same GitHub Pages domain, so
+   they compete for one pool. This scans the WHOLE origin deliberately: filtering to LedgerOS's
+   own keys is exactly what would hide the situation where another app is the real consumer
+   (and vice versa — it's how LedgerOS's own 4.9 MB key went unnoticed from inside CalendarOS).
+*/
+const LEDGEROS_KEYS = [
+  'ledgerData_v1','activityLog_v1','syncQueue_v1','jvDrafts_v1','ledgerLastChanged',
+  'sb_url','sb_key','forecastSignFlips','forecastSectionOrder','forecastCollapsedSections',
+  'budgetCollapsedSections','statementSortDesc','driftDismissals','driftSettings',
+  'hiddenPages','sidebarPinned','theme','invFxUsdSar',
+];
+const LS_ORIGIN_LIMIT_BYTES = 5 * 1024 * 1024; // browsers land near 5 MB; treated as approximate
+function isLedgerOsKey(k){
+  return LEDGEROS_KEYS.includes(k) || /^ledger|^jv|^forecast|^drift|^budgetCollapsed|^acc/.test(k);
+}
+function fmtBytes(n){
+  if(n < 1024) return n + ' B';
+  if(n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+  return (n/(1024*1024)).toFixed(2) + ' MB';
+}
+// Size as key.length + value.length: both count toward the quota.
+function scanLocalStorage(){
+  const entries = [];
+  let total = 0, mine = 0, foreign = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    let v = '';
+    try{ v = localStorage.getItem(k) || ''; }catch(e){ v = ''; }
+    const size = k.length + v.length;
+    const ours = isLedgerOsKey(k);
+    entries.push({key:k, size, ours});
+    total += size;
+    if(ours) mine += size; else foreign += size;
+  }
+  entries.sort((a,b)=>b.size-a.size);
+  return {entries, total, mine, foreign, pct: total/LS_ORIGIN_LIMIT_BYTES*100};
+}
+// Breaks the single ledgerData_v1 blob down by collection, so "4.94 MB" becomes an answer to
+// "of what?" rather than a number to guess at.
+function analyzeLedgerCache(){
+  let raw = '';
+  try{ raw = localStorage.getItem(LS_CACHE_KEY) || localStorage.getItem(LS_TRIMMED_KEY) || ''; }catch(e){ return null; }
+  if(!raw) return null;
+  let obj;
+  try{ obj = JSON.parse(raw); }catch(e){ return {totalSize: raw.length, parts: null, parseError:true}; }
+  const parts = Object.keys(obj).map(k=>{
+    const val = obj[k];
+    const size = JSON.stringify(val === undefined ? null : val).length + k.length + 4;
+    const count = Array.isArray(val)? val.length : (val && typeof val==='object'? Object.keys(val).length : null);
+    return {key:k, size, count, perRecord: (count && count>0)? Math.round(size/count) : null};
+  }).sort((a,b)=>b.size-a.size);
+  return {totalSize: raw.length, parts};
+}
+function renderStorageExplorer(){
+  const scan = scanLocalStorage();
+  const cache = analyzeLedgerCache();
+  const weAreTheProblem = scan.total>0 && (scan.mine/scan.total) > 0.5 && scan.pct > 60;
+  const nearFull = scan.pct >= 85;
+  const barColor = scan.pct>=90? 'var(--red)' : (scan.pct>=70? '#c8a44d' : 'var(--green)');
+  const pendingSync = (typeof syncQueue!=='undefined' && syncQueue.length) || 0;
+  return `
+    <div class="panel">
+      <h3>💾 Local Storage</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:12px">Your browser allows roughly 5 MB of local storage per domain, shared by <em>every</em> app served from it — not 5 MB each. This lists everything on this domain, including other apps, because a neighbour filling the pool looks identical to running out of room yourself.</div>
+
+      ${nearFull? `<div class="panel" style="border-left:3px solid var(--red);margin-bottom:12px">
+        <div style="font-weight:700;color:var(--red);margin-bottom:4px">⚠ Storage is ${scan.pct>=99?'full':'nearly full'}</div>
+        <div class="mut" style="font-size:12px">Writes are failing or about to fail. When that happens, changes may not persist locally and other apps on this domain can silently lose data.</div>
+      </div>`:''}
+
+      ${weAreTheProblem? `<div class="panel" style="border-left:3px solid #c8a44d;margin-bottom:12px">
+        <div style="font-weight:700;margin-bottom:4px">LedgerOS is the main consumer here</div>
+        <div class="mut" style="font-size:12px">LedgerOS accounts for ${fmtBytes(scan.mine)} of the ${fmtBytes(scan.total)} in use (${Math.round(scan.mine/scan.total*100)}%). Any other app on this domain has whatever is left.</div>
+      </div>`:''}
+
+      <div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        <div style="font-weight:700">${fmtBytes(scan.total)} used</div>
+        <div class="mut" style="font-size:12px">${scan.pct.toFixed(1)}% of ~5 MB</div>
+      </div>
+      <div style="height:10px;background:var(--chip);border-radius:999px;overflow:hidden;margin-bottom:10px">
+        <div style="height:100%;width:${Math.min(100,scan.pct).toFixed(1)}%;background:${barColor}"></div>
+      </div>
+      <div class="row" style="gap:16px;margin-bottom:14px;font-size:12px">
+        <div><span class="mut">LedgerOS:</span> <b>${fmtBytes(scan.mine)}</b></div>
+        <div><span class="mut">Other apps on this domain:</span> <b>${fmtBytes(scan.foreign)}</b></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:12px;background:var(--chip)">
+        <div style="font-weight:700;margin-bottom:4px">Offline cache: ${_idbUnavailable? 'localStorage (fallback)' : 'IndexedDB'}</div>
+        <div class="mut" style="font-size:12px">${_idbUnavailable
+          ? 'IndexedDB isn\'t available in this browser or mode, so the cache falls back to localStorage and is trimmed to the last '+TRIMMED_LEDGER_MONTHS+' months of history to stay small. Older history is still available whenever you are online.'
+          : 'Your ledger history lives in IndexedDB, which has its own much larger quota and does not compete with other apps for the ~5 MB shown here.'}</div>
+      </div>
+      <div style="overflow-x:auto"><table style="min-width:420px"><thead><tr><th>Key</th><th>Owner</th><th class="num">Size</th><th class="num">Share</th></tr></thead>
+      <tbody>${scan.entries.map(e=>`<tr>
+        <td class="mono" style="word-break:break-all">${esc(e.key)}</td>
+        <td>${e.ours? '<span class="badge">LedgerOS</span>' : '<span class="badge neg">other app</span>'}</td>
+        <td class="num mono">${fmtBytes(e.size)}</td>
+        <td class="num mono">${scan.total>0? (e.size/scan.total*100).toFixed(1)+'%' : '—'}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="empty">Nothing stored</td></tr>'}</tbody></table></div>
+    </div>
+
+    ${cache? `<div class="panel">
+      <h3>🔍 Inside the offline cache</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:10px">What the localStorage copy of the cache (${fmtBytes(cache.totalSize)}) is made of. This is a mirror of your cloud data kept for offline use — Supabase remains the source of truth.</div>
+      ${cache.parts? `<div style="overflow-x:auto"><table style="min-width:460px"><thead><tr><th>Collection</th><th class="num">Records</th><th class="num">Size</th><th class="num">Bytes/record</th><th class="num">Share</th></tr></thead>
+      <tbody>${cache.parts.map(p=>`<tr>
+        <td class="mono">${esc(p.key)}</td>
+        <td class="num mono">${p.count===null?'—':p.count.toLocaleString()}</td>
+        <td class="num mono">${fmtBytes(p.size)}</td>
+        <td class="num mono">${p.perRecord===null?'—':p.perRecord}</td>
+        <td class="num mono">${(p.size/cache.totalSize*100).toFixed(1)}%</td>
+      </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Cache could not be parsed</div>'}
+    </div>
+
+    <div class="panel">
+      <h3>🧹 Free up space now</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:10px">Clearing the offline cache releases that space immediately. It is <b>not</b> your data — everything is in Supabase and will be re-downloaded on the next load. The only cost is a slower first load and no offline access until it rebuilds.</div>
+      ${pendingSync>0
+        ? `<div class="mut" style="font-size:12px;color:var(--red)"><b>Not safe right now:</b> ${pendingSync} change(s) have not reached the cloud yet. Wait for sync to finish, then come back.</div>`
+        : `<button class="btn del sm" onclick="clearLocalLedgerCache()">Clear offline cache (${cache? fmtBytes(cache.totalSize) : '0 B'})</button>`}
+    </div>` : ''}`;
+}
+// Guarded on an empty sync queue: the cache is disposable, but only once every pending change
+// has actually reached Supabase.
+function clearLocalLedgerCache(){
+  if(typeof syncQueue!=='undefined' && syncQueue.length){
+    toast('Not safe — '+syncQueue.length+' change(s) still waiting to sync', true);
+    return;
+  }
+  if(!confirm('Clear the local offline cache?\n\nThis frees the space immediately. Your data stays safe in the cloud and will be re-downloaded next time you open LedgerOS. The only effect is a slower first load until it rebuilds.')) return;
+  try{
+    localStorage.removeItem(LS_CACHE_KEY);
+    localStorage.removeItem(LS_TRIMMED_KEY);
+    logActivity('action', 'Cleared the local offline cache to free browser storage');
+    toast('Offline cache cleared ✓');
+    renderSettings();
+  }catch(e){
+    toast('Could not clear the cache: '+e.message, true);
+  }
+}
+
 /* ============================= FULL DATABASE SCHEMA =============================
    STANDING CONVENTION (as of v4.12.0, applies to every release from here on):
    whenever a table or column is added, changed, or removed anywhere in this app,
@@ -9048,6 +9457,7 @@ function renderSettings(){
         </div>
       </div>`},
     visibility: {label:'🧭 Pages', html: renderPageOrderSection(hidden)},
+    storage: {label:'💾 Local Storage', html: renderStorageExplorer()},
     dbschema: {label:'🗄 Database Schema', html: `
       <div class="panel">
         <h3>🗄 Full Database Schema</h3>
