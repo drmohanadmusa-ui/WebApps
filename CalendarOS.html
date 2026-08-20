@@ -583,6 +583,17 @@ body.dark-mode .ticket.missed{background:linear-gradient(90deg, rgba(232,201,160
 }
 .chip-select button.active{background:var(--ink); color:#fff;}
 
+.freq-multiselect{position:relative;}
+.freq-dropdown-panel{
+  position:absolute; top:100%; left:0; z-index:50; margin-top:4px; padding:8px 10px;
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:8px;
+  box-shadow:var(--shadow-card); min-width:170px;
+}
+.freq-dropdown-item{
+  display:flex; align-items:center; gap:7px; font-size:12.5px; padding:4px 2px; cursor:pointer; white-space:nowrap;
+}
+.freq-dropdown-item:hover{color:var(--ink);}
+
 select.filter-select, input.filter-date{
   border:1px solid var(--line); background:var(--paper-raised);
   border-radius:8px; padding:7px 10px; font-size:12.5px; color:var(--ink);
@@ -648,24 +659,46 @@ select.filter-select, input.filter-date{
   text-align:center; padding-bottom:4px; letter-spacing:0.05em;
 }
 .cal-cell{
-  aspect-ratio:1/0.9;
+  aspect-ratio:1/1.25;
   border:1px solid var(--line); border-radius:8px; background:var(--paper-raised);
-  padding:6px; position:relative; cursor:pointer;
-  display:flex; flex-direction:column; gap:3px; overflow:hidden;
+  padding:8px; position:relative; cursor:pointer;
+  display:flex; flex-direction:column; gap:4px; overflow:hidden;
 }
 .cal-cell:hover{border-color:var(--brass);}
 .cal-cell.empty{background:transparent; border:none; cursor:default;}
 .cal-cell.today{border-color:var(--brass); border-width:2px;}
 .cal-cell-top{display:flex; align-items:center; justify-content:space-between;}
-.cal-cell .date-num{font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
+.cal-cell .date-num{font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);}
 .cal-cell .hijri-num{font-family:var(--font-mono); font-size:8.5px; color:var(--slate-light);}
-.cal-cell-tasks{display:flex; flex-direction:column; gap:3px; flex:1; min-height:0; justify-content:center;}
+.cal-cell-tasks{display:flex; flex-direction:column; gap:4px; flex:1; min-height:0; overflow-y:auto;}
 .cal-cell-sep{height:1px; background:var(--line); margin:1px 0;}
+.cal-cell-chip-list{display:flex; flex-direction:column; gap:2px;}
+.cal-task-chip{
+  font-size:10px; padding:2px 5px; border-radius:4px; background:var(--paper-dim);
+  border-left:2px solid var(--brass); line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  cursor:pointer;
+}
+.cal-task-chip:hover{background:color-mix(in srgb, var(--brass) 12%, var(--paper-dim));}
+.cal-task-chip-extra{font-family:var(--font-mono); font-size:9px; color:var(--slate-light); padding:1px 5px;}
 .dot-row{display:flex; gap:3px; flex-wrap:wrap; align-items:center;}
 .dot{width:6px; height:6px; border-radius:50%; background:var(--brass); flex-shrink:0;}
 .dot.over{background:var(--flag);}
 .dot-extra{font-family:var(--font-mono); font-size:8px; color:var(--slate-light);}
 .density-count{font-family:var(--font-mono); font-size:9.5px; color:var(--slate);}
+
+.mini-cal-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+}
+.mini-cal-dow{
+  text-align:center; font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase;
+  color:var(--slate-light); padding-bottom:2px;
+}
+.mini-cal-cell{
+  aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+  border-radius:6px; font-size:11.5px; background:var(--paper-dim);
+}
+.mini-cal-cell.empty{background:transparent;}
+.mini-cal-cell.today{box-shadow:0 0 0 2px var(--brass) inset;}
 
 .cal-legend{
   display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
@@ -673,6 +706,55 @@ select.filter-select, input.filter-date{
 }
 .cal-legend-item{display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
 .cal-legend-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+
+.week-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:8px;
+}
+.week-day-col{
+  border:1px solid var(--line); border-radius:10px; background:var(--paper-raised);
+  min-height:220px; display:flex; flex-direction:column; overflow:hidden;
+}
+.week-day-col.today{border-color:var(--brass); border-width:2px;}
+.week-day-col.weekend{background:var(--paper-dim);}
+.week-day-head{
+  display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px;
+  border-bottom:1px solid var(--line); cursor:pointer;
+}
+.week-day-head:hover{background:var(--paper-dim);}
+.week-day-name{font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--slate);}
+.week-day-num{font-family:var(--font-display); font-size:18px; color:var(--ink);}
+.week-day-tasks{padding:8px 6px; display:flex; flex-direction:column; gap:5px; flex:1; overflow-y:auto;}
+.week-task-chip{
+  font-size:11.5px; padding:4px 7px; border-radius:6px; background:var(--paper-dim);
+  border-left:3px solid var(--brass); cursor:pointer; white-space:normal; line-height:1.3;
+}
+.week-task-chip.done{opacity:0.5; text-decoration:line-through;}
+@media (max-width: 900px){
+  .week-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width: 560px){
+  .week-grid{grid-template-columns:1fr;}
+}
+
+.recipe-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px;
+}
+.recipe-card{
+  border:1px solid var(--line); border-radius:12px; background:var(--paper-raised);
+  overflow:hidden; cursor:pointer; transition:border-color .15s ease, transform .15s ease;
+}
+.recipe-card:hover{border-color:var(--brass); transform:translateY(-2px);}
+.recipe-card-img{
+  height:120px; background-size:cover; background-position:center; background-color:var(--paper-dim);
+  display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--slate-light);
+}
+.recipe-card-body{padding:10px 12px; display:flex; flex-direction:column; gap:2px;}
+.macro-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+.macro-pill{
+  background:var(--paper-dim); border-radius:8px; padding:8px 12px; text-align:center; min-width:64px;
+}
+.macro-pill b{display:block; font-family:var(--font-display); font-size:15px;}
+.macro-pill span{display:block; font-family:var(--font-mono); font-size:9px; text-transform:uppercase; color:var(--slate-light); letter-spacing:0.04em; margin-top:2px;}
 
 /* ============ LISTS VIEW ============ */
 .lists-layout{display:flex; gap:20px; align-items:flex-start;}
@@ -732,6 +814,8 @@ body.dark-mode .notebook-page{background-image:repeating-linear-gradient(to bott
   100%{transform:translateY(0); opacity:1;}
 }
 .notebook-line.settle{animation:rowSettle 0.22s ease-out;}
+.notebook-line{transition:opacity 0.16s ease, transform 0.16s ease;}
+.notebook-line.removing{opacity:0; transform:translateX(10px) scale(0.98); pointer-events:none;}
 .notebook-line .li-check{
   width:16px; height:16px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;
@@ -781,8 +865,9 @@ body.dark-mode .notebook-page{background-image:repeating-linear-gradient(to bott
 /* ============ TRAINING: exercise picker + danger zone ============ */
 .ex-picker-input{width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--paper); color:var(--ink); font-family:inherit;}
 .ex-picker-results{position:absolute; top:100%; left:0; right:0; z-index:50; background:var(--paper-raised); border:1px solid var(--line); border-radius:8px; margin-top:4px; max-height:180px; overflow-y:auto; box-shadow:var(--shadow-card);}
+.ex-picker-results.tall{max-height:320px;}
 .ex-picker-result-item{padding:8px 10px; font-size:13px; cursor:pointer;}
-.ex-picker-result-item:hover{background:var(--paper-dim);}
+.ex-picker-result-item:hover, .ex-picker-result-item.active{background:var(--paper-dim);}
 .danger-zone{border:1px solid var(--flag); border-radius:12px; padding:16px; margin-top:24px; background:var(--flag-soft);}
 body.dark-mode .danger-zone{background:color-mix(in srgb, var(--flag) 12%, var(--paper-raised));}
 .danger-zone h3{color:var(--flag); margin:0 0 6px 0; font-family:var(--font-display); font-size:15px;}
@@ -1315,7 +1400,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.16.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1323,6 +1408,83 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.16.0', changes: [
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds two new columns on training_logs (avg_pace text, incline text). Additive/idempotent, safe to run anytime; the old avg_speed_kmh column is left in place unused rather than dropped.',
+    'Walking training: "Avg Speed (km/h)" replaced with "Avg Pace (min/km)" — type it directly, e.g. "6:30". Added a new Incline (%) field alongside it.',
+    'New Day screen now shows yesterday\'s water intake (with a progress bar toward your goal) as part of the daily review, right alongside the task completion summary.',
+  ]},
+  { v:'4.15.0', changes: [
+    'Hydration: "Manage Containers & Liquid Types" moved out of the always-visible page into a ⚙ settings button that opens it as a pop-out — same editing capability, just tucked away.',
+    'Progress page: clicking into a task now shows a mini month calendar between the stat widgets and the history list, color-coded the same way as the Activity Log (teal/red/amber for completed/missed/moved), with month navigation.',
+  ]},
+  { v:'4.14.0', changes: [
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds a new hydration_logs table and three new columns on app_settings (hydration_containers, hydration_liquid_types, hydration_goal_ml). Additive/idempotent, safe to run anytime; hydration sync is fault-isolated the same way Training/Recipes are, so it can\'t break your core sync even before this is run.',
+    'New Hydration tracker in Health Log: define your own containers (name, size in ml, pick from 8 icons — glass/bottle/mug/etc) and your own liquid types (name + color) to log against. One-tap quick-log buttons per container. Set a daily ml goal in the section itself, with an SVG bottle that visually fills up as you log toward it. Today\'s log entries are listed with one-tap delete.',
+  ]},
+  { v:'4.13.0', changes: [
+    'Progress page colors made much more visible: completed/missed/moved entries now show as solid colored badges (with icon + label, not just a colored border and character) plus a soft background tint on the whole row, in both the overall Activity Log and a task\'s individual history.',
+  ]},
+  { v:'4.12.1', changes: [
+    'Escape now closes the training "Add Exercise" search modal.',
+    'Progress page: completed/missed/moved entries are now color-coded (teal/red/amber) in both the overall Activity Log and a task\'s individual history, matching the colors already used in the stat cards above.',
+  ]},
+  { v:'4.12.0', changes: [
+    'New "Progress" page: overall Commitment Rate plus a chronological Activity Log of every completed/missed/moved task (recurring and one-time), filterable by time range and task type. Click any entry to drill into that task\'s own full history and commitment rate.',
+  ]},
+  { v:'4.11.0', changes: [
+    'Fixed the remaining case of "add exercise doesn\'t take me to Today": creating a brand new exercise from the Exercise Library\'s own "+ Add Exercise" button now also lands you on Training → Today with it already added, ready to log — not just the picker flow fixed last time.',
+    'Fixed: with "Hide completed" on and "Group by location" on, each location\'s count/percentage now reflects the true total including hidden (completed/missed) tasks, instead of only counting what\'s currently visible. A location that\'s 100% done no longer disappears from the list either — it stays visible with its accurate count, just with nothing to show underneath.',
+  ]},
+  { v:'4.10.1', changes: [
+    'Fixed a real, confirmed bug I introduced two versions ago: the very first automatic sync on app startup could get permanently stuck (progress reaching 100% but the app never opening on its own — only "Use local copy for now" would get you in). Root cause: the app shell doesn\'t exist yet during that very first sync, and a recent change had it try to refresh a part of that shell that wasn\'t built yet, which threw and silently broke the chain that reveals the app. Fixed at the source, plus two safety nets added so this class of bug (an unexpected error anywhere in the startup sync path) can never again strand someone on the splash screen: renderMain() now no-ops safely if the shell isn\'t built yet, and the startup sequence now always opens the app even if something in the sync unexpectedly fails.',
+  ]},
+  { v:'4.10.0', changes: [
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds a category column on training_exercises, and five new columns on training_logs (distance_km, duration_min, avg_heart_rate, avg_speed_kmh, calories). Additive/idempotent, safe to run anytime.',
+    'Exercises can now be marked "Walking" (vs the default "Strength") in the Exercise Library. A Walking exercise shows Distance/Time/Avg Heart Rate/Avg Speed/Calories fields when logged, instead of Sets/Reps/Weight. Log History shows a compact walking-stats summary for these instead of the strength columns.',
+    'Adding an exercise to a day now always lands you on Training → Today, even if you got there via the "add a new exercise" inline link from the picker.',
+    'Fixed a real, confirmed bug: in-progress training log values could get silently wiped by a re-render before you hit Save (this was already fixed for the trigger reported last time — this release extends the same fix to cover the new walking metric fields too).',
+  ]},
+  { v:'4.9.0', changes: [
+    'Fixed a real, confirmed bug: in-progress (unsaved) values in the training day log — sets, reps, weight, notes, difficulty, completed — could get silently wiped by a re-render before you hit Save. Two known triggers: adding another exercise mid-edit, and a background sync completing while you were still typing. Root cause was that every re-render rebuilt each row purely from the last *saved* log, discarding anything typed since. Fixed with a live draft buffer that every field now writes into, so a re-render can never lose in-progress work again.',
+    'Background sync completing no longer rebuilds the whole app shell (was re-animating the sidebar any time a sync finished while you were just using the app, same root cause as the earlier page-navigation fix, just a second call site).',
+  ]},
+  { v:'4.8.1', changes: [
+    'Frequency filter on Week and Calendar is now multi-select (checkboxes in a dropdown) instead of one-at-a-time — pick any combination, e.g. Monthly + Yearly together. Existing saved views with the old single-value format still load correctly.',
+  ]},
+  { v:'4.8.0', changes: [
+    'Week and Calendar filters gained a Frequency dropdown (Daily/Days of Week/Weekly/Bi-Weekly/Monthly/Yearly/Every X Days) alongside the existing Hide Daily toggle and type/location/priority filters.',
+    'Fixed the real cause of "arrow keys re-animate/feel broken" in Ctrl+K and the training exercise picker: arrow-key navigation was rebuilding the entire results list on every keypress (to reapply the highlight), which recreates every row as a new DOM node and replays any entrance animation each time. Arrow keys now only toggle the highlighted row directly — no list rebuild, no replay.',
+    'Calendar: clicking a task chip now opens that task directly instead of jumping to the day view. Clicking the date number or empty cell area still jumps to the day, as before.',
+    'Fixed: "Hide completed" on the Dashboard didn\'t survive a reload — it was never actually being saved. Now persists like other display preferences.',
+  ]},
+  { v:'4.7.0', changes: [
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds three new columns on training_logs (sets, reps, weight_kg). Additive/idempotent, safe to run anytime.',
+    'Training log now has fields for Sets, Reps, and Weight (kg) on every exercise, alongside the existing Completed toggle and Difficulty rating. Shown in Log History too.',
+  ]},
+  { v:'4.6.0', changes: [
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds two new columns on app_settings (week_view_presets, calendar_view_presets) for the new saved-view feature below. Additive/idempotent, safe to run anytime.',
+    'Week and Calendar each now have their own independent filter: hide daily tasks, plus filter by type, location, or priority — and "Save as View" to store named presets you can switch back to later (e.g. "Work only", "No daily + High priority").',
+    'Calendar defaults to hiding daily tasks (toggle it back on any time from its filter bar).',
+    'Calendar redesigned: cells are bigger and now show each task\'s actual name as a small readable chip instead of just colored dots (still capped per cell with a "+N more" for very busy days).',
+  ]},
+  { v:'4.5.1', changes: [
+    'Fixed: navigating between pages rebuilt the entire sidebar every time, re-triggering its entrance animation and making the whole app look like it was reloading. Page navigation now only updates the content area — the sidebar (and jumping to a date from Calendar/Week) no longer restarts.',
+    'Fixed: using ↑/↓ in the Ctrl+K command palette caused a visible flicker on every keypress — the whole palette (including the focused search input) was being rebuilt on each arrow press. Now only the results list updates.',
+    'Training\'s "+ Add Exercise" search is now taller, and supports ↑/↓ to navigate results and Enter to add the highlighted one, instead of requiring a mouse click.',
+  ]},
+  { v:'4.5.0', changes: [
+    '🔴 SQL migration required for the new Recipes feature — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds two new tables (recipes, recipe_ingredients). Additive/idempotent, safe to run anytime, doesn\'t touch anything else — but recipe sync won\'t work until it\'s run (recipes will still work locally in the meantime; sync failures are isolated and logged, never block the rest of the app).',
+    'Training reworked: moved away from pre-built Sessions mapped to calendar days. You now log exercises directly against any day — "+ Add Exercise" searches your Exercise Library and adds it right there. Existing session/calendar data isn\'t deleted (still syncs, still exportable) — it\'s just no longer part of the main flow. "Upcoming" replaced with "Recent Days" (backward-looking, matches the new day-by-day flow).',
+    'Exercises can now be edited (✎), not just added/deleted.',
+    'New "Week" page — a 7-day grid showing actual task names per day (not just the month view\'s dot counts), with prev/next week navigation.',
+    'New Recipe Tracker page: recipe library with meal-type classification, picture URL, ingredients in grams, steps, and macros + fiber per serving. Pick how many servings you want to make and ingredient amounts scale live.',
+  ]},
+  { v:'4.4.0', changes: [
+    'Exercises in the Training library can now be edited (✎ button) instead of only add/delete.',
+    'Fixed: deleting a list item felt slow because the row didn\'t disappear until the background sync call finished. It now plays a quick fade-out and updates instantly — the sync to Supabase still happens, just without blocking the screen. Applied the same fix to "Remove all items" too, since it had the identical issue.',
+    'New "Remove checked items" (🧹) button on a list — clears only the items you\'ve checked off, leaving the rest.',
+    'Training: once every exercise in a day\'s session has been logged and saved, the card now collapses into a compact "✓ logged" summary instead of staying open as an editable form — with an "Edit Log" button if you need to go back and change something.',
+  ]},
   { v:'4.3.0', changes: [
     'Fixed: pinning/unpinning a list from the Lists page itself didn\'t visually update the pin button until navigating elsewhere — the toggle was only re-rendering the floating panel, not the page you were actually looking at.',
     'When a list is pinned open, the main content area now automatically narrows (and gets a right margin) so text can never sit behind the floating panel, on any page — reacts live via CSS, no extra clicking needed.',
@@ -1601,7 +1763,7 @@ const DEFAULT_SETTINGS_EXTRAS = {
     '5.Last': '#3A3F47',
   },
   hiddenPages: [],
-  pageOrder: ['dashboard','overdue','tasks','calendar','lists','health','training','settings'],
+  pageOrder: ['dashboard','overdue','tasks','calendar','week','lists','health','training','recipes','progress','settings'],
   rememberUnlock: true,
   healthCoreMetricsSeeded: false,
   darkMode: false,
@@ -1612,9 +1774,22 @@ const DEFAULT_SETTINGS_EXTRAS = {
   contentWidthMode: 'auto', // 'auto' | 'manual'
   contentWidthPreset: 'standard', // compact | standard | wide | xwide | full
   colorTheme: 'warm', // 'warm' | 'classic' | 'ocean' | 'sage' | 'slate' | 'coral' | 'midnight' — local-only display preference, same treatment as darkMode/contentWidth
+  hideCompleted: false, // Dashboard "Hide completed" toggle — local-only display preference, same treatment as darkMode/colorTheme (was previously ephemeral/not persisted — that was the bug)
   // Unlike the above, this DOES sync — it's real data (a managed set of
   // folder names for grouping Lists), not a device display preference.
   listFolders: [],
+  // Hydration tracker: user-defined containers/liquid types, both real
+  // data (not device preferences), same treatment as listFolders. Log
+  // entries themselves live in state.hydrationLogs / a dedicated table —
+  // these two arrays are just the managed definitions, like locations/silos.
+  hydrationContainers: [], // [{id, name, ml, icon}]
+  hydrationLiquidTypes: [], // [{id, name, color}]
+  hydrationGoalMl: 2500,
+  hydrationDefaultsSeeded: false, // local-only flag, same pattern as healthCoreMetricsSeeded
+  // Named filter presets for Week/Calendar — also real data (not a display
+  // preference), so these sync too. Each entry: {id, name, filter:{hideDaily,silo,location,priority}}.
+  weekViewPresets: [],
+  calendarViewPresets: [],
   // Which list (if any) is pinned open in the floating right-side panel —
   // local-only, same treatment as darkMode/colorTheme, since a panel pinned
   // open on one device shouldn't force itself open on another.
@@ -1638,7 +1813,7 @@ function backfillSettingsDefaults(){
   if(!state.settings.siloColors) state.settings.siloColors = {};
   if(!state.settings.locationColors) state.settings.locationColors = {};
   // any locations/pages added since pageOrder was created should still show up
-  const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','lists','health','training','settings'];
+  const ALL_PAGE_KEYS = ['dashboard','overdue','tasks','calendar','week','lists','health','training','recipes','progress','settings'];
   if(!state.settings.pageOrder) state.settings.pageOrder = ALL_PAGE_KEYS.slice();
   ALL_PAGE_KEYS.forEach(k=>{ if(!state.settings.pageOrder.includes(k)) state.settings.pageOrder.push(k); });
 }
@@ -1656,6 +1831,8 @@ const STORAGE_KEYS = {
   RECENT_COMPLETIONS: 'dispatch:recentcompletions', // bounded ~14-day buffer, offline safety net when sync IS configured
   HEALTH_METRIC_DEFS: 'dispatch:healthmetricdefs', // [ {id, name, type, unit, sortOrder} ]
   TRAINING: 'dispatch:training', // { exercises:[], sessions:[], calendar:[], logs:[] }
+  RECIPES: 'dispatch:recipes', // { items:[ {id,name,mealType,imageUrl,baseServings,ingredients:[],steps,macros} ] }
+  HYDRATION: 'dispatch:hydration', // [ {id,date,containerId,liquidTypeId,ml,loggedAt} ]
   SYNC_ERROR_HISTORY: 'dispatch:syncerrorhistory', // durable, bounded, local-only — see recordSyncErrorHistory()
 };
 
@@ -1665,13 +1842,13 @@ const state = {
   tasks: { oneTime: [], recurring: [], completions: {} }, // completions: { taskId: [dateStr,...] }
   lists: [],
   health: [],
+  hydrationLogs: [], // [{id, date, containerId, liquidTypeId, ml, loggedAt}]
   settings: { locations: [], silos: [], lastActiveDate: null, sync: null },
   selectedDate: todayStr(),
   dashboardFilter: 'Today', // Today | Next7 | Next30 | Custom
   locationFilter: 'All',
   searchQuery: '',
   groupByLocation: true, // always defaults on each load, per user preference — not persisted
-  hideCompleted: false,
   selectedListId: null,
   calMonthCursor: null, // {year, month}
   calColorMode: 'location', // 'location' | 'silo' | 'recurType'
@@ -1688,11 +1865,30 @@ const state = {
   // logs are session-level (completed/difficulty/notes) keyed by date.
   training: { exercises: [], sessions: [], calendar: [], logs: [] },
   trainingSelectedDate: null, // date being viewed/logged on the Training page; defaults to today on first render
+  recipes: { items: [] }, // recipe library — see recipe/ingredient row conversion functions
+  recipesSelectedId: null, // which recipe is open in detail view, if any
+  progressSelectedTaskId: null, // which task's individual history is open, if any
+  progressRangeDays: 30, // 7 | 30 | 90 | null (all time) — for the overall Activity Log
+  progressKindFilter: 'all', // 'all' | 'recurring' | 'oneTime'
+  // Week and Calendar each get their own independent filter — deliberately
+  // NOT shared, since a person may want "hide daily" on Calendar by default
+  // but a different filter (or none) on Week.
+  weekFilter: { hideDaily: false, frequency: [], silo: 'All', location: 'All', priority: 'All' }, // frequency is an array now — multi-select
+  calendarFilter: { hideDaily: true, frequency: [], silo: 'All', location: 'All', priority: 'All' }, // Calendar defaults to hiding daily tasks
   syncErrorHistory: [], // durable, bounded sync-failure breadcrumbs — populated properly in loadAll(), this is just a safe pre-load default
   trainingSection: 'today', // which Training subpage is active: today | calendar | history | sessions | exercises
   trainingCalMonthCursor: null, // {year, month} for the Training Calendar View subpage; set on first render
   trainingCalExpandedDate: null, // which date is inline-expanded in the Training Calendar View
   trainingMoveFormDate: null, // which date's "move to another date" inline form is open
+  trainingEditingDate: null, // if a day is fully logged it collapses to a summary card — set this to that date to force the edit form back open
+  trainingPendingAdds: {}, // date -> [exerciseId,...] added via "+ Add Exercise" but not yet saved — ephemeral, not persisted
+  // Live buffer of in-progress (not-yet-saved) field values while editing a
+  // day's training log — keyed by "date::exerciseId". renderTrainingExerciseLogRow
+  // reads from here FIRST (falling back to the saved log) specifically so
+  // that a re-render mid-edit (adding another exercise, a background sync
+  // completing, etc.) can never wipe out something you've typed but not
+  // saved yet — this was a real bug before this buffer existed.
+  trainingDraftValues: {},
   editingListItemId: null, // list item currently showing an inline edit input instead of its text span
 };
 
@@ -1870,6 +2066,8 @@ const pendingCompletionDeletes = [];
 // locally (via import remap or manual delete) need an explicit DELETE sent —
 // an upsert of what remains never tells Supabase to drop a row.
 const pendingTrainingDeletes = []; // [{table, match: {col:val,...}}]
+const pendingRecipeDeletes = []; // [{table, match: {col:val,...}}]
+const pendingHydrationDeletes = []; // [{table, match: {col:val,...}}]
 // Same pattern for health metric definitions — deleting one locally without
 // also telling Supabase means the next pull brings it right back (this was
 // a real, reported bug: "delete a metric, refresh, it's back").
@@ -2029,13 +2227,15 @@ async function loadSettingsOnly(){
 
 async function loadAll(){
   try{
-    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, syncErrHistRes] = await Promise.all([
+    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, recipesRes, hydrationRes, syncErrHistRes] = await Promise.all([
       safeGet(STORAGE_KEYS.TASKS),
       safeGet(STORAGE_KEYS.LISTS),
       safeGet(STORAGE_KEYS.HEALTH),
       safeGet(STORAGE_KEYS.RATINGS),
       safeGet(STORAGE_KEYS.HEALTH_METRIC_DEFS),
       safeGet(STORAGE_KEYS.TRAINING),
+      safeGet(STORAGE_KEYS.RECIPES),
+      safeGet(STORAGE_KEYS.HYDRATION),
       safeGet(STORAGE_KEYS.SYNC_ERROR_HISTORY),
     ]);
     state.syncErrorHistory = syncErrHistRes ? JSON.parse(syncErrHistRes.value) : [];
@@ -2089,6 +2289,18 @@ async function loadAll(){
     } else {
       state.training = { exercises: [], sessions: [], calendar: [], logs: [] };
     }
+
+    // Recipes — same treatment as Training (small/bounded, kept locally
+    // even when sync is on, rather than reclaimed like completions/health).
+    if(recipesRes){
+      const r = JSON.parse(recipesRes.value);
+      state.recipes = { items: r.items||[] };
+    } else {
+      state.recipes = { items: [] };
+    }
+
+    // Hydration logs — same treatment as Recipes/Training.
+    state.hydrationLogs = hydrationRes ? (JSON.parse(hydrationRes.value)||[]) : [];
 
     // settings were already loaded by loadSettingsOnly() before the gate;
     // if for some reason this runs standalone, make sure they're present.
@@ -2161,7 +2373,22 @@ async function runBackgroundSync(){
   state.initialSyncBlocking = false;
   renderSyncBlockOverlay();
   updateSyncBadge();
-  render(); // refresh with whatever came from the sync
+  // The app shell (#mainContent, sidebar) doesn't exist yet during the very
+  // first automatic sync on startup — it's only built by the full render()
+  // inside revealApp(), which runs AFTER this function resolves. Calling
+  // renderMain() before that shell exists throws (nothing to write into),
+  // and since that throw happens here, outside this function's own
+  // try/catch, it silently rejected this whole function's promise — and
+  // because init()'s call to this function had no .catch(), revealApp()
+  // never ran automatically. That was the actual cause of "stuck at 100%,
+  // only the bypass button gets me in." Guarding on whether the shell
+  // exists yet keeps both fixes: no crash during the first sync, and no
+  // needless sidebar re-animation on every later one.
+  if(document.getElementById('mainContent')){
+    renderMain();
+    updateNavActiveState();
+    updateNavBadges();
+  }
 }
 
 async function markSyncDirty(){
@@ -2323,10 +2550,10 @@ function rowToRating(row){
 }
 function trainingExerciseToRow(ex){
   const s = state.settings.sync;
-  return { pin:s.pin, id:ex.id, name:ex.name, video_url:ex.videoUrl||null, notes:ex.notes||'', updated_at:new Date().toISOString() };
+  return { pin:s.pin, id:ex.id, name:ex.name, video_url:ex.videoUrl||null, notes:ex.notes||'', category:ex.category||'strength', updated_at:new Date().toISOString() };
 }
 function rowToTrainingExercise(r){
-  return { id:r.id, name:r.name, videoUrl:r.video_url||'', notes:r.notes||'' };
+  return { id:r.id, name:r.name, videoUrl:r.video_url||'', notes:r.notes||'', category:r.category||'strength' };
 }
 function trainingSessionToRow(sess){
   const s = state.settings.sync;
@@ -2343,6 +2570,41 @@ function trainingCalendarToRow(c){
 function rowToTrainingCalendar(r){
   return { date:r.cal_date, sessionId:r.session_id };
 }
+function recipeToRow(r){
+  const s = state.settings.sync;
+  return {
+    pin:s.pin, id:r.id, name:r.name, meal_type:r.mealType||null, image_url:r.imageUrl||null,
+    base_servings:r.baseServings||1, steps:r.steps||'',
+    calories:r.macros&&r.macros.calories!=null?r.macros.calories:null,
+    protein_g:r.macros&&r.macros.protein!=null?r.macros.protein:null,
+    carbs_g:r.macros&&r.macros.carbs!=null?r.macros.carbs:null,
+    fat_g:r.macros&&r.macros.fat!=null?r.macros.fat:null,
+    fiber_g:r.macros&&r.macros.fiber!=null?r.macros.fiber:null,
+    updated_at:new Date().toISOString(),
+  };
+}
+function rowToRecipe(r, ingredientRows){
+  return {
+    id:r.id, name:r.name, mealType:r.meal_type||null, imageUrl:r.image_url||null,
+    baseServings:r.base_servings||1, steps:r.steps||'',
+    macros: { calories:r.calories, protein:r.protein_g, carbs:r.carbs_g, fat:r.fat_g, fiber:r.fiber_g },
+    ingredients: (ingredientRows||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(rowToRecipeIngredient),
+  };
+}
+function recipeIngredientToRow(ing, recipeId, idx){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:ing.id, recipe_id:recipeId, name:ing.name, amount_grams:ing.grams||0, sort_order:idx };
+}
+function rowToRecipeIngredient(r){
+  return { id:r.id, name:r.name, grams:r.amount_grams||0 };
+}
+function hydrationLogToRow(l){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:l.id, log_date:l.date, container_id:l.containerId||null, liquid_type_id:l.liquidTypeId||null, ml:l.ml||0, logged_at:l.loggedAt||new Date().toISOString() };
+}
+function rowToHydrationLog(r){
+  return { id:r.id, date:r.log_date, containerId:r.container_id, liquidTypeId:r.liquid_type_id, ml:r.ml||0, loggedAt:r.logged_at };
+}
 function trainingLogToRow(l){
   const s = state.settings.sync;
   // exerciseId is never actually null in practice — sessions with no
@@ -2350,10 +2612,20 @@ function trainingLogToRow(l){
   // this stays a real, non-null PRIMARY KEY column (Postgres PKs can't be
   // nullable, and a UNIQUE constraint would let multiple NULLs collide).
   return { pin:s.pin, log_date:l.date, exercise_id: l.exerciseId || '__session__', session_id:l.sessionId||null, completed:!!l.completed,
-           difficulty: l.difficulty===undefined?null:l.difficulty, notes:l.notes||'', logged_at:l.loggedAt||null };
+           difficulty: l.difficulty===undefined?null:l.difficulty, notes:l.notes||'',
+           sets: l.sets===undefined?null:l.sets, reps: l.reps||'', weight_kg: l.weight===undefined?null:l.weight,
+           distance_km: l.distanceKm===undefined?null:l.distanceKm, duration_min: l.durationMin===undefined?null:l.durationMin,
+           avg_heart_rate: l.avgHeartRate===undefined?null:l.avgHeartRate, avg_pace: l.avgPace||'', incline: l.incline||'',
+           calories: l.calories===undefined?null:l.calories,
+           logged_at:l.loggedAt||null };
 }
 function rowToTrainingLog(r){
-  return { date:r.log_date, exerciseId: r.exercise_id||'__session__', sessionId:r.session_id, completed:!!r.completed, difficulty:r.difficulty, notes:r.notes||'', loggedAt:r.logged_at };
+  return { date:r.log_date, exerciseId: r.exercise_id||'__session__', sessionId:r.session_id, completed:!!r.completed, difficulty:r.difficulty, notes:r.notes||'',
+           sets: r.sets===undefined?null:r.sets, reps: r.reps||'', weight: r.weight_kg===undefined?null:r.weight_kg,
+           distanceKm: r.distance_km===undefined?null:r.distance_km, durationMin: r.duration_min===undefined?null:r.duration_min,
+           avgHeartRate: r.avg_heart_rate===undefined?null:r.avg_heart_rate, avgPace: r.avg_pace||'', incline: r.incline||'',
+           calories: r.calories===undefined?null:r.calories,
+           loggedAt:r.logged_at };
 }
 function buildCompletionRows(){
   const s = state.settings.sync;
@@ -2383,6 +2655,22 @@ async function flushPendingTrainingDeletes(){
     pendingTrainingDeletes.shift();
   }
 }
+async function flushPendingRecipeDeletes(){
+  while(pendingRecipeDeletes.length){
+    const { table, match } = pendingRecipeDeletes[0];
+    const q = Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    await supaDeleteMatch(table, q);
+    pendingRecipeDeletes.shift();
+  }
+}
+async function flushPendingHydrationDeletes(){
+  while(pendingHydrationDeletes.length){
+    const { table, match } = pendingHydrationDeletes[0];
+    const q = Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    await supaDeleteMatch(table, q);
+    pendingHydrationDeletes.shift();
+  }
+}
 async function flushPendingMetricDefDeletes(){
   while(pendingMetricDefDeletes.length){
     const id = pendingMetricDefDeletes[0];
@@ -2408,7 +2696,7 @@ async function pushFullStateToSupabase(onProgress){
     ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
     ()=> flushPendingMetricDefDeletes(),
     ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
-    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_liquid_types: state.settings.hydrationLiquidTypes, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
   // Training runs AFTER the core steps and is deliberately fault-isolated
   // from them: if the training-tables SQL migration hasn't been run yet in
@@ -2444,12 +2732,37 @@ async function pushFullStateToSupabase(onProgress){
     recordSyncErrorHistory('training-push', e.message||String(e));
     console.error('Training push failed (core task/list/health data still synced fine):', e);
   }
+  // Recipes: same fault-isolation treatment as Training, for the same
+  // reason — a missing/failed recipe-table migration must never be able to
+  // fail the core task/list/health push.
+  try{
+    await flushPendingRecipeDeletes();
+    await supaUpsert('recipes', state.recipes.items.map(recipeToRow), 'pin,id');
+    const ingredientRows = [];
+    state.recipes.items.forEach(r=> (r.ingredients||[]).forEach((ing,idx)=> ingredientRows.push(recipeIngredientToRow(ing, r.id, idx))));
+    if(ingredientRows.length) await supaUpsert('recipe_ingredients', ingredientRows, 'pin,id');
+  } catch(e){
+    diagLogEvent('sync', 'Recipes push failed — core sync still succeeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('recipes-push', e.message||String(e));
+    console.error('Recipes push failed (core task/list/health data still synced fine):', e);
+  }
+  // Hydration: same fault-isolation treatment as Training/Recipes.
+  try{
+    await flushPendingHydrationDeletes();
+    if(state.hydrationLogs.length) await supaUpsert('hydration_logs', state.hydrationLogs.map(hydrationLogToRow), 'pin,id');
+  } catch(e){
+    diagLogEvent('sync', 'Hydration push failed — core sync still succeeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('hydration-push', e.message||String(e));
+    console.error('Hydration push failed (core task/list/health data still synced fine):', e);
+  }
 }
 
 async function pullFromSupabase(onProgress){
   const coreTables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'];
   const trainingTables = ['training_exercises','training_sessions','training_calendar','training_logs'];
-  const totalTables = coreTables.length + trainingTables.length;
+  const recipeTables = ['recipes','recipe_ingredients'];
+  const hydrationTables = ['hydration_logs'];
+  const totalTables = coreTables.length + trainingTables.length + recipeTables.length + hydrationTables.length;
   const results = {};
   for(let i=0;i<coreTables.length;i++){
     results[coreTables[i]] = await supaSelectAll(coreTables[i]);
@@ -2484,6 +2797,38 @@ async function pullFromSupabase(onProgress){
     diagLogEvent('sync', 'Training pull failed — core pull still proceeded', { error: e.message||String(e) });
     recordSyncErrorHistory('training-pull', e.message||String(e));
     console.error('Training pull failed (core task/list/health data still pulled fine):', e);
+  }
+
+  // Recipes: same fault-isolation as Training — a missing/failed migration
+  // here must never abort the core pull.
+  let recipesPulled = null;
+  try{
+    const recipeResults = {};
+    for(let i=0;i<recipeTables.length;i++){
+      recipeResults[recipeTables[i]] = await supaSelectAll(recipeTables[i]);
+      if(onProgress) onProgress(coreTables.length+trainingTables.length+i+1, totalTables);
+    }
+    recipesPulled = recipeResults;
+  } catch(e){
+    diagLogEvent('sync', 'Recipes pull failed — core pull still proceeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('recipes-pull', e.message||String(e));
+    console.error('Recipes pull failed (core task/list/health data still pulled fine):', e);
+  }
+
+  // Hydration: same fault-isolation as Training/Recipes — a missing/failed
+  // migration here must never abort the core pull.
+  let hydrationPulled = null;
+  try{
+    const hydrationResults = {};
+    for(let i=0;i<hydrationTables.length;i++){
+      hydrationResults[hydrationTables[i]] = await supaSelectAll(hydrationTables[i]);
+      if(onProgress) onProgress(coreTables.length+trainingTables.length+recipeTables.length+i+1, totalTables);
+    }
+    hydrationPulled = hydrationResults;
+  } catch(e){
+    diagLogEvent('sync', 'Hydration pull failed — core pull still proceeded', { error: e.message||String(e) });
+    recordSyncErrorHistory('hydration-pull', e.message||String(e));
+    console.error('Hydration pull failed (core task/list/health data still pulled fine):', e);
   }
 
   const hasAnyRemoteData = oneTimeRows.length || recurringRows.length || listRows.length;
@@ -2545,10 +2890,32 @@ async function pullFromSupabase(onProgress){
     // crashing. Local training data (and its own next successful sync) is
     // unaffected by this pull's training-fetch failure.
 
+    if(recipesPulled){
+      const ingredientsByRecipe = {};
+      recipesPulled.recipe_ingredients.forEach(r=>{
+        if(!ingredientsByRecipe[r.recipe_id]) ingredientsByRecipe[r.recipe_id] = [];
+        ingredientsByRecipe[r.recipe_id].push(r);
+      });
+      state.recipes = { items: recipesPulled.recipes.map(r=> rowToRecipe(r, ingredientsByRecipe[r.id])) };
+      pendingRecipeDeletes.length = 0;
+    }
+    // else: recipes fetch failed — same "leave it as-is" treatment as training.
+
+    if(hydrationPulled){
+      state.hydrationLogs = hydrationPulled.hydration_logs.map(rowToHydrationLog);
+      pendingHydrationDeletes.length = 0;
+    }
+    // else: hydration fetch failed — same "leave it as-is" treatment as training/recipes.
+
     if(settingsRows.length){
       state.settings.locations = settingsRows[0].locations || state.settings.locations;
       state.settings.silos = settingsRows[0].silos || state.settings.silos;
       if(settingsRows[0].list_folders) state.settings.listFolders = settingsRows[0].list_folders;
+      if(settingsRows[0].week_view_presets) state.settings.weekViewPresets = settingsRows[0].week_view_presets;
+      if(settingsRows[0].calendar_view_presets) state.settings.calendarViewPresets = settingsRows[0].calendar_view_presets;
+      if(settingsRows[0].hydration_containers) state.settings.hydrationContainers = settingsRows[0].hydration_containers;
+      if(settingsRows[0].hydration_liquid_types) state.settings.hydrationLiquidTypes = settingsRows[0].hydration_liquid_types;
+      if(settingsRows[0].hydration_goal_ml!=null) state.settings.hydrationGoalMl = settingsRows[0].hydration_goal_ml;
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
       // instead of each device only ever trusting its own local record.
@@ -2571,6 +2938,8 @@ async function pullFromSupabase(onProgress){
     try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
     try{ await window.storage.set(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), false); } catch(e){ console.error('local cache write failed (metric defs)', e); }
     if(trainingPulled){ try{ await window.storage.set(STORAGE_KEYS.TRAINING, JSON.stringify(state.training), false); } catch(e){ console.error('local cache write failed (training)', e); } }
+    if(recipesPulled){ try{ await window.storage.set(STORAGE_KEYS.RECIPES, JSON.stringify(state.recipes), false); } catch(e){ console.error('local cache write failed (recipes)', e); } }
+    if(hydrationPulled){ try{ await window.storage.set(STORAGE_KEYS.HYDRATION, JSON.stringify(state.hydrationLogs), false); } catch(e){ console.error('local cache write failed (hydration)', e); } }
     try{ await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false); } catch(e){ console.error('local cache write failed (settings)', e); }
 
     if(needsReconcilePush){
@@ -2949,7 +3318,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_liquid_types: state.settings.hydrationLiquidTypes, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
     ]);
   }
 }
@@ -2962,6 +3331,29 @@ async function saveTraining(){
       ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
       ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
       ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+    ]);
+  }
+}
+async function saveRecipes(){
+  await safeStorageSet(STORAGE_KEYS.RECIPES, JSON.stringify(state.recipes), 'recipes');
+  if(syncConfigured()){
+    scheduleSync('recipes', ()=>[
+      ()=> flushPendingRecipeDeletes(),
+      ()=> supaUpsert('recipes', state.recipes.items.map(recipeToRow), 'pin,id'),
+      ()=> {
+        const rows = [];
+        state.recipes.items.forEach(r=> (r.ingredients||[]).forEach((ing,idx)=> rows.push(recipeIngredientToRow(ing, r.id, idx))));
+        return rows.length ? supaUpsert('recipe_ingredients', rows, 'pin,id') : null;
+      },
+    ]);
+  }
+}
+async function saveHydration(){
+  await safeStorageSet(STORAGE_KEYS.HYDRATION, JSON.stringify(state.hydrationLogs), 'hydration');
+  if(syncConfigured()){
+    scheduleSync('hydration', ()=>[
+      ()=> flushPendingHydrationDeletes(),
+      ()=> state.hydrationLogs.length ? supaUpsert('hydration_logs', state.hydrationLogs.map(hydrationLogToRow), 'pin,id') : null,
     ]);
   }
 }
@@ -3117,6 +3509,224 @@ function getOverdueOneTime(){
     .sort((a,b)=> a.due < b.due ? -1 : 1);
 }
 
+/* =========================================================
+   PROGRESS: activity log built from existing data — no new
+   schema. Recurring tasks already record every resolved
+   occurrence in state.tasks.completions; reschedule moves are
+   already in task.rescheduleExceptions. One-time tasks: a
+   completion is done+doneDate, a "miss" is inferred from being
+   currently overdue and undone, and moves are reconstructed
+   from the dueHistory chain (each entry is the PREVIOUS due
+   date at the moment it changed, so consecutive entries give a
+   from→to pair, with the task's current `due` closing the chain).
+   ========================================================= */
+function buildActivityLog(daysBack){
+  const today = todayStr();
+  const cutoff = daysBack ? addDays(today, -daysBack) : null;
+  const entries = [];
+
+  state.tasks.recurring.forEach(t=>{
+    const comp = state.tasks.completions[t.id] || {};
+    Object.keys(comp).forEach(dateStr=>{
+      if(cutoff && dateStr < cutoff) return;
+      entries.push({ date: dateStr, taskId: t.id, taskName: t.name, kind:'recurring', status: comp[dateStr].status, location:t.location, silo:t.silo });
+    });
+    (t.rescheduleExceptions||[]).forEach(ex=>{
+      if(cutoff && ex.from < cutoff) return;
+      entries.push({ date: ex.from, taskId: t.id, taskName: t.name, kind:'recurring', status:'moved', movedTo: ex.to, location:t.location, silo:t.silo });
+    });
+  });
+
+  state.tasks.oneTime.forEach(t=>{
+    if(t.done && t.doneDate){
+      if(!cutoff || t.doneDate >= cutoff) entries.push({ date:t.doneDate, taskId:t.id, taskName:t.name, kind:'oneTime', status:'done', location:t.location, silo:t.silo });
+    } else if(!t.done && t.due && t.due < today){
+      if(!cutoff || t.due >= cutoff) entries.push({ date:t.due, taskId:t.id, taskName:t.name, kind:'oneTime', status:'missed', location:t.location, silo:t.silo });
+    }
+    const hist = t.dueHistory||[];
+    hist.forEach((oldDue,i)=>{
+      if(cutoff && oldDue < cutoff) return;
+      const to = i+1<hist.length ? hist[i+1] : t.due;
+      entries.push({ date: oldDue, taskId:t.id, taskName:t.name, kind:'oneTime', status:'moved', movedTo: to, location:t.location, silo:t.silo });
+    });
+  });
+
+  entries.sort((a,b)=> b.date < a.date ? -1 : b.date > a.date ? 1 : 0); // newest first
+  return entries;
+}
+function progressStatusIcon(status){
+  return status==='done' ? '✓' : status==='missed' ? '✗' : '↷';
+}
+function progressStatusColor(status){
+  // Same color language already used for the stat cards above (teal/flag/brass) — done/missed/moved
+  return status==='done' ? 'var(--teal)' : status==='missed' ? 'var(--flag)' : 'var(--brass)';
+}
+function progressStatusBg(status){
+  // Soft tint variants — same ones the theme system already defines for every color theme
+  return status==='done' ? 'var(--teal-soft)' : status==='missed' ? 'var(--flag-soft)' : 'var(--accent-soft)';
+}
+function progressStatusLabel(status){
+  return status==='done' ? 'Completed' : status==='missed' ? 'Missed' : 'Moved';
+}
+function progressStatusBadge(status){
+  return `<span style="display:inline-flex; align-items:center; gap:4px; background:${progressStatusColor(status)}; color:#fff; font-size:10.5px; font-weight:700; padding:3px 9px 3px 7px; border-radius:999px; text-transform:uppercase; letter-spacing:0.03em; white-space:nowrap; flex-shrink:0;">${progressStatusIcon(status)} ${progressStatusLabel(status)}</span>`;
+}
+function setProgressRange(d){ state.progressRangeDays = d; renderMain(); }
+function setProgressKindFilter(k){ state.progressKindFilter = k; renderMain(); }
+function openProgressTaskDetail(taskId){ state.progressSelectedTaskId = taskId; state.progressCalMonthCursor = null; renderMain(); }
+function closeProgressTaskDetail(){ state.progressSelectedTaskId = null; renderMain(); }
+
+function renderProgressView(){
+  if(state.progressSelectedTaskId) return renderProgressTaskDetail(state.progressSelectedTaskId);
+
+  const rangeDays = state.progressRangeDays;
+  const entries = buildActivityLog(rangeDays);
+  const doneCount = entries.filter(e=>e.status==='done').length;
+  const missedCount = entries.filter(e=>e.status==='missed').length;
+  const movedCount = entries.filter(e=>e.status==='moved').length;
+  const resolvedTotal = doneCount + missedCount;
+  const commitmentPct = resolvedTotal ? Math.round((doneCount/resolvedTotal)*100) : null;
+
+  const kindFilter = state.progressKindFilter;
+  const filteredEntries = kindFilter==='all' ? entries : entries.filter(e=>e.kind===kindFilter);
+
+  const RANGE_OPTIONS = [[7,'7 Days'],[30,'30 Days'],[90,'90 Days'],[null,'All Time']];
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Progress</h1>
+        <div class="page-sub">Completion history and commitment rate across your tasks.</div>
+      </div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-card teal"><div class="stat-num">${commitmentPct===null?'—':commitmentPct+'%'}</div><div class="stat-label">Commitment Rate</div></div>
+      <div class="stat-card"><div class="stat-num">${doneCount}</div><div class="stat-label">Completed</div></div>
+      <div class="stat-card flag"><div class="stat-num">${missedCount}</div><div class="stat-label">Missed</div></div>
+      <div class="stat-card brass"><div class="stat-num">${movedCount}</div><div class="stat-label">Moved</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="chip-select">
+        ${RANGE_OPTIONS.map(([d,label])=>`<button class="${rangeDays===d?'active':''}" onclick="setProgressRange(${d})">${label}</button>`).join('')}
+      </div>
+      <div class="chip-select">
+        ${[['all','All'],['recurring','Recurring'],['oneTime','One-Time']].map(([k,label])=>`<button class="${kindFilter===k?'active':''}" onclick="setProgressKindFilter('${k}')">${label}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Activity Log</h2><span class="section-count">${filteredEntries.length} entries</span></div>
+      <div class="card" style="padding:4px 16px;">
+        ${filteredEntries.length ? filteredEntries.slice(0,200).map(e=>`
+          <div class="metric-manage-row" style="cursor:pointer; background:${progressStatusBg(e.status)}; border-radius:8px; margin:4px 0; padding:8px 10px;" onclick="openProgressTaskDetail('${e.taskId}')">
+            <span class="metric-manage-name" style="display:flex; align-items:center; gap:8px;">
+              ${progressStatusBadge(e.status)}
+              <span>${escapeHtml(e.taskName)}${e.status==='moved'?` <span class="page-sub">→ ${humanDate(e.movedTo)}</span>`:''}</span>
+            </span>
+            <span class="page-sub">${humanDate(e.date)}</span>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:16px 0;">No activity in this range.</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function shiftProgressCalMonth(delta){
+  if(!state.progressCalMonthCursor){
+    const t = parseDate(todayStr());
+    state.progressCalMonthCursor = { year:t.getFullYear(), month:t.getMonth() };
+  }
+  let { year, month } = state.progressCalMonthCursor;
+  month += delta;
+  if(month<0){ month=11; year--; } else if(month>11){ month=0; year++; }
+  state.progressCalMonthCursor = { year, month };
+  renderMain();
+}
+function renderProgressMiniCalendar(allEntries){
+  if(!state.progressCalMonthCursor){
+    const t = parseDate(todayStr());
+    state.progressCalMonthCursor = { year:t.getFullYear(), month:t.getMonth() };
+  }
+  const { year, month } = state.progressCalMonthCursor;
+  const startDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const entriesByDate = {};
+  allEntries.forEach(e=>{ entriesByDate[e.date] = e; }); // last-write-wins if a date somehow has >1 entry
+
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div class="mini-cal-cell empty"></div>`;
+  for(let day=1; day<=daysInMonth; day++){
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entry = entriesByDate[dateStr];
+    const isToday = dateStr===todayStr();
+    const style = entry
+      ? `background:${progressStatusColor(entry.status)}; color:#fff;`
+      : `color:var(--ink-soft);`;
+    const title = entry ? `${progressStatusLabel(entry.status)}${entry.status==='moved'?` → ${humanDate(entry.movedTo)}`:''} — ${humanDate(dateStr)}` : humanDate(dateStr);
+    cells += `<div class="mini-cal-cell ${isToday?'today':''}" style="${style}" title="${escapeHtml(title)}">${day}</div>`;
+  }
+  return `
+    <div class="card" style="padding:14px 16px; margin:14px 0;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <button class="btn ghost sm" onclick="shiftProgressCalMonth(-1)">←</button>
+        <b style="font-family:var(--font-display);">${MONTH_NAMES[month]} ${year}</b>
+        <button class="btn ghost sm" onclick="shiftProgressCalMonth(1)">→</button>
+      </div>
+      <div class="mini-cal-grid">
+        ${DOW_ABBR.map(d=>`<div class="mini-cal-dow">${d[0]}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+  `;
+}
+function renderProgressTaskDetail(taskId){
+  const rTask = state.tasks.recurring.find(t=>t.id===taskId);
+  const oTask = !rTask ? state.tasks.oneTime.find(t=>t.id===taskId) : null;
+  const task = rTask || oTask;
+  if(!task){
+    state.progressSelectedTaskId = null;
+    return renderProgressView();
+  }
+  const kind = rTask ? 'recurring' : 'oneTime';
+  const allEntries = buildActivityLog(null).filter(e=>e.taskId===taskId);
+  const doneCount = allEntries.filter(e=>e.status==='done').length;
+  const missedCount = allEntries.filter(e=>e.status==='missed').length;
+  const movedCount = allEntries.filter(e=>e.status==='moved').length;
+  const resolvedTotal = doneCount+missedCount;
+  const pct = resolvedTotal ? Math.round((doneCount/resolvedTotal)*100) : null;
+
+  return `
+    <div class="topbar">
+      <div><button class="btn ghost sm" onclick="closeProgressTaskDetail()">← Back to Progress</button></div>
+    </div>
+    <div class="card" style="padding:20px; margin-top:8px;">
+      <h1 class="page-title" style="margin-bottom:4px;">${escapeHtml(task.name)}</h1>
+      <div class="page-sub" style="margin-bottom:14px;">${kind==='recurring'?'Recurring':'One-Time'} · ${escapeHtml(task.location||'')}</div>
+      <div class="stat-strip">
+        <div class="stat-card teal"><div class="stat-num">${pct===null?'—':pct+'%'}</div><div class="stat-label">Commitment Rate</div></div>
+        <div class="stat-card"><div class="stat-num">${doneCount}</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card flag"><div class="stat-num">${missedCount}</div><div class="stat-label">Missed</div></div>
+        <div class="stat-card brass"><div class="stat-num">${movedCount}</div><div class="stat-label">Moved</div></div>
+      </div>
+      ${renderProgressMiniCalendar(allEntries)}
+      <h3 style="margin:16px 0 8px;">Full History</h3>
+      <div class="card" style="padding:4px 16px;">
+        ${allEntries.length ? allEntries.map(e=>`
+          <div class="metric-manage-row" style="background:${progressStatusBg(e.status)}; border-radius:8px; margin:4px 0; padding:8px 10px;">
+            <span class="metric-manage-name" style="display:flex; align-items:center; gap:8px;">
+              ${progressStatusBadge(e.status)}
+              <span>${e.status==='moved'?`Moved to ${humanDate(e.movedTo)}`:e.status==='done'?'Completed':'Missed'}</span>
+            </span>
+            <span class="page-sub">${humanDate(e.date)}</span>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No history yet.</div>`}
+      </div>
+    </div>
+  `;
+}
+
 function matchesFilters(item){
   if(state.locationFilter !== 'All' && item.location !== state.locationFilter) return false;
   if(state.searchQuery){
@@ -3230,9 +3840,12 @@ function render(){
     overdue: ['⚑','Overdue', overdueCount],
     tasks: ['☰','All Tasks'],
     calendar: ['▦','Calendar'],
+    week: ['▧','Week'],
     lists: ['▤','Lists'],
     health: ['♥','Health Log'],
     training: ['⛊','Training'],
+    recipes: ['❖','Recipes'],
+    progress: ['◈','Progress'],
     settings: ['⚙','Settings'],
   };
   const order = (state.settings.pageOrder && state.settings.pageOrder.length) ? state.settings.pageOrder : Object.keys(NAV_META);
@@ -3395,9 +4008,20 @@ async function clearLocalCacheNow(){
 function navItem(view, icon, label, count){
   const active = state.view === view ? 'active' : '';
   const countHtml = (count !== undefined) ? `<span class="nav-count">${count}</span>` : '';
-  return `<button class="nav-item ${active}" onclick="setView('${view}')">
+  return `<button class="nav-item ${active}" data-view="${view}" onclick="setView('${view}')">
     <span class="nav-icon">${icon}</span>${label}${countHtml}
   </button>`;
+}
+function updateNavActiveState(){
+  document.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.view === state.view);
+  });
+}
+function updateNavBadges(){
+  const dashCount = document.querySelector('.nav-item[data-view="dashboard"] .nav-count');
+  if(dashCount) dashCount.textContent = countDueToday();
+  const overdueCountEl = document.querySelector('.nav-item[data-view="overdue"] .nav-count');
+  if(overdueCountEl) overdueCountEl.textContent = getOverdueOneTime().length;
 }
 
 function setView(v){
@@ -3405,12 +4029,22 @@ function setView(v){
   state.view = v;
   state.searchQuery = '';
   if(v !== 'tasks'){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); }
-  render();
+  // Was calling the full shell-rebuilding render() here — that re-created
+  // every sidebar nav item on every single page click, re-triggering their
+  // entrance animation each time (reported: "whole page view moves,
+  // animation looks like it restarts"). renderMain() only swaps the content
+  // area, so the sidebar (and its one-time entrance animation) stays put;
+  // the content area's own fade-in still plays, so navigating still feels
+  // alive without the whole app appearing to reload.
+  renderMain();
+  updateNavActiveState();
+  updateNavBadges();
 }
 
 function renderMain(){
   applyDynamicTheme();
   const el = document.getElementById('mainContent');
+  if(!el) return; // shell not built yet (e.g. called before revealApp's first render()) — nothing to write into yet, safe no-op
   if((state.settings.hiddenPages||[]).includes(state.view)){
     state.view = 'dashboard';
   }
@@ -3419,6 +4053,9 @@ function renderMain(){
     else if(state.view === 'overdue') el.innerHTML = renderOverdueView();
     else if(state.view === 'tasks') el.innerHTML = renderTasksView();
     else if(state.view === 'calendar') el.innerHTML = renderCalendarView();
+    else if(state.view === 'week') el.innerHTML = renderWeekView();
+    else if(state.view === 'recipes') el.innerHTML = renderRecipesView();
+    else if(state.view === 'progress') el.innerHTML = renderProgressView();
     else if(state.view === 'lists') el.innerHTML = renderListsView();
     else if(state.view === 'health') el.innerHTML = renderHealthView();
     else if(state.view === 'training') el.innerHTML = renderTrainingView();
@@ -3486,8 +4123,8 @@ async function repairSettingsAndRetry(){
    RENDER: DASHBOARD
    ========================================================= */
 function renderDashboard(){
-  let rows = getDashboardTasks();
-  if(state.hideCompleted) rows = rows.filter(r=>!isRowCompleted(r));
+  let allRows = getDashboardTasks();
+  let rows = state.settings.hideCompleted ? allRows.filter(r=>!isRowCompleted(r)) : allRows;
   const overdueN = getOverdueOneTime().length;
   const doneToday = state.tasks.oneTime.filter(t=>t.done && t.due===todayStr()).length +
     state.tasks.recurring.filter(t=> isEffectivelyDueOn(t, todayStr()) && isCompletedOn(t.id, todayStr())).length;
@@ -3551,7 +4188,7 @@ function renderDashboard(){
       ${state.selectedDate!==todayStr() ? `<button class="btn ghost sm" onclick="setSelectedDate('${todayStr()}')">↺ Jump to Today</button>` : ''}
       <div class="toggle-switch-row">
         <span>Hide completed</span>
-        <div class="toggle-switch ${state.hideCompleted?'on':''}" onclick="toggleHideCompleted()"><div class="knob"></div></div>
+        <div class="toggle-switch ${state.settings.hideCompleted?'on':''}" onclick="toggleHideCompleted()"><div class="knob"></div></div>
       </div>
       <div class="toggle-switch-row" style="margin-left:auto;">
         <span>Group by location</span>
@@ -3564,7 +4201,7 @@ function renderDashboard(){
         <h2>Tasks</h2>
         <span class="section-count">${rows.length} shown</span>
       </div>
-      ${state.groupByLocation ? renderGroupedTickets(rows) : renderTicketList(rows)}
+      ${state.groupByLocation ? renderGroupedTickets(rows, allRows) : renderTicketList(rows)}
     </div>
 
     <div class="dash-fab" title="New task" onclick="openNewTaskChooser()">+</div>
@@ -3572,8 +4209,9 @@ function renderDashboard(){
   `;
 }
 
-function toggleHideCompleted(){
-  state.hideCompleted = !state.hideCompleted;
+async function toggleHideCompleted(){
+  state.settings.hideCompleted = !state.settings.hideCompleted;
+  await saveSettings();
   renderMain();
 }
 
@@ -3589,9 +4227,10 @@ function toggleGroupCollapse(loc){
   renderMain();
 }
 
-function renderGroupedTickets(rows, opts){
+function renderGroupedTickets(rows, allRows, opts){
+  allRows = allRows || rows; // backward compatible if called without a separate full set
   opts = opts || {};
-  if(rows.length === 0){
+  if(allRows.length === 0){
     return `<div class="card empty-state"><span class="glyph">☺</span>Nothing here. Clear runway ahead.</div>`;
   }
   const groups = {};
@@ -3600,25 +4239,36 @@ function renderGroupedTickets(rows, opts){
     if(!groups[loc]) groups[loc] = [];
     groups[loc].push(r);
   });
-  const locOrder = state.settings.locations.filter(l=>groups[l]).concat(Object.keys(groups).filter(l=>!state.settings.locations.includes(l)));
+  // Counted separately from the visible groups above so the header count
+  // stays accurate (e.g. "76/76 (100%)") even when Hide Completed has
+  // filtered every row for that location out of the visible list — the
+  // location itself still shows, just with an empty body.
+  const allGroups = {};
+  allRows.forEach(r=>{
+    const loc = r.task.location || 'Unassigned';
+    if(!allGroups[loc]) allGroups[loc] = [];
+    allGroups[loc].push(r);
+  });
+  const locOrder = state.settings.locations.filter(l=>allGroups[l]).concat(Object.keys(allGroups).filter(l=>!state.settings.locations.includes(l)));
   return locOrder.map(loc=>{
-    const groupRows = groups[loc];
+    const groupRows = groups[loc] || [];
+    const countingRows = allGroups[loc] || [];
     const collapsed = collapsedGroups.has(loc);
     // Counts as "handled" if either completed OR missed — both are states
     // you've already taken action on/acknowledged, vs. still needing a
     // decision. isRowResolved() already encodes exactly this (done OR
     // missed), reused here rather than recomputed.
-    const handledCount = groupRows.filter(isRowResolved).length;
-    const pct = groupRows.length ? Math.round((handledCount/groupRows.length)*100) : 0;
+    const handledCount = countingRows.filter(isRowResolved).length;
+    const pct = countingRows.length ? Math.round((handledCount/countingRows.length)*100) : 0;
     return `
       <div class="group-block">
         <div class="group-header ${collapsed?'collapsed':''}" onclick="toggleGroupCollapse('${escapeHtml(loc)}')">
           <span class="caret">▾</span>
           <h3>${escapeHtml(loc)}</h3>
-          <span class="group-count">${handledCount}/${groupRows.length} (${pct}%)</span>
+          <span class="group-count">${handledCount}/${countingRows.length} (${pct}%)</span>
         </div>
         <div class="group-body ${collapsed?'collapsed':''}">
-          ${sortWithCompletedLast(groupRows).map(r=>renderTicket(r, Object.assign({hideLocation:true}, opts))).join('')}
+          ${groupRows.length ? sortWithCompletedLast(groupRows).map(r=>renderTicket(r, Object.assign({hideLocation:true}, opts))).join('') : `<div class="page-sub" style="padding:10px 14px;">Nothing to show here while hidden.</div>`}
         </div>
       </div>
     `;
@@ -3849,6 +4499,10 @@ document.addEventListener('keydown', (e)=>{
     e.preventDefault();
     closeModal();
   }
+  if(e.key === 'Escape' && document.getElementById('quickAddExOverlay')){
+    e.preventDefault();
+    closeQuickAddExerciseModal();
+  }
 
   // New task shortcut: press N (no modifier — Ctrl/Cmd+N is reserved by the
   // browser itself for "new window" and can't be intercepted from JS in any
@@ -4019,7 +4673,7 @@ function renderTasksView(){
 
     ${(() => {
       const opts = tab==='recurring' ? {hideCheckbox:true, showNextDate:true} : {};
-      return state.tasksGroupByLocation ? renderGroupedTickets(rows, opts) : renderTicketList(rows, opts);
+      return state.tasksGroupByLocation ? renderGroupedTickets(rows, rows, opts) : renderTicketList(rows, opts);
     })()}
   `;
 }
@@ -4248,6 +4902,169 @@ function getTasksForDateSplit(dateStr){
   return { recurring, oneTime };
 }
 
+// Shared by Week and Calendar (each keeps its own independent filter state,
+// but the matching logic itself is identical). "Daily" means a recurring
+// task whose recurrence type is exactly 'Daily' — one-time tasks are never
+// considered daily, so hideDaily never touches them.
+function taskMatchesPageFilter(task, kind, filter){
+  if(!filter) return true;
+  if(filter.hideDaily && kind==='recurring' && task.type==='Daily') return false;
+  // Frequency is multi-select (array) — empty array means no filter applied.
+  // Only makes sense for recurring tasks (one-time tasks have no
+  // recurrence type) — one-time tasks pass through untouched, same
+  // treatment as hideDaily.
+  if(filter.frequency && filter.frequency.length && kind==='recurring' && !filter.frequency.includes(task.type)) return false;
+  if(filter.silo && filter.silo!=='All' && task.silo!==filter.silo) return false;
+  if(filter.location && filter.location!=='All' && task.location!==filter.location) return false;
+  if(filter.priority && filter.priority!=='All' && task.priority!==filter.priority) return false;
+  return true;
+}
+function renderPageFilterBar(pageKey, filter, presets){
+  const setFn = pageKey==='week' ? 'setWeekFilterField' : 'setCalendarFilterField';
+  const saveFn = pageKey==='week' ? 'saveWeekViewPreset' : 'saveCalendarViewPreset';
+  const applyFn = pageKey==='week' ? 'applyWeekViewPreset' : 'applyCalendarViewPreset';
+  const deleteFn = pageKey==='week' ? 'deleteWeekViewPreset' : 'deleteCalendarViewPreset';
+  return `
+    <div class="card" style="padding:10px 14px; margin-bottom:14px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; cursor:pointer;">
+        <input type="checkbox" ${filter.hideDaily?'checked':''} onchange="${setFn}('hideDaily', this.checked)"> Hide daily tasks
+      </label>
+      <div class="freq-multiselect" id="${pageKey}FreqMultiselect">
+        <button type="button" class="btn secondary sm" onclick="toggleFreqDropdown('${pageKey}')">
+          Frequency: ${(filter.frequency&&filter.frequency.length) ? escapeHtml(filter.frequency.join(', ')) : 'All'} ▾
+        </button>
+        <div class="freq-dropdown-panel" id="${pageKey}FreqDropdownPanel" style="display:none;">
+          ${RECUR_TYPES.map(rt=>`
+            <label class="freq-dropdown-item">
+              <input type="checkbox" value="${escapeHtml(rt)}" ${(filter.frequency||[]).includes(rt)?'checked':''} onchange="toggleFrequencyOption('${pageKey}','${escapeHtml(rt)}', this.checked)">
+              ${escapeHtml(rt)}
+            </label>
+          `).join('')}
+          <button type="button" class="btn ghost sm" style="margin-top:6px; width:100%;" onclick="clearFrequencyFilter('${pageKey}')">Clear (show all)</button>
+        </div>
+      </div>
+      <select onchange="${setFn}('silo', this.value)" style="padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12px; background:var(--paper); color:var(--ink);">
+        <option value="All" ${filter.silo==='All'?'selected':''}>Type: All</option>
+        ${state.settings.silos.map(s=>`<option value="${escapeHtml(s)}" ${filter.silo===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
+      <select onchange="${setFn}('location', this.value)" style="padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12px; background:var(--paper); color:var(--ink);">
+        <option value="All" ${filter.location==='All'?'selected':''}>Location: All</option>
+        ${state.settings.locations.map(l=>`<option value="${escapeHtml(l)}" ${filter.location===l?'selected':''}>${escapeHtml(l)}</option>`).join('')}
+      </select>
+      <select onchange="${setFn}('priority', this.value)" style="padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12px; background:var(--paper); color:var(--ink);">
+        <option value="All" ${filter.priority==='All'?'selected':''}>Priority: All</option>
+        ${PRIORITIES.map(p=>`<option value="${p}" ${filter.priority===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+      <button class="btn secondary sm" onclick="${saveFn}()">Save as View</button>
+      ${presets.length ? `
+        <span style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-left:4px;">
+          ${presets.map(p=>`
+            <span class="chip-select" style="display:inline-flex;">
+              <button onclick="${applyFn}('${p.id}')" title="Apply this view">${escapeHtml(p.name)}</button>
+              <button onclick="${deleteFn}('${p.id}')" title="Delete this view" style="padding:0 8px;">✕</button>
+            </span>
+          `).join('')}
+        </span>
+      ` : ''}
+    </div>
+  `;
+}
+function setWeekFilterField(field, value){
+  state.weekFilter[field] = value;
+  renderMain();
+}
+function setCalendarFilterField(field, value){
+  state.calendarFilter[field] = value;
+  renderMain();
+}
+function getPageFilter(pageKey){
+  return pageKey==='week' ? state.weekFilter : state.calendarFilter;
+}
+function toggleFreqDropdown(pageKey){
+  const panel = document.getElementById(`${pageKey}FreqDropdownPanel`);
+  if(!panel) return;
+  const willOpen = panel.style.display !== 'block';
+  document.querySelectorAll('.freq-dropdown-panel').forEach(p=> p.style.display='none');
+  panel.style.display = willOpen ? 'block' : 'none';
+}
+function toggleFrequencyOption(pageKey, type, checked){
+  const filter = getPageFilter(pageKey);
+  if(!Array.isArray(filter.frequency)) filter.frequency = [];
+  if(checked){
+    if(!filter.frequency.includes(type)) filter.frequency.push(type);
+  } else {
+    filter.frequency = filter.frequency.filter(t=>t!==type);
+  }
+  renderMain();
+  // renderMain() rebuilds the filter bar with the panel closed by default —
+  // reopen it right after so checking multiple boxes in a row doesn't
+  // require re-clicking the dropdown button each time.
+  setTimeout(()=>{ const panel = document.getElementById(`${pageKey}FreqDropdownPanel`); if(panel) panel.style.display='block'; }, 0);
+}
+function clearFrequencyFilter(pageKey){
+  getPageFilter(pageKey).frequency = [];
+  renderMain();
+  setTimeout(()=>{ const panel = document.getElementById(`${pageKey}FreqDropdownPanel`); if(panel) panel.style.display='block'; }, 0);
+}
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.freq-multiselect')) return;
+  document.querySelectorAll('.freq-dropdown-panel').forEach(p=> p.style.display='none');
+});
+// Frequency used to be a single string ('All' or one RECUR_TYPES value)
+// before it became multi-select — normalize any older saved preset (or
+// hand-edited Supabase row) into the current array format rather than
+// letting a stray string break .length/.includes() checks.
+function normalizeFilterFrequency(filter){
+  if(!Array.isArray(filter.frequency)){
+    filter.frequency = (typeof filter.frequency === 'string' && filter.frequency !== 'All') ? [filter.frequency] : [];
+  }
+  return filter;
+}
+async function saveWeekViewPreset(){
+  const name = prompt('Name this view:');
+  if(!name || !name.trim()) return;
+  state.settings.weekViewPresets.push({ id:newId('view'), name:name.trim(), filter:Object.assign({}, state.weekFilter) });
+  await saveSettings();
+  renderMain();
+  showToast('View saved');
+}
+async function saveCalendarViewPreset(){
+  const name = prompt('Name this view:');
+  if(!name || !name.trim()) return;
+  state.settings.calendarViewPresets.push({ id:newId('view'), name:name.trim(), filter:Object.assign({}, state.calendarFilter) });
+  await saveSettings();
+  renderMain();
+  showToast('View saved');
+}
+function applyWeekViewPreset(id){
+  const preset = state.settings.weekViewPresets.find(p=>p.id===id);
+  if(!preset) return;
+  state.weekFilter = normalizeFilterFrequency(Object.assign({ hideDaily:false, frequency:[], silo:'All', location:'All', priority:'All' }, preset.filter));
+  renderMain();
+}
+function applyCalendarViewPreset(id){
+  const preset = state.settings.calendarViewPresets.find(p=>p.id===id);
+  if(!preset) return;
+  state.calendarFilter = normalizeFilterFrequency(Object.assign({ hideDaily:true, frequency:[], silo:'All', location:'All', priority:'All' }, preset.filter));
+  renderMain();
+}
+async function deleteWeekViewPreset(id){
+  const preset = state.settings.weekViewPresets.find(p=>p.id===id);
+  if(!preset) return;
+  if(!confirm(`Delete the saved view "${preset.name}"?`)) return;
+  state.settings.weekViewPresets = state.settings.weekViewPresets.filter(p=>p.id!==id);
+  await saveSettings();
+  renderMain();
+}
+async function deleteCalendarViewPreset(id){
+  const preset = state.settings.calendarViewPresets.find(p=>p.id===id);
+  if(!preset) return;
+  if(!confirm(`Delete the saved view "${preset.name}"?`)) return;
+  state.settings.calendarViewPresets = state.settings.calendarViewPresets.filter(p=>p.id!==id);
+  await saveSettings();
+  renderMain();
+}
+
 function calDotColor(task, kind){
   const mode = state.calColorMode || 'location';
   if(mode === 'location') return locationColor(task.location);
@@ -4273,6 +5090,73 @@ async function toggleWeekendDay(day){
   renderMain();
 }
 
+/* ---------- Week view: one column per day, actual task names (not just dot counts) ---------- */
+function startOfWeek(dateStr){
+  const dow = parseDate(dateStr).getDay(); // 0=Sun
+  return addDays(dateStr, -dow);
+}
+function ensureWeekCursor(){
+  if(!state.weekCursorDate) state.weekCursorDate = startOfWeek(todayStr());
+}
+function shiftWeek(delta){
+  ensureWeekCursor();
+  state.weekCursorDate = addDays(state.weekCursorDate, delta*7);
+  renderMain();
+}
+function jumpToThisWeek(){
+  state.weekCursorDate = startOfWeek(todayStr());
+  renderMain();
+}
+function renderWeekView(){
+  ensureWeekCursor();
+  const start = state.weekCursorDate;
+  const days = [];
+  for(let i=0;i<7;i++) days.push(addDays(start, i));
+  const weekendDays = state.settings.weekendDays || [];
+  const today = todayStr();
+  const filter = state.weekFilter;
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Week</h1>
+        <div class="page-sub">${fullDate(days[0])} – ${fullDate(days[6])}</div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="btn ghost sm" onclick="shiftWeek(-1)">← Prev Week</button>
+      <button class="btn ghost sm" onclick="jumpToThisWeek()">↺ This Week</button>
+      <button class="btn ghost sm" onclick="shiftWeek(1)">Next Week →</button>
+    </div>
+    ${renderPageFilterBar('week', filter, state.settings.weekViewPresets||[])}
+    <div class="week-grid">
+      ${days.map(d=>{
+        const dow = parseDate(d).getDay();
+        const isWeekend = weekendDays.includes(DOW_ABBR[dow]);
+        const isToday = d === today;
+        const { recurring, oneTime } = getTasksForDateSplit(d);
+        const items = [
+          ...recurring.map(t=>({ t, kind:'recurring', done: isCompletedOn(t.id, d) })),
+          ...oneTime.map(t=>({ t, kind:'oneTime', done: !!t.done })),
+        ].filter(({t,kind})=> taskMatchesPageFilter(t, kind, filter));
+        return `
+          <div class="week-day-col ${isToday?'today':''} ${isWeekend?'weekend':''}">
+            <div class="week-day-head" onclick="jumpToDate('${d}')" title="Open in Dashboard">
+              <span class="week-day-name">${DOW_ABBR[dow]}</span>
+              <span class="week-day-num">${parseDate(d).getDate()}</span>
+            </div>
+            <div class="week-day-tasks">
+              ${items.length ? items.map(({t,kind,done})=>`
+                <div class="week-task-chip ${done?'done':''}" style="border-left-color:${calDotColor(t,kind)};" onclick="jumpToDate('${d}')" title="${escapeHtml(calDotLabel(t,kind))}">${escapeHtml(t.name)}</div>
+              `).join('') : `<div class="page-sub" style="padding:4px 0; font-size:11px;">—</div>`}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
 function calLegendItems(){
   const mode = state.calColorMode || 'location';
   if(mode === 'location') return state.settings.locations.map(l=>[l, locationColor(l)]);
@@ -4291,15 +5175,16 @@ function renderCalendarView(){
   const startDow = firstOfMonth.getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const weekendDays = state.settings.weekendDays || [];
-  const MAX_DOTS_PER_ROW = 8;
+  const MAX_CHIPS_PER_CELL = 4;
+  const filter = state.calendarFilter;
 
-  const dotsRowHtml = (tasks, kind)=>{
+  const taskChipsHtml = (tasks, kind)=>{
     if(!tasks.length) return '';
-    const shown = tasks.slice(0, MAX_DOTS_PER_ROW);
+    const shown = tasks.slice(0, MAX_CHIPS_PER_CELL);
     const extra = tasks.length - shown.length;
-    return `<div class="dot-row">
-      ${shown.map(t=>`<span class="dot" style="background:${calDotColor(t,kind)};" title="${escapeHtml(calDotLabel(t,kind))}"></span>`).join('')}
-      ${extra>0 ? `<span class="dot-extra">+${extra}</span>` : ''}
+    return `<div class="cal-cell-chip-list">
+      ${shown.map(t=>`<div class="cal-task-chip" style="border-left-color:${calDotColor(t,kind)};" title="${escapeHtml(calDotLabel(t,kind))}" onclick="event.stopPropagation(); openTaskModal('${kind}','${t.id}');">${escapeHtml(t.name)}</div>`).join('')}
+      ${extra>0 ? `<div class="cal-task-chip-extra">+${extra} more</div>` : ''}
     </div>`;
   };
 
@@ -4307,7 +5192,9 @@ function renderCalendarView(){
   for(let i=0;i<startDow;i++) cells += `<div class="cal-cell empty"></div>`;
   for(let day=1; day<=daysInMonth; day++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const { recurring, oneTime } = getTasksForDateSplit(dateStr);
+    const { recurring: recurringRaw, oneTime: oneTimeRaw } = getTasksForDateSplit(dateStr);
+    const recurring = recurringRaw.filter(t=> taskMatchesPageFilter(t, 'recurring', filter));
+    const oneTime = oneTimeRaw.filter(t=> taskMatchesPageFilter(t, 'oneTime', filter));
     const isToday = dateStr === todayStr();
     const dow = new Date(year, month, day).getDay();
     const isWeekend = weekendDays.includes(DOW_ABBR[dow]);
@@ -4319,9 +5206,9 @@ function renderCalendarView(){
           ${total>0 ? `<span class="density-count">${total}</span>` : ''}
         </div>
         <div class="cal-cell-tasks">
-          ${dotsRowHtml(recurring, 'recurring')}
+          ${taskChipsHtml(recurring, 'recurring')}
           ${recurring.length && oneTime.length ? `<div class="cal-cell-sep"></div>` : ''}
-          ${dotsRowHtml(oneTime, 'oneTime')}
+          ${taskChipsHtml(oneTime, 'oneTime')}
         </div>
       </div>`;
   }
@@ -4341,6 +5228,7 @@ function renderCalendarView(){
         <button class="${state.calColorMode==='recurType'?'active':''}" onclick="setCalColorMode('recurType')">By Recurrence Type</button>
       </div>
     </div>
+    ${renderPageFilterBar('calendar', filter, state.settings.calendarViewPresets||[])}
 
     <div class="cal-legend">
       ${calLegendItems().map(([label,color])=>`<span class="cal-legend-item"><span class="cal-legend-dot" style="background:${color};"></span>${escapeHtml(label)}</span>`).join('')}
@@ -4378,7 +5266,9 @@ function jumpToDate(dateStr){
   state.selectedDate = dateStr;
   state.dashboardFilter = 'Today';
   state.view = 'dashboard';
-  render();
+  renderMain();
+  updateNavActiveState();
+  updateNavBadges();
 }
 
 /* =========================================================
@@ -4474,6 +5364,7 @@ function renderNotebookPage(list){
         ` : ''}
         <button class="pin-list-btn ${isPinned?'active':''}" title="${isPinned?'Unpin from the side panel':'Pin to the side panel'}" onclick="togglePinList('${list.id}')">📌</button>
         ${doneCount>0 ? `<button class="icon-btn" title="Uncheck all items" onclick="uncheckAllListItems('${list.id}')">↺</button>` : ''}
+        ${doneCount>0 ? `<button class="icon-btn" title="Remove checked items" onclick="clearCompletedListItems('${list.id}')">🧹</button>` : ''}
         ${list.items.length>0 ? `<button class="icon-btn" title="Remove all items" onclick="clearAllListItems('${list.id}')">🗑</button>` : ''}
         <button class="icon-btn" title="Copy list as text" onclick="exportListAsText('${list.id}')">⧉</button>
         <button class="icon-btn" title="Delete list" onclick="deleteList('${list.id}')">✕</button>
@@ -4482,7 +5373,7 @@ function renderNotebookPage(list){
     <div class="page-sub" style="margin-bottom:14px;">${doneCount}/${list.items.length} done</div>
     <div class="notebook-lines">
       ${list.items.map((item,idx)=>`
-        <div class="notebook-line ${item.done?'done':''} ${_justReorderedListId===list.id?'settle':''}" draggable="true" data-index="${idx}"
+        <div class="notebook-line ${item.done?'done':''} ${_justReorderedListId===list.id?'settle':''}" draggable="true" data-index="${idx}" data-item-id="${item.id}"
              ondragstart="onListItemDragStart(event,'${list.id}')" ondragover="onListItemDragOver(event)" ondrop="onListItemDragDrop(event,'${list.id}')" ondragend="onListItemDragEnd(event)">
           <span class="drag-handle-sm" title="Drag to reorder">⠿</span>
           <button class="li-check ${item.done?'checked':''} ${item.id===_justCompletedListItemId?'pop':''}" onclick="toggleListItem('${list.id}','${item.id}')">${item.done?'✓':''}</button>${item.id===state.editingListItemId
@@ -4586,27 +5477,54 @@ async function clearAllListItems(listId){
   diagLogEvent('activity', `Cleared all items from list "${list.title}"`, { listId, count: removedIds.length });
   list.items = [];
   await saveLists();
+  renderMain(); // instant — does not wait on the sync calls below
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps(
+    enqueueSync(()=> runSyncSteps(
       removedIds.map(id => ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(id)}`))
-    ));
+    )).catch(e=> console.error('clear all items sync failed', e));
   }
-  renderMain();
   showToast('All items removed');
+}
+async function clearCompletedListItems(listId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  const doneItems = list.items.filter(i=>i.done);
+  if(!doneItems.length) return;
+  if(!confirm(`Remove ${doneItems.length} checked item${doneItems.length===1?'':'s'} from "${list.title}"?`)) return;
+  const removedIds = doneItems.map(i=>i.id);
+  diagLogEvent('activity', `Cleared completed items from list "${list.title}"`, { listId, count: removedIds.length });
+  list.items = list.items.filter(i=>!i.done);
+  await saveLists();
+  renderMain(); // instant — does not wait on the sync calls below
+  if(syncConfigured()){
+    enqueueSync(()=> runSyncSteps(
+      removedIds.map(id => ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(id)}`))
+    )).catch(e=> console.error('clear completed items sync failed', e));
+  }
+  showToast(`${removedIds.length} completed item${removedIds.length===1?'':'s'} removed`);
 }
 async function deleteListItem(listId, itemId){
   const list = state.lists.find(l=>l.id===listId);
   if(!list) return;
-  const itemText = list.items.find(i=>i.id===itemId)?.text;
-  diagLogEvent('activity', `Deleted list item "${itemText}"`, { listId, itemId });
+  const item = list.items.find(i=>i.id===itemId);
+  if(!item) return;
+  // Play a quick fade/collapse on the actual row first, so deleting always
+  // feels immediate — the background sync call below can take a moment on
+  // a slow connection, but the UI never waits on it.
+  const rowEl = document.querySelector(`.notebook-line[data-item-id="${itemId}"]`);
+  if(rowEl){
+    rowEl.classList.add('removing');
+    await new Promise(r=> setTimeout(r, 160));
+  }
+  diagLogEvent('activity', `Deleted list item "${item.text}"`, { listId, itemId });
   list.items = list.items.filter(i=>i.id!==itemId);
   await saveLists();
+  renderMain(); // instant — does not wait on the sync call below
   if(syncConfigured()){
-    await enqueueSync(()=> runSyncSteps([
+    enqueueSync(()=> runSyncSteps([
       ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(itemId)}`),
-    ]));
+    ])).catch(e=> console.error('list item delete sync failed', e));
   }
-  renderMain();
 }
 async function addListItem(listId, text){
   text = (text||'').trim();
@@ -4736,6 +5654,30 @@ function coreFieldFor(metricId){
 // ever, tracked by a persisted flag. Without this guard, deleting a core
 // metric would just get it silently re-added the next time this runs (e.g.
 // on the next page render), since it'd still look "missing".
+const HYDRATION_ICON_CHOICES = ['🥛','🍶','🧴','☕','🍵','🥤','🧃','💧'];
+const HYDRATION_COLOR_CHOICES = ['#2E7BA6','#6F4E37','#8B5E3C','#B5583E','#3E7A72','#7A8F4A','#9A7FE0','#5C6A8C'];
+function ensureHydrationDefaults(){
+  if(!state.settings.hydrationDefaultsSeeded){
+    if(!state.settings.hydrationContainers.length){
+      state.settings.hydrationContainers = [
+        { id:'cont_glass', name:'Glass', ml:250, icon:'🥛' },
+        { id:'cont_bottle_s', name:'Small Bottle', ml:500, icon:'🍶' },
+        { id:'cont_bottle_l', name:'Large Bottle', ml:1000, icon:'🧴' },
+        { id:'cont_mug', name:'Mug', ml:300, icon:'☕' },
+      ];
+    }
+    if(!state.settings.hydrationLiquidTypes.length){
+      state.settings.hydrationLiquidTypes = [
+        { id:'liq_water', name:'Water', color:'#2E7BA6' },
+        { id:'liq_coffee', name:'Coffee', color:'#6F4E37' },
+        { id:'liq_tea', name:'Tea', color:'#8B5E3C' },
+        { id:'liq_milk', name:'Milk', color:'#B5583E' },
+      ];
+    }
+    state.settings.hydrationDefaultsSeeded = true;
+    saveSettings();
+  }
+}
 function ensureCoreMetricDefs(){
   if(!state.settings.healthCoreMetricsSeeded){
     CORE_METRIC_DEFAULTS.forEach((def, i)=>{
@@ -4773,6 +5715,280 @@ function getHealthEntry(dateStr){
 
 if(!state.healthViewDate) state.healthViewDate = todayStr();
 
+/* =========================================================
+   HYDRATION TRACKER
+   ========================================================= */
+function getHydrationLogsForDate(date){
+  return state.hydrationLogs.filter(l=>l.date===date);
+}
+function getHydrationTotalForDate(date){
+  return getHydrationLogsForDate(date).reduce((sum,l)=> sum+(l.ml||0), 0);
+}
+async function logHydration(date, containerId, liquidTypeId){
+  const container = state.settings.hydrationContainers.find(c=>c.id===containerId);
+  if(!container) return;
+  state.hydrationLogs.push({ id:newId('hyd'), date, containerId, liquidTypeId, ml:container.ml, loggedAt:new Date().toISOString() });
+  await saveHydration();
+  renderMain();
+  showToast(`Logged ${container.ml}ml`);
+}
+async function deleteHydrationLog(id){
+  state.hydrationLogs = state.hydrationLogs.filter(l=>l.id!==id);
+  pendingHydrationDeletes.push({ table:'hydration_logs', match:{ id } });
+  await saveHydration();
+  renderMain();
+}
+async function setHydrationGoal(ml){
+  const n = Number(ml);
+  if(!n || n<=0) return;
+  state.settings.hydrationGoalMl = n;
+  await saveSettings();
+  renderMain();
+}
+
+let hydrationContainerDraftIcon = null;
+function openHydrationContainerModal(existingId){
+  const existing = existingId ? state.settings.hydrationContainers.find(c=>c.id===existingId) : null;
+  hydrationContainerDraftIcon = existing ? existing.icon : HYDRATION_ICON_CHOICES[0];
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'hydContainerOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${existing?'Edit':'Add'} Container</h3>
+      <div class="field"><label>Name</label><input type="text" id="hydContName" value="${existing?escapeHtml(existing.name):''}" placeholder="e.g. My Gym Bottle"></div>
+      <div class="field"><label>Size (ml)</label><input type="number" min="1" id="hydContMl" value="${existing?existing.ml:''}" placeholder="e.g. 500"></div>
+      <div class="field">
+        <label>Icon</label>
+        <div class="radio-pills" id="hydContIconPills">
+          ${HYDRATION_ICON_CHOICES.map(icon=>`<button type="button" class="radio-pill ${hydrationContainerDraftIcon===icon?'active':''}" style="font-size:16px;" onclick="pickHydrationIcon('${icon}')">${icon}</button>`).join('')}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('hydContainerOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitHydrationContainer('${existingId||''}')">${existing?'Save':'Add'}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('hydContName'); if(el) el.focus(); }, 50);
+}
+function pickHydrationIcon(icon){
+  hydrationContainerDraftIcon = icon;
+  document.querySelectorAll('#hydContIconPills .radio-pill').forEach(b=> b.classList.toggle('active', b.textContent===icon));
+}
+async function submitHydrationContainer(existingId){
+  const name = (document.getElementById('hydContName').value||'').trim();
+  const ml = Number(document.getElementById('hydContMl').value);
+  if(!name || !ml || ml<=0){ showToast('Name and a valid size are required'); return; }
+  if(existingId){
+    const c = state.settings.hydrationContainers.find(c=>c.id===existingId);
+    c.name = name; c.ml = ml; c.icon = hydrationContainerDraftIcon;
+  } else {
+    state.settings.hydrationContainers.push({ id:newId('cont'), name, ml, icon:hydrationContainerDraftIcon });
+  }
+  await saveSettings();
+  const overlay = document.getElementById('hydContainerOverlay');
+  if(overlay) overlay.remove();
+  renderMain();
+  refreshHydrationSettingsModalIfOpen();
+  showToast(existingId?'Container updated':'Container added');
+}
+async function deleteHydrationContainer(id){
+  if(!confirm('Delete this container? Past log entries using it are kept, just without a matching container anymore.')) return;
+  state.settings.hydrationContainers = state.settings.hydrationContainers.filter(c=>c.id!==id);
+  await saveSettings();
+  renderMain();
+  refreshHydrationSettingsModalIfOpen();
+}
+
+let hydrationLiquidDraftColor = null;
+function openHydrationLiquidTypeModal(existingId){
+  const existing = existingId ? state.settings.hydrationLiquidTypes.find(l=>l.id===existingId) : null;
+  hydrationLiquidDraftColor = existing ? existing.color : HYDRATION_COLOR_CHOICES[0];
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'hydLiquidOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${existing?'Edit':'Add'} Liquid Type</h3>
+      <div class="field"><label>Name</label><input type="text" id="hydLiquidName" value="${existing?escapeHtml(existing.name):''}" placeholder="e.g. Iced Tea"></div>
+      <div class="field">
+        <label>Color</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;" id="hydLiquidColorSwatches">
+          ${HYDRATION_COLOR_CHOICES.map(c=>`<button type="button" data-color="${c}" onclick="pickHydrationColor('${c}')" style="width:28px; height:28px; border-radius:50%; background:${c}; border:2px solid ${hydrationLiquidDraftColor===c?'var(--ink)':'transparent'}; cursor:pointer;"></button>`).join('')}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('hydLiquidOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitHydrationLiquidType('${existingId||''}')">${existing?'Save':'Add'}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('hydLiquidName'); if(el) el.focus(); }, 50);
+}
+function pickHydrationColor(color){
+  hydrationLiquidDraftColor = color;
+  document.querySelectorAll('#hydLiquidColorSwatches button').forEach(b=>{
+    b.style.borderColor = (b.dataset.color === color) ? 'var(--ink)' : 'transparent';
+  });
+}
+async function submitHydrationLiquidType(existingId){
+  const name = (document.getElementById('hydLiquidName').value||'').trim();
+  if(!name){ showToast('Name required'); return; }
+  if(existingId){
+    const l = state.settings.hydrationLiquidTypes.find(l=>l.id===existingId);
+    l.name = name; l.color = hydrationLiquidDraftColor;
+  } else {
+    state.settings.hydrationLiquidTypes.push({ id:newId('liq'), name, color:hydrationLiquidDraftColor });
+  }
+  await saveSettings();
+  const overlay = document.getElementById('hydLiquidOverlay');
+  if(overlay) overlay.remove();
+  renderMain();
+  refreshHydrationSettingsModalIfOpen();
+  showToast(existingId?'Liquid type updated':'Liquid type added');
+}
+async function deleteHydrationLiquidType(id){
+  if(!confirm('Delete this liquid type? Past log entries using it are kept, just without a matching type anymore.')) return;
+  state.settings.hydrationLiquidTypes = state.settings.hydrationLiquidTypes.filter(l=>l.id!==id);
+  await saveSettings();
+  renderMain();
+  refreshHydrationSettingsModalIfOpen();
+}
+
+function renderHydrationBottleSvg(pct){
+  const clamped = Math.max(0, Math.min(100, pct));
+  const bottleTop = 10, bottleBottom = 195, bottleHeight = bottleBottom - bottleTop;
+  const fillHeight = (clamped/100) * bottleHeight;
+  const fillY = bottleBottom - fillHeight;
+  const bottlePath = 'M45,10 L75,10 L75,30 Q95,40 95,70 L95,180 Q95,195 80,195 L40,195 Q25,195 25,180 L25,70 Q25,40 45,30 Z';
+  return `
+    <svg viewBox="0 0 120 205" width="110" height="188" style="flex-shrink:0;">
+      <defs><clipPath id="hydBottleClip"><path d="${bottlePath}"/></clipPath></defs>
+      <rect x="20" y="${fillY}" width="80" height="${fillHeight}" fill="var(--teal)" clip-path="url(#hydBottleClip)" style="transition: y 0.5s ease, height 0.5s ease;"/>
+      <path d="${bottlePath}" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <text x="60" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)" font-family="var(--font-display)">${Math.round(clamped)}%</text>
+    </svg>
+  `;
+}
+
+function renderHydrationSection(date){
+  ensureHydrationDefaults();
+  const containers = state.settings.hydrationContainers;
+  const liquidTypes = state.settings.hydrationLiquidTypes;
+  const goal = state.settings.hydrationGoalMl || 2500;
+  const total = getHydrationTotalForDate(date);
+  const pct = goal>0 ? (total/goal)*100 : 0;
+  const logs = getHydrationLogsForDate(date).slice().reverse();
+  const defaultLiquidId = liquidTypes[0] ? liquidTypes[0].id : '';
+
+  return `
+    <div class="section">
+      <div class="section-head">
+        <h2>Hydration</h2>
+        <button class="icon-btn" title="Manage containers &amp; liquid types" onclick="openHydrationSettingsModal()">⚙</button>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center;">
+          ${renderHydrationBottleSvg(pct)}
+          <div style="flex:1; min-width:200px;">
+            <div style="font-family:var(--font-display); font-size:22px;">${total}ml <span class="page-sub" style="font-size:14px;">/ ${goal}ml goal</span></div>
+            <div class="page-sub" style="margin:4px 0 12px;">${pct>=100?'Goal reached — nice work.':`${Math.max(0,goal-total)}ml to go`}</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+              <span class="page-sub">Daily goal (ml)</span>
+              <input type="number" min="1" value="${goal}" style="width:90px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);" onchange="setHydrationGoal(this.value)">
+            </div>
+            ${liquidTypes.length ? `
+              <div class="page-sub" style="margin-bottom:6px;">Quick log:</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${containers.map(c=>`
+                  <button class="btn secondary sm" style="display:flex; align-items:center; gap:6px;" onclick="logHydration('${date}','${c.id}','${defaultLiquidId}')" title="${escapeHtml(c.name)} — ${c.ml}ml">
+                    <span style="font-size:15px;">${c.icon}</span> ${escapeHtml(c.name)} <span class="page-sub">${c.ml}ml</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : `<div class="page-sub">No containers yet — open ⚙ above to add one.</div>`}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${logs.length ? `
+      <div class="section">
+        <div class="section-head"><h2>Today's Log</h2></div>
+        <div class="card" style="padding:4px 16px;">
+          ${logs.map(l=>{
+            const container = containers.find(c=>c.id===l.containerId);
+            const liquid = liquidTypes.find(t=>t.id===l.liquidTypeId);
+            return `
+              <div class="metric-manage-row" style="border-left:3px solid ${liquid?liquid.color:'var(--brass)'}; padding-left:8px;">
+                <span class="metric-manage-name">${container?container.icon:'💧'} ${liquid?escapeHtml(liquid.name):'—'} <span class="page-sub">${l.ml}ml</span></span>
+                <button class="icon-btn" title="Delete" onclick="deleteHydrationLog('${l.id}')">✕</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+function renderHydrationSettingsModalBody(){
+  const containers = state.settings.hydrationContainers;
+  const liquidTypes = state.settings.hydrationLiquidTypes;
+  return `
+    <div class="modal">
+      <h3>Manage Containers &amp; Liquid Types</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <b class="page-sub" style="text-transform:uppercase; font-size:11px;">Containers</b>
+        <button class="btn secondary sm" onclick="openHydrationContainerModal()">+ Add Container</button>
+      </div>
+      ${containers.map(c=>`
+        <div class="metric-manage-row">
+          <span class="metric-manage-name">${c.icon} ${escapeHtml(c.name)} <span class="page-sub">${c.ml}ml</span></span>
+          <button class="icon-btn" title="Edit" onclick="openHydrationContainerModal('${c.id}')">✎</button>
+          <button class="icon-btn" title="Delete" onclick="deleteHydrationContainer('${c.id}')">✕</button>
+        </div>
+      `).join('') || `<div class="page-sub" style="padding:6px 0;">No containers yet.</div>`}
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 6px;">
+        <b class="page-sub" style="text-transform:uppercase; font-size:11px;">Liquid Types</b>
+        <button class="btn secondary sm" onclick="openHydrationLiquidTypeModal()">+ Add Liquid Type</button>
+      </div>
+      ${liquidTypes.map(l=>`
+        <div class="metric-manage-row">
+          <span class="metric-manage-name"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${l.color}; margin-right:4px;"></span>${escapeHtml(l.name)}</span>
+          <button class="icon-btn" title="Edit" onclick="openHydrationLiquidTypeModal('${l.id}')">✎</button>
+          <button class="icon-btn" title="Delete" onclick="deleteHydrationLiquidType('${l.id}')">✕</button>
+        </div>
+      `).join('') || `<div class="page-sub" style="padding:6px 0;">No liquid types yet.</div>`}
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('hydSettingsOverlay').remove();">Done</button>
+      </div>
+    </div>
+  `;
+}
+function openHydrationSettingsModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'hydSettingsOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = renderHydrationSettingsModalBody();
+  document.body.appendChild(overlay);
+}
+// Re-render just the settings modal body (not the whole page) after an
+// edit made from within it, so it stays open and in sync — container/
+// liquid-type add/edit/delete already call renderMain() for the page
+// behind it; this keeps the modal itself current too.
+function refreshHydrationSettingsModalIfOpen(){
+  const overlay = document.getElementById('hydSettingsOverlay');
+  if(overlay) overlay.innerHTML = renderHydrationSettingsModalBody();
+}
+
 function renderHealthView(){
   ensureCoreMetricDefs();
   const viewDate = state.healthViewDate;
@@ -4797,6 +6013,8 @@ function renderHealthView(){
       ${viewDate!==todayStr() ? `<button class="btn ghost sm" onclick="setHealthViewDate(todayStr())">↺ Jump to Today</button>` : ''}
       <span class="page-sub" style="margin-left:auto;">${fullDate(viewDate)}</span>
     </div>
+
+    ${renderHydrationSection(viewDate)}
 
     <div class="health-grid">
       ${visibleMetrics.map(m=>renderMetricCard(m, entry)).join('')}
@@ -5052,6 +6270,34 @@ function getTrainingLoggableBlocks(session){
   return [{ exerciseId: TRAINING_SESSION_LEVEL_ID, reps:null, sets:null, notes:null, __sessionLevel:true }];
 }
 
+// Day-based (session-free) equivalents — training now logs directly against
+// a date instead of requiring a pre-built Session mapped via the Calendar
+// subpage. Old session/calendar data isn't deleted (still syncs, still
+// exportable) — it's just no longer part of the main flow.
+function getTrainingDayExerciseIds(date){
+  const loggedIds = state.training.logs.filter(l=>l.date===date).map(l=>l.exerciseId);
+  const pending = state.trainingPendingAdds[date] || [];
+  return Array.from(new Set([...loggedIds, ...pending]));
+}
+function computeDayAggregateV2(date){
+  const ids = getTrainingDayExerciseIds(date);
+  if(!ids.length) return null;
+  const logs = getTrainingLogsForDate(date);
+  let completed = 0, diffSum = 0, diffCount = 0;
+  ids.forEach(id=>{
+    const log = logs.find(l=>l.exerciseId===id);
+    if(log && log.completed) completed++;
+    if(log && log.difficulty!=null){ diffSum += log.difficulty; diffCount++; }
+  });
+  return { completed, total: ids.length, avgDifficulty: diffCount ? Math.round((diffSum/diffCount)*10)/10 : null };
+}
+function isTrainingDayFullyLoggedV2(date){
+  const ids = getTrainingDayExerciseIds(date);
+  if(!ids.length) return false;
+  if((state.trainingPendingAdds[date]||[]).length) return false; // unsaved additions — not "done" yet
+  return ids.every(id => !!getTrainingLogForExercise(date, id));
+}
+
 function computeDayAggregate(date){
   const cal = getTrainingCalEntry(date);
   if(!cal) return null;
@@ -5119,30 +6365,25 @@ async function clearAllWrongTrainingMappings(){
 function renderTrainingView(){
   ensureTrainingViewDate();
   if(!state.trainingSection) state.trainingSection = 'today';
-  const issues = getTrainingIntegrityIssues();
-  const hasIssues = issues.missingSessIds.length || issues.missingExIds.length || issues.emptyMappedDates.length;
 
   const TRAINING_NAV = [
-    ['today','◐',"Today's Training"],
-    ['calendar','▦','Calendar View'],
+    ['today','◐',"Log Training"],
     ['history','≡','Log History'],
-    ['sessions','▤','Session Library'],
     ['exercises','⛊','Exercise Library'],
   ];
   const sectionRenderers = {
     today: renderTrainingToday,
-    calendar: renderTrainingCalendarSubpage,
     history: renderTrainingHistorySubpage,
-    sessions: renderTrainingSessionsSubpage,
     exercises: renderTrainingExercisesSubpage,
   };
   const active = sectionRenderers[state.trainingSection] ? state.trainingSection : 'today';
+  const loggedDayCount = new Set(state.training.logs.map(l=>l.date)).size;
 
   return `
     <div class="topbar">
       <div>
         <h1 class="page-title">Training</h1>
-        <div class="page-sub">${state.training.sessions.length} session${state.training.sessions.length===1?'':'s'} in library · ${state.training.calendar.length} day${state.training.calendar.length===1?'':'s'} planned</div>
+        <div class="page-sub">${state.training.exercises.length} exercise${state.training.exercises.length===1?'':'s'} in library · ${loggedDayCount} day${loggedDayCount===1?'':'s'} logged</div>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn secondary sm" onclick="exportTrainingJson()">Export</button>
@@ -5155,22 +6396,6 @@ function renderTrainingView(){
         </label>
       </div>
     </div>
-
-    ${hasIssues ? `
-      <div class="card" style="padding:14px 16px; margin-bottom:16px; border:1px solid var(--brass-deep);">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-          <div>
-            <b style="color:var(--brass-deep);">⚠ This plan has wrong/dangling mappings</b>
-            <div class="page-sub" style="margin-top:6px; line-height:1.6;">
-              ${issues.missingSessIds.length ? `${issues.missingSessIds.length} calendar day(s) point to a session id not in your library: ${issues.missingSessIds.map(id=>`<code>${escapeHtml(id)}</code>`).join(', ')}.<br>` : ''}
-              ${issues.emptyMappedDates.length ? `${issues.emptyMappedDates.length} calendar day(s) have an empty session reference.<br>` : ''}
-              ${issues.missingExIds.length ? `${issues.missingExIds.length} exercise id(s) referenced by a session aren't in your library: ${issues.missingExIds.map(id=>`<code>${escapeHtml(id)}</code>`).join(', ')}.<br>` : ''}
-            </div>
-          </div>
-          <button class="btn brass sm" onclick="clearAllWrongTrainingMappings()">Clear Wrong Mappings</button>
-        </div>
-      </div>
-    ` : ''}
 
     <div class="settings-layout">
       <div class="settings-nav">
@@ -5202,62 +6427,148 @@ function renderTrainingToday(){
     ${renderTrainingDayCard(viewDate)}
 
     <div class="section">
-      <div class="section-head"><h2>Upcoming</h2></div>
+      <div class="section-head"><h2>Recent Days</h2></div>
       <div class="card" style="padding:4px 16px;">
-        ${renderTrainingUpcomingList(viewDate)}
+        ${renderTrainingRecentDaysList(viewDate)}
       </div>
     </div>
   `;
 }
 
-function renderTrainingUpcomingList(fromDate){
+function renderTrainingRecentDaysList(uptoDate){
   const rows = [];
-  for(let i=0;i<7;i++){
-    const d = addDays(fromDate, i);
-    const cal = getTrainingCalEntry(d);
-    const session = cal ? getTrainingSessionById(cal.sessionId) : null;
-    const agg = computeDayAggregate(d);
-    let label;
-    if(!cal) label = `<span class="page-sub">— unmapped —</span>`;
-    else if(!session) label = `<span class="page-sub" style="color:var(--brass-deep);">⚠ missing "${escapeHtml(cal.sessionId)}"</span>`;
-    else label = `<span class="page-sub">${escapeHtml(session.name)}</span>`;
+  for(let i=6;i>=0;i--){
+    const d = addDays(uptoDate, -i);
+    const agg = computeDayAggregateV2(d);
+    const label = agg
+      ? `<span class="page-sub">${agg.completed}/${agg.total} logged${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>`
+      : `<span class="page-sub">— nothing logged —</span>`;
     rows.push(`<div class="metric-manage-row" style="cursor:pointer;" onclick="setTrainingViewDate('${d}')">
       <span class="metric-manage-name">${humanDate(d)}${d===todayStr()?' <span class="ptr-locked">today</span>':''}</span>
       ${label}
-      <span>${agg ? `${agg.completed}/${agg.total}` : ''}</span>
     </div>`);
   }
   return rows.join('');
 }
 
+function trainingDraftKey(date, exerciseId){ return `${date}::${exerciseId}`; }
+function getTrainingDraft(date, exerciseId){
+  return state.trainingDraftValues[trainingDraftKey(date, exerciseId)] || null;
+}
+function setTrainingDraftField(date, exerciseId, field, value){
+  const key = trainingDraftKey(date, exerciseId);
+  if(!state.trainingDraftValues[key]) state.trainingDraftValues[key] = {};
+  state.trainingDraftValues[key][field] = value;
+}
+function clearTrainingDraftsForDate(date){
+  Object.keys(state.trainingDraftValues).forEach(key=>{
+    if(key.startsWith(`${date}::`)) delete state.trainingDraftValues[key];
+  });
+}
 function renderTrainingExerciseLogRow(date, block, index){
   const isSessionLevel = !!block.__sessionLevel;
   const ex = isSessionLevel ? null : getTrainingExerciseById(block.exerciseId);
   const log = getTrainingLogForExercise(date, block.exerciseId);
+  const draft = getTrainingDraft(date, block.exerciseId);
+  // Draft (in-progress, unsaved) values win over the last-saved log, which
+  // wins over blank — this is the fix: previously this only ever read from
+  // `log`, so a re-render mid-edit (adding another exercise, a background
+  // sync completing) would regenerate every field from stale saved data and
+  // silently discard anything typed but not yet saved.
+  const val = (field, fallback) => (draft && draft[field]!==undefined) ? draft[field] : (log && log[field]!==undefined && log[field]!==null ? log[field] : fallback);
+  const completedVal = (draft && draft.completed!==undefined) ? draft.completed : !!(log && log.completed);
+  const difficultyVal = (draft && draft.difficulty!==undefined) ? draft.difficulty : (log ? log.difficulty : null);
   const reps = !isSessionLevel && block.reps ? String(block.reps) : '';
   const sets = !isSessionLevel && block.sets ? `${block.sets} sets` : '';
   const repsLine = [reps, sets].filter(Boolean).join(' · ');
+  const isWalking = !isSessionLevel && ex && ex.category === 'walking';
   const rowId = `trainEx_${index}`;
   const title = isSessionLevel ? 'Log this session' : (ex ? ex.name : null);
   return `
     <div class="card" style="padding:12px 14px; margin-bottom:10px; background:var(--paper-dim);" data-exercise-id="${escapeHtml(block.exerciseId)}" data-row-id="${rowId}">
       <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;">
         <b>${title ? escapeHtml(title) : `⚠ missing exercise "${escapeHtml(block.exerciseId||'')}"`}</b>
-        ${repsLine ? `<span class="page-sub">${escapeHtml(repsLine)}</span>` : ''}
+        <span style="display:flex; align-items:center; gap:8px;">
+          ${repsLine ? `<span class="page-sub">${escapeHtml(repsLine)}</span>` : ''}
+          ${!isSessionLevel ? `<button class="icon-btn" style="width:20px;height:20px;font-size:11px;" title="Remove from this day" onclick="removeExerciseFromDay('${date}','${escapeHtml(block.exerciseId)}')">✕</button>` : ''}
+        </span>
       </div>
       ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
       ${!isSessionLevel && ex && ex.videoUrl ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Form guide</a>` : ''}
       <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
-        <div class="toggle-switch ${log&&log.completed?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); updateTrainingDayAggPreview();"><div class="knob"></div></div>
+        <div class="toggle-switch ${completedVal?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','completed', this.classList.contains('on')); updateTrainingDayAggPreview();"><div class="knob"></div></div>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="page-sub" style="text-transform:uppercase; font-size:10.5px; letter-spacing:0.03em;">Difficulty</span>
           <div class="radio-pills" id="${rowId}_diff">
-            ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${log&&log.difficulty===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v})">${v}</button>`).join('')}
+            ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${difficultyVal===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v}); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','difficulty', ${v});">${v}</button>`).join('')}
           </div>
         </div>
       </div>
+      ${isWalking ? `
+        <div style="display:flex; align-items:flex-end; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Distance (km)</span>
+            <input type="number" min="0" step="0.1" id="${rowId}_distanceKm" value="${val('distanceKm','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','distanceKm', this.value===''?null:Number(this.value));"
+                   style="width:76px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Time (min)</span>
+            <input type="number" min="0" step="1" id="${rowId}_durationMin" value="${val('durationMin','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','durationMin', this.value===''?null:Number(this.value));"
+                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Avg HR (bpm)</span>
+            <input type="number" min="0" step="1" id="${rowId}_avgHeartRate" value="${val('avgHeartRate','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgHeartRate', this.value===''?null:Number(this.value));"
+                   style="width:76px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Avg Pace (min/km)</span>
+            <input type="text" id="${rowId}_avgPace" value="${escapeHtml(String(val('avgPace','')))}" placeholder="e.g. 6:30"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgPace', this.value);"
+                   style="width:90px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Incline (%)</span>
+            <input type="text" id="${rowId}_incline" value="${escapeHtml(String(val('incline','')))}" placeholder="e.g. 3"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','incline', this.value);"
+                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Calories</span>
+            <input type="number" min="0" step="1" id="${rowId}_calories" value="${val('calories','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','calories', this.value===''?null:Number(this.value));"
+                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+        </div>
+      ` : ''}
+      ${!isSessionLevel && !isWalking ? `
+        <div style="display:flex; align-items:flex-end; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Sets</span>
+            <input type="number" min="0" step="1" id="${rowId}_sets" value="${val('sets','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','sets', this.value===''?null:Number(this.value));"
+                   style="width:56px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Reps</span>
+            <input type="text" id="${rowId}_reps" value="${escapeHtml(String(val('reps','')))}" placeholder="e.g. 10 or 8-10"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','reps', this.value);"
+                   style="width:100px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Weight (kg)</span>
+            <input type="number" min="0" step="0.5" id="${rowId}_weight" value="${val('weight','')}" placeholder="—"
+                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','weight', this.value===''?null:Number(this.value));"
+                   style="width:80px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+          </div>
+        </div>
+      ` : ''}
       <div class="field" style="margin-top:8px; margin-bottom:0;">
-        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…">${escapeHtml(log&&log.notes?log.notes:'')}</textarea>
+        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…"
+                  oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','notes', this.value);">${escapeHtml(String(val('notes','')))}</textarea>
       </div>
     </div>
   `;
@@ -5287,56 +6598,66 @@ function updateTrainingDayAggPreview(){
   badge.textContent = `${completed}/${rowEls.length} done${avg!=null?` · avg difficulty ${avg}`:''}`;
 }
 
+function isTrainingDayFullyLogged(date, blocks){
+  return blocks.length>0 && blocks.every(b => !!getTrainingLogForExercise(date, b.exerciseId));
+}
 function renderTrainingDayCard(date){
-  const cal = getTrainingCalEntry(date);
-  if(!cal){
-    return `<div class="card empty-state" style="margin-bottom:20px;"><span class="glyph">☺</span>No session mapped to ${humanDate(date)} yet. Import this month's plan to fill in the calendar.</div>`;
+  const exerciseIds = getTrainingDayExerciseIds(date);
+  const agg = computeDayAggregateV2(date);
+  const fullyLogged = isTrainingDayFullyLoggedV2(date);
+
+  if(fullyLogged && state.trainingEditingDate !== date){
+    return `
+      <div class="card" style="padding:18px; margin-bottom:20px; border:1px solid var(--teal);">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
+          <h2 style="margin:0; font-family:var(--font-display);">Training logged</h2>
+          ${agg ? `<span class="page-sub" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
+        </div>
+        <div class="page-sub" style="margin-top:6px;">${humanDate(date)}.</div>
+        <div class="modal-actions" style="justify-content:flex-start; margin-top:10px;">
+          <button class="btn secondary sm" onclick="reopenTrainingDayLog('${date}')">Edit Log</button>
+          <button class="btn ghost sm" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>
+        </div>
+      </div>
+    `;
   }
-  const session = getTrainingSessionById(cal.sessionId);
-  if(!session){
-    return `<div class="card empty-state" style="margin-bottom:20px; border:1px solid var(--brass-deep);">
-      <span class="glyph">⚠</span>${humanDate(date)} is mapped to session id <code>${escapeHtml(cal.sessionId)}</code>, but that session isn't in your library. Re-import including that session's full definition, or clear this day's mapping below.
-      <div style="margin-top:12px;"><button class="btn secondary sm" onclick="clearTrainingDayMapping('${date}')">Clear this day's mapping</button></div>
-    </div>`;
+
+  if(!exerciseIds.length){
+    return `
+      <div class="card empty-state" style="margin-bottom:20px;">
+        <span class="glyph">🏋</span>No exercises logged for ${humanDate(date)} yet.
+        <div style="margin-top:12px;"><button class="btn brass sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button></div>
+      </div>
+    `;
   }
-  const blocks = getTrainingLoggableBlocks(session);
-  const agg = computeDayAggregate(date);
-  const typeColors = { strength:'var(--brass)', walk:'var(--teal)', rest:'var(--slate-light)' };
-  const typeColor = typeColors[session.type] || 'var(--slate)';
+
   const hasLogs = getTrainingLogsForDate(date).length > 0;
-  const moveFormOpen = state.trainingMoveFormDate === date;
   return `
     <div class="card" style="padding:18px; margin-bottom:20px;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
-        <span style="width:10px;height:10px;border-radius:50%;background:${typeColor};display:inline-block;"></span>
-        <h2 style="margin:0; font-family:var(--font-display);">${escapeHtml(session.name)}</h2>
+        <h2 style="margin:0; font-family:var(--font-display);">${humanDate(date)}</h2>
         ${agg ? `<span class="page-sub" id="trainingDayAggBadge" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
-        <button class="icon-btn" title="Move to another date" onclick="toggleMoveDateForm('${date}')">⇄</button>
-        <button class="icon-btn" title="Clear this day's mapping" onclick="clearTrainingDayMapping('${date}')">✕</button>
       </div>
-      ${moveFormOpen ? `
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px; padding:8px 10px; background:var(--paper-dim); border-radius:8px;">
-          <span class="page-sub">Move to:</span>
-          <input type="date" id="moveDateInput_${date}" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
-          <button class="btn brass sm" onclick="moveTrainingDayMapping('${date}', document.getElementById('moveDateInput_${date}').value)">Move</button>
-          <button class="btn ghost sm" onclick="toggleMoveDateForm('${date}')">Cancel</button>
-        </div>
-      ` : ''}
-      ${session.format ? `<div class="page-sub" style="margin-bottom:8px;">${escapeHtml(session.format)}</div>` : ''}
 
       <div id="trainingExerciseRows">
-        ${blocks.map((b,i)=> renderTrainingExerciseLogRow(date, b, i)).join('')}
+        ${exerciseIds.map((id,i)=> renderTrainingExerciseLogRow(date, { exerciseId:id, reps:null, sets:null, notes:null }, i)).join('')}
       </div>
 
-      <div class="modal-actions" style="justify-content:flex-start; margin-top:4px;">
-        <button class="btn brass" onclick="saveTrainingDayLogs('${date}','${session.id}')">Save Today's Log</button>
+      <div class="modal-actions" style="justify-content:flex-start; margin-top:4px; flex-wrap:wrap;">
+        <button class="btn secondary sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button>
+        <button class="btn brass" onclick="saveTrainingDayLogs('${date}')">Save Today's Log</button>
         ${hasLogs ? `<button class="btn secondary" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>` : ''}
       </div>
     </div>
   `;
 }
 
-async function saveTrainingDayLogs(date, sessionId){
+function reopenTrainingDayLog(date){
+  state.trainingEditingDate = date;
+  renderMain();
+}
+async function saveTrainingDayLogs(date){
   const rowEls = document.querySelectorAll('#trainingExerciseRows [data-row-id]');
   if(!rowEls.length){ showToast('Nothing to save'); return; }
   let count = 0;
@@ -5349,22 +6670,177 @@ async function saveTrainingDayLogs(date, sessionId){
     const difficulty = diffEl ? Number(diffEl.dataset.val) : null;
     const notesEl = document.getElementById(`${rowId}_notes`);
     const notes = notesEl ? notesEl.value.trim() : '';
+    const setsEl = document.getElementById(`${rowId}_sets`);
+    const sets = setsEl && setsEl.value !== '' ? Number(setsEl.value) : null;
+    const repsEl = document.getElementById(`${rowId}_reps`);
+    const reps = repsEl ? repsEl.value.trim() : '';
+    const weightEl = document.getElementById(`${rowId}_weight`);
+    const weight = weightEl && weightEl.value !== '' ? Number(weightEl.value) : null;
+    const distanceEl = document.getElementById(`${rowId}_distanceKm`);
+    const distanceKm = distanceEl && distanceEl.value !== '' ? Number(distanceEl.value) : null;
+    const durationEl = document.getElementById(`${rowId}_durationMin`);
+    const durationMin = durationEl && durationEl.value !== '' ? Number(durationEl.value) : null;
+    const hrEl = document.getElementById(`${rowId}_avgHeartRate`);
+    const avgHeartRate = hrEl && hrEl.value !== '' ? Number(hrEl.value) : null;
+    const paceEl = document.getElementById(`${rowId}_avgPace`);
+    const avgPace = paceEl ? paceEl.value.trim() : '';
+    const inclineEl = document.getElementById(`${rowId}_incline`);
+    const incline = inclineEl ? inclineEl.value.trim() : '';
+    const calEl = document.getElementById(`${rowId}_calories`);
+    const calories = calEl && calEl.value !== '' ? Number(calEl.value) : null;
     let log = getTrainingLogForExercise(date, exerciseId);
     if(!log){
-      log = { date, exerciseId, sessionId, completed:false, difficulty:null, notes:'', loggedAt:null };
+      log = { date, exerciseId, sessionId: null, completed:false, difficulty:null, notes:'', sets:null, reps:'', weight:null,
+               distanceKm:null, durationMin:null, avgHeartRate:null, avgPace:'', incline:'', calories:null, loggedAt:null };
       state.training.logs.push(log);
     }
-    log.sessionId = sessionId;
     log.completed = completed;
     log.difficulty = difficulty;
     log.notes = notes;
+    log.sets = sets;
+    log.reps = reps;
+    log.weight = weight;
+    log.distanceKm = distanceKm;
+    log.durationMin = durationMin;
+    log.avgHeartRate = avgHeartRate;
+    log.avgPace = avgPace;
+    log.incline = incline;
+    log.calories = calories;
     log.loggedAt = new Date().toISOString();
     count++;
   });
+  if(state.trainingPendingAdds[date]) delete state.trainingPendingAdds[date];
+  clearTrainingDraftsForDate(date);
   await saveTraining();
   diagLogEvent('activity', `Training log saved for ${date}`, { exercises: count });
+  if(state.trainingEditingDate === date) state.trainingEditingDate = null; // collapse back to the summary card if this completed the day
   renderMain();
   showToast(`Saved log for ${count} exercise${count===1?'':'s'}`);
+}
+function addExerciseToDay(date, exerciseId){
+  if(!state.trainingPendingAdds[date]) state.trainingPendingAdds[date] = [];
+  if(getTrainingDayExerciseIds(date).includes(exerciseId)) return;
+  state.trainingPendingAdds[date].push(exerciseId);
+  state.trainingEditingDate = date; // make sure we're not showing a stale collapsed summary
+  // Explicitly land on Training → Today after adding, regardless of what
+  // page/subpage you were on when this fired (e.g. after creating a brand
+  // new exercise inline from the picker's "Add a new exercise" link).
+  state.view = 'training';
+  state.trainingSection = 'today';
+  renderMain();
+  updateNavActiveState();
+  updateNavBadges();
+}
+async function removeExerciseFromDay(date, exerciseId){
+  delete state.trainingDraftValues[trainingDraftKey(date, exerciseId)];
+  const pending = state.trainingPendingAdds[date] || [];
+  if(pending.includes(exerciseId)){
+    state.trainingPendingAdds[date] = pending.filter(id=>id!==exerciseId);
+    renderMain();
+    return;
+  }
+  await deleteTrainingExerciseLog(date, exerciseId); // already-saved row — has its own confirm + renderMain
+}
+let quickAddExIndex = 0;
+let quickAddExMatches = [];
+function openQuickAddExerciseModal(date){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'quickAddExOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:520px; min-height:440px;">
+      <h3>Add Exercise — ${escapeHtml(humanDate(date))}</h3>
+      <div class="field" style="position:relative;">
+        <label>Search your library</label>
+        <input type="text" class="ex-picker-input" id="quickAddExInput" placeholder="Type to search… (↑↓ to navigate, Enter to add)"
+               oninput="quickAddExIndex=0; filterQuickAddExercisePicker('${date}');" onfocus="filterQuickAddExercisePicker('${date}')"
+               onkeydown="handleQuickAddExKey(event, '${date}')"
+               onblur="setTimeout(()=>hideQuickAddExercisePickerResults(), 200)">
+        <div id="quickAddExResults" class="ex-picker-results tall" style="display:none;"></div>
+      </div>
+      <div class="page-sub" style="margin-top:4px;">Not in your library yet? <a href="#" onclick="event.preventDefault(); closeQuickAddExerciseModal(); openAddExerciseModal();">Add a new exercise</a> first, then come back and search for it.</div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeQuickAddExerciseModal()">Done</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  quickAddExIndex = 0;
+  quickAddExMatches = [];
+  setTimeout(()=>{ const el = document.getElementById('quickAddExInput'); if(el) el.focus(); }, 50);
+}
+function closeQuickAddExerciseModal(){
+  const overlay = document.getElementById('quickAddExOverlay');
+  if(overlay) overlay.remove();
+}
+function filterQuickAddExercisePicker(date){
+  const inputEl = document.getElementById('quickAddExInput');
+  const resultsEl = document.getElementById('quickAddExResults');
+  if(!inputEl || !resultsEl) return;
+  const q = inputEl.value.trim().toLowerCase();
+  const already = new Set(getTrainingDayExerciseIds(date));
+  quickAddExMatches = [...state.training.exercises].sort((a,b)=>a.name.localeCompare(b.name))
+    .filter(e=> (!q || e.name.toLowerCase().includes(q)) && !already.has(e.id)).slice(0,10);
+  if(quickAddExIndex >= quickAddExMatches.length) quickAddExIndex = Math.max(0, quickAddExMatches.length-1);
+  renderQuickAddExResults(date);
+  resultsEl.style.display = 'block';
+}
+// Full rebuild — only called when the actual match SET changes (typing),
+// never on arrow-key navigation (see updateQuickAddExHighlight below).
+function renderQuickAddExResults(date){
+  const resultsEl = document.getElementById('quickAddExResults');
+  if(!resultsEl) return;
+  resultsEl.innerHTML = quickAddExMatches.length
+    ? quickAddExMatches.map((e,i)=>`<div class="ex-picker-result-item ${i===quickAddExIndex?'active':''}" data-idx="${i}" data-ex-id="${escapeHtml(e.id)}" onmousedown="addExerciseToDayFromPicker('${date}', this)">${escapeHtml(e.name)}</div>`).join('')
+    : `<div class="ex-picker-result-item" style="color:var(--slate-light); cursor:default;">${state.training.exercises.length ? 'No matches (or already added)' : 'No exercises yet — add one first'}</div>`;
+  const activeEl = resultsEl.querySelector('.ex-picker-result-item.active');
+  if(activeEl && activeEl.scrollIntoView) activeEl.scrollIntoView({ block:'nearest' });
+}
+// Arrow-key navigation only toggles which row is highlighted — same
+// reasoning as the Ctrl+K palette fix: rebuilding the rows via innerHTML on
+// every keypress is unnecessary DOM churn and (if any entrance animation
+// gets added later) would replay it on every press.
+function updateQuickAddExHighlight(){
+  const resultsEl = document.getElementById('quickAddExResults');
+  if(!resultsEl) return;
+  let activeEl = null;
+  resultsEl.querySelectorAll('.ex-picker-result-item').forEach(el=>{
+    const isActive = Number(el.dataset.idx) === quickAddExIndex;
+    el.classList.toggle('active', isActive);
+    if(isActive) activeEl = el;
+  });
+  if(activeEl && activeEl.scrollIntoView) activeEl.scrollIntoView({ block:'nearest' });
+}
+function handleQuickAddExKey(e, date){
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(quickAddExMatches.length){ quickAddExIndex = Math.min(quickAddExMatches.length-1, quickAddExIndex+1); updateQuickAddExHighlight(); }
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(quickAddExMatches.length){ quickAddExIndex = Math.max(0, quickAddExIndex-1); updateQuickAddExHighlight(); }
+  } else if(e.key==='Enter'){
+    e.preventDefault();
+    const match = quickAddExMatches[quickAddExIndex];
+    if(match){ addExerciseToDay(date, match.id); afterQuickAddExPick(date); }
+  }
+}
+function hideQuickAddExercisePickerResults(){
+  const el = document.getElementById('quickAddExResults');
+  if(el) el.style.display = 'none';
+}
+function afterQuickAddExPick(date){
+  showToast('Added — remember to Save');
+  // renderMain() (inside addExerciseToDay) rebuilds #mainContent but the
+  // modal lives on document.body, so it survives — just refresh the search.
+  const inputEl = document.getElementById('quickAddExInput');
+  if(inputEl){ inputEl.value=''; inputEl.focus(); }
+  quickAddExIndex = 0;
+  filterQuickAddExercisePicker(date);
+}
+function addExerciseToDayFromPicker(date, el){
+  addExerciseToDay(date, el.dataset.exId);
+  afterQuickAddExPick(date);
 }
 async function deleteTrainingExerciseLog(date, exerciseId){
   const log = getTrainingLogForExercise(date, exerciseId);
@@ -5499,15 +6975,34 @@ function renderTrainingHistorySubpage(){
               </div>
             </div>
             <table class="log-table" style="margin-top:8px;">
-              <thead><tr><th>Exercise</th><th>Completed</th><th>Difficulty</th><th>Notes</th><th></th></tr></thead>
+              <thead><tr><th>Exercise</th><th>Completed</th><th>Sets / Reps / Weight or Walking Stats</th><th>Difficulty</th><th>Notes</th><th></th></tr></thead>
               <tbody>
                 ${logs.map(l=>{
                   const isSessionLevel = l.exerciseId === TRAINING_SESSION_LEVEL_ID;
                   const ex = !isSessionLevel ? getTrainingExerciseById(l.exerciseId) : null;
                   const name = isSessionLevel ? (session?escapeHtml(session.name):'(session)') : (ex?escapeHtml(ex.name):`⚠ missing "${escapeHtml(l.exerciseId)}"`);
+                  const isWalking = ex && ex.category === 'walking';
+                  let statsCell;
+                  if(isWalking){
+                    const parts = [];
+                    if(l.distanceKm!=null) parts.push(`${l.distanceKm} km`);
+                    if(l.durationMin!=null) parts.push(`${l.durationMin} min`);
+                    if(l.avgHeartRate!=null) parts.push(`${l.avgHeartRate} bpm avg`);
+                    if(l.avgPace) parts.push(`${l.avgPace} /km avg pace`);
+                    if(l.incline) parts.push(`${l.incline}% incline`);
+                    if(l.calories!=null) parts.push(`${l.calories} cal`);
+                    statsCell = parts.length ? escapeHtml(parts.join(' · ')) : '—';
+                  } else {
+                    const strengthParts = [];
+                    strengthParts.push(l.sets===null||l.sets===undefined?'— sets':`${l.sets} sets`);
+                    strengthParts.push(l.reps?escapeHtml(l.reps)+' reps':'— reps');
+                    strengthParts.push(l.weight===null||l.weight===undefined?'— kg':`${l.weight} kg`);
+                    statsCell = strengthParts.join(' · ');
+                  }
                   return `<tr>
                     <td>${name}</td>
                     <td>${l.completed?'✓':'—'}</td>
+                    <td>${statsCell}</td>
                     <td>${l.difficulty===null||l.difficulty===undefined?'—':l.difficulty}</td>
                     <td style="max-width:240px; white-space:normal;">${escapeHtml(l.notes||'')}</td>
                     <td><button class="icon-btn" title="Delete" onclick="deleteTrainingExerciseLog('${date}','${escapeHtml(l.exerciseId)}')">✕</button></td>
@@ -5582,8 +7077,9 @@ function renderTrainingExercisesSubpage(){
       <div class="card" style="padding:4px 16px;">
         ${sorted.length ? sorted.map(ex=>`
           <div class="metric-manage-row">
-            <span class="metric-manage-name">${escapeHtml(ex.name)}</span>
+            <span class="metric-manage-name">${escapeHtml(ex.name)}${ex.category==='walking' ? ' <span class="page-sub" style="font-size:10px; text-transform:uppercase; letter-spacing:0.03em; border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:4px;">Walking</span>' : ''}</span>
             ${ex.videoUrl ? `<a class="btn ghost sm" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Video</a>` : ''}
+            <button class="icon-btn" title="Edit" onclick="openEditExerciseModal('${ex.id}')">✎</button>
             <button class="icon-btn" title="Delete" onclick="deleteTrainingExercise('${ex.id}')">✕</button>
           </div>
         `).join('') : `<div class="page-sub" style="padding:10px 0;">No exercises yet — add one with "+ Add Exercise", or import a plan.</div>`}
@@ -5606,6 +7102,259 @@ async function deleteTrainingExercise(id){
   await saveTraining();
   renderMain();
   showToast('Exercise deleted');
+}
+
+/* =========================================================
+   RECIPE TRACKER
+   ========================================================= */
+const RECIPE_MEAL_TYPES = ['breakfast','lunch','dinner','snack','dessert'];
+
+function setRecipesMealTypeFilter(mt){
+  state.recipesMealTypeFilter = mt;
+  renderMain();
+}
+function openRecipeDetail(id){
+  state.recipesSelectedId = id;
+  state.recipeDesiredServings = null; // reset scaler to base servings on open
+  renderMain();
+}
+function closeRecipeDetail(){
+  state.recipesSelectedId = null;
+  renderMain();
+}
+function renderRecipesView(){
+  if(state.recipesSelectedId){
+    const recipe = state.recipes.items.find(r=>r.id===state.recipesSelectedId);
+    if(recipe) return renderRecipeDetail(recipe);
+    state.recipesSelectedId = null; // dangling — fall through to the grid
+  }
+  const items = [...state.recipes.items].sort((a,b)=>a.name.localeCompare(b.name));
+  const filter = state.recipesMealTypeFilter || 'all';
+  const filtered = filter==='all' ? items : items.filter(r=>r.mealType===filter);
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Recipes</h1>
+        <div class="page-sub">${items.length} recipe${items.length===1?'':'s'} in your library</div>
+      </div>
+      <button class="btn brass sm" onclick="openRecipeEditModal()">+ Add Recipe</button>
+    </div>
+    <div class="filter-bar">
+      <div class="chip-select">
+        <button class="${filter==='all'?'active':''}" onclick="setRecipesMealTypeFilter('all')">All</button>
+        ${RECIPE_MEAL_TYPES.map(mt=>`<button class="${filter===mt?'active':''}" onclick="setRecipesMealTypeFilter('${mt}')" style="text-transform:capitalize;">${mt}</button>`).join('')}
+      </div>
+    </div>
+    <div class="recipe-grid">
+      ${filtered.length ? filtered.map(r=>`
+        <div class="recipe-card" onclick="openRecipeDetail('${r.id}')">
+          <div class="recipe-card-img" ${r.imageUrl?`style="background-image:url('${escapeHtml(r.imageUrl)}');"`:''}>${!r.imageUrl?'❖':''}</div>
+          <div class="recipe-card-body">
+            <b>${escapeHtml(r.name)}</b>
+            ${r.mealType ? `<span class="page-sub" style="text-transform:capitalize;">${escapeHtml(r.mealType)}</span>` : ''}
+          </div>
+        </div>
+      `).join('') : `<div class="page-sub" style="padding:20px 4px;">No recipes yet — add one with "+ Add Recipe".</div>`}
+    </div>
+  `;
+}
+function renderRecipeDetail(recipe){
+  const desired = state.recipeDesiredServings || recipe.baseServings || 1;
+  const scale = recipe.baseServings>0 ? desired/recipe.baseServings : 1;
+  const m = recipe.macros||{};
+  const hasMacros = m.calories!=null||m.protein!=null||m.carbs!=null||m.fat!=null||m.fiber!=null;
+  return `
+    <div class="topbar">
+      <div><button class="btn ghost sm" onclick="closeRecipeDetail()">← Back to Recipes</button></div>
+      <span style="display:flex; gap:8px;">
+        <button class="icon-btn" title="Edit" onclick="openRecipeEditModal('${recipe.id}')">✎</button>
+        <button class="icon-btn" title="Delete" onclick="deleteRecipe('${recipe.id}')">✕</button>
+      </span>
+    </div>
+    <div class="card" style="padding:20px; margin-top:8px;">
+      ${recipe.imageUrl ? `<img src="${escapeHtml(recipe.imageUrl)}" alt="${escapeHtml(recipe.name)}" style="width:100%; max-height:280px; object-fit:cover; border-radius:10px; margin-bottom:14px;" onerror="this.style.display='none';">` : ''}
+      <h1 class="page-title" style="margin-bottom:4px;">${escapeHtml(recipe.name)}</h1>
+      ${recipe.mealType ? `<div class="page-sub" style="text-transform:capitalize; margin-bottom:10px;">${escapeHtml(recipe.mealType)}</div>` : ''}
+
+      ${hasMacros ? `
+        <div class="macro-row">
+          ${m.calories!=null ? `<div class="macro-pill"><b>${m.calories}</b><span>kcal</span></div>` : ''}
+          ${m.protein!=null ? `<div class="macro-pill"><b>${m.protein}g</b><span>protein</span></div>` : ''}
+          ${m.carbs!=null ? `<div class="macro-pill"><b>${m.carbs}g</b><span>carbs</span></div>` : ''}
+          ${m.fat!=null ? `<div class="macro-pill"><b>${m.fat}g</b><span>fat</span></div>` : ''}
+          ${m.fiber!=null ? `<div class="macro-pill"><b>${m.fiber}g</b><span>fiber</span></div>` : ''}
+        </div>
+        <div class="page-sub" style="margin-bottom:14px;">Per serving</div>
+      ` : ''}
+
+      <div class="field" style="max-width:220px;">
+        <label>Servings to make</label>
+        <input type="number" min="1" step="1" value="${desired}" oninput="setRecipeDesiredServings(this.value)" style="padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:var(--paper); color:var(--ink);">
+      </div>
+      <div class="page-sub" style="margin:6px 0 14px;">Recipe makes ${recipe.baseServings} serving${recipe.baseServings===1?'':'s'} at base amounts — ingredient amounts below scale automatically.</div>
+
+      <h3 style="margin-bottom:8px;">Ingredients</h3>
+      <div class="card" style="padding:4px 16px; margin-bottom:16px;">
+        ${recipe.ingredients.length ? recipe.ingredients.map(ing=>`
+          <div class="metric-manage-row">
+            <span class="metric-manage-name">${escapeHtml(ing.name)}</span>
+            <span id="ingAmt_${ing.id}">${Math.round(ing.grams*scale*10)/10}g</span>
+          </div>
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">No ingredients listed.</div>`}
+      </div>
+
+      ${recipe.steps ? `<h3 style="margin-bottom:8px;">Steps</h3><div class="page-sub" style="white-space:pre-wrap; line-height:1.6;">${escapeHtml(recipe.steps)}</div>` : ''}
+    </div>
+  `;
+}
+function setRecipeDesiredServings(v){
+  const n = Number(v);
+  state.recipeDesiredServings = n>0 ? n : 1;
+  const recipe = state.recipes.items.find(r=>r.id===state.recipesSelectedId);
+  if(!recipe) return;
+  const scale = recipe.baseServings>0 ? state.recipeDesiredServings/recipe.baseServings : 1;
+  // Direct DOM update (no renderMain) so the servings input never loses
+  // focus/cursor position while typing — same reasoning as the training
+  // day-aggregate live preview.
+  recipe.ingredients.forEach(ing=>{
+    const el = document.getElementById(`ingAmt_${ing.id}`);
+    if(el) el.textContent = `${Math.round(ing.grams*scale*10)/10}g`;
+  });
+}
+
+let recipeDraft = null;
+function openRecipeEditModal(existingId){
+  const existing = existingId ? state.recipes.items.find(r=>r.id===existingId) : null;
+  recipeDraft = existing
+    ? { id:existing.id, isNew:false, name:existing.name, mealType:existing.mealType||'', imageUrl:existing.imageUrl||'',
+        baseServings:existing.baseServings||1, steps:existing.steps||'',
+        macros:Object.assign({calories:null,protein:null,carbs:null,fat:null,fiber:null}, existing.macros||{}),
+        ingredients:(existing.ingredients||[]).map(i=>Object.assign({},i)) }
+    : { id:newId('recipe'), isNew:true, name:'', mealType:'', imageUrl:'', baseServings:1, steps:'',
+        macros:{calories:null,protein:null,carbs:null,fat:null,fiber:null}, ingredients:[] };
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'recipeEditOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeRecipeEditModal(); };
+  document.body.appendChild(overlay);
+  renderRecipeEditModalBody();
+}
+function closeRecipeEditModal(){
+  const overlay = document.getElementById('recipeEditOverlay');
+  if(overlay) overlay.remove();
+  recipeDraft = null;
+}
+function syncRecipeDraftFromDom(){
+  if(!recipeDraft) return;
+  const g = id => document.getElementById(id);
+  if(g('rcpName')) recipeDraft.name = g('rcpName').value;
+  if(g('rcpImage')) recipeDraft.imageUrl = g('rcpImage').value;
+  if(g('rcpServings')) recipeDraft.baseServings = Number(g('rcpServings').value)||1;
+  if(g('rcpSteps')) recipeDraft.steps = g('rcpSteps').value;
+  ['calories','protein','carbs','fat','fiber'].forEach(k=>{
+    const el = g('rcpMacro_'+k);
+    if(el) recipeDraft.macros[k] = el.value===''? null : Number(el.value);
+  });
+  recipeDraft.ingredients.forEach((ing,i)=>{
+    const nameEl = g('rcpIngName_'+i);
+    const gramsEl = g('rcpIngGrams_'+i);
+    if(nameEl) ing.name = nameEl.value;
+    if(gramsEl) ing.grams = Number(gramsEl.value)||0;
+  });
+}
+function setRecipeDraftMealType(mt){
+  syncRecipeDraftFromDom();
+  recipeDraft.mealType = recipeDraft.mealType===mt ? '' : mt;
+  renderRecipeEditModalBody();
+}
+function addRecipeDraftIngredient(){
+  syncRecipeDraftFromDom();
+  recipeDraft.ingredients.push({ id:newId('ing'), name:'', grams:0 });
+  renderRecipeEditModalBody();
+}
+function removeRecipeDraftIngredient(idx){
+  syncRecipeDraftFromDom();
+  recipeDraft.ingredients.splice(idx,1);
+  renderRecipeEditModalBody();
+}
+function renderRecipeEditModalBody(){
+  const overlay = document.getElementById('recipeEditOverlay');
+  if(!overlay || !recipeDraft) return;
+  const d = recipeDraft;
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:600px; max-height:85vh; overflow-y:auto;">
+      <h3>${d.isNew?'Add':'Edit'} Recipe</h3>
+      <div class="field"><label>Name</label><input type="text" id="rcpName" value="${escapeHtml(d.name)}" placeholder="e.g. Classic Egg Muffins"></div>
+      <div class="field">
+        <label>Meal type</label>
+        <div class="radio-pills">
+          ${RECIPE_MEAL_TYPES.map(mt=>`<button type="button" class="radio-pill ${d.mealType===mt?'active':''}" onclick="setRecipeDraftMealType('${mt}')" style="text-transform:capitalize;">${mt}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label>Picture URL (optional)</label><input type="text" id="rcpImage" value="${escapeHtml(d.imageUrl)}" placeholder="https://..."></div>
+      <div class="field" style="max-width:220px;"><label>Base servings this recipe makes</label><input type="number" min="1" step="1" id="rcpServings" value="${d.baseServings}"></div>
+
+      <div class="field">
+        <label>Macros (per serving)</label>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px;">
+          ${['calories','protein','carbs','fat','fiber'].map(k=>`
+            <div>
+              <input type="number" id="rcpMacro_${k}" placeholder="${k==='calories'?'kcal':'g'}" value="${d.macros[k]!=null?d.macros[k]:''}" style="width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink); box-sizing:border-box;">
+              <div class="page-sub" style="text-align:center; font-size:9.5px; text-transform:capitalize; margin-top:2px;">${k}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ingredients (grams)</label>
+        <div id="rcpIngredients">
+          ${d.ingredients.map((ing,i)=>`
+            <div style="display:flex; gap:8px; margin-bottom:6px; align-items:center;">
+              <input type="text" id="rcpIngName_${i}" placeholder="Ingredient" value="${escapeHtml(ing.name)}" style="flex:1; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+              <input type="number" id="rcpIngGrams_${i}" placeholder="g" value="${ing.grams||''}" style="width:80px; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+              <button class="icon-btn" onclick="removeRecipeDraftIngredient(${i})">✕</button>
+            </div>
+          `).join('') || `<div class="page-sub" style="padding:4px 0;">No ingredients yet.</div>`}
+        </div>
+        <button class="btn secondary sm" onclick="addRecipeDraftIngredient()">+ Add Ingredient</button>
+      </div>
+
+      <div class="field"><label>Steps (optional)</label><textarea id="rcpSteps" rows="4" placeholder="1. ...">${escapeHtml(d.steps)}</textarea></div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeRecipeEditModal()">Cancel</button>
+        <button class="btn brass" onclick="saveRecipeDraft()">${d.isNew?'Add':'Save'} Recipe</button>
+      </div>
+    </div>
+  `;
+}
+async function saveRecipeDraft(){
+  syncRecipeDraftFromDom();
+  const d = recipeDraft;
+  const name = (d.name||'').trim();
+  if(!name){ showToast('Give the recipe a name'); return; }
+  const cleanIngredients = d.ingredients.filter(i=>i.name && i.name.trim()).map(i=>({ id:i.id, name:i.name.trim(), grams:i.grams||0 }));
+  const recipe = { id:d.id, name, mealType:d.mealType||null, imageUrl:(d.imageUrl||'').trim()||null, baseServings:d.baseServings||1, steps:d.steps||'', macros:d.macros, ingredients:cleanIngredients };
+  const idx = state.recipes.items.findIndex(r=>r.id===d.id);
+  if(idx>=0) state.recipes.items[idx] = recipe; else state.recipes.items.push(recipe);
+  await saveRecipes();
+  closeRecipeEditModal();
+  diagLogEvent('activity', `${d.isNew?'Added':'Edited'} recipe "${name}"`);
+  renderMain();
+  showToast(`Recipe ${d.isNew?'added':'updated'}`);
+}
+async function deleteRecipe(id){
+  const recipe = state.recipes.items.find(r=>r.id===id);
+  if(!recipe) return;
+  if(!confirm(`Delete "${recipe.name}"? This can't be undone.`)) return;
+  pendingRecipeDeletes.push({ table:'recipes', match:{ id } });
+  (recipe.ingredients||[]).forEach(ing=> pendingRecipeDeletes.push({ table:'recipe_ingredients', match:{ id:ing.id } }));
+  state.recipes.items = state.recipes.items.filter(r=>r.id!==id);
+  await saveRecipes();
+  state.recipesSelectedId = null;
+  renderMain();
+  showToast('Recipe deleted');
 }
 
 /* ---------- Training: export / import ---------- */
@@ -6124,6 +7873,14 @@ function openAddExerciseModal(){
     <div class="modal">
       <h3>Add Exercise</h3>
       <div class="field"><label>Name</label><input type="text" id="newExName" placeholder="e.g. Bulgarian Split Squat"></div>
+      <div class="field">
+        <label>Category</label>
+        <div class="radio-pills" id="newExCategoryPills">
+          <button type="button" class="radio-pill active" data-val="strength" onclick="pickExCategoryUI('newExCategoryPills', this)">Strength</button>
+          <button type="button" class="radio-pill" data-val="walking" onclick="pickExCategoryUI('newExCategoryPills', this)">Walking</button>
+        </div>
+        <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
+      </div>
       <div class="field"><label>Video URL (optional)</label><input type="text" id="newExVideo" placeholder="https://..."></div>
       <div class="field"><label>Notes (optional)</label><input type="text" id="newExNotes"></div>
       <div class="modal-actions">
@@ -6135,18 +7892,76 @@ function openAddExerciseModal(){
   document.body.appendChild(overlay);
   setTimeout(()=>{ const el = document.getElementById('newExName'); if(el) el.focus(); }, 50);
 }
+function pickExCategoryUI(pillsId, btn){
+  document.querySelectorAll(`#${pillsId} .radio-pill`).forEach(b=> b.classList.toggle('active', b===btn));
+}
 async function submitAddExercise(){
   const name = (document.getElementById('newExName').value||'').trim();
   if(!name){ showToast('Name required'); return; }
   const video = (document.getElementById('newExVideo').value||'').trim();
   const notes = (document.getElementById('newExNotes').value||'').trim();
-  state.training.exercises.push({ id:newId('ex'), name, videoUrl:video, notes });
+  const categoryBtn = document.querySelector('#newExCategoryPills .radio-pill.active');
+  const category = categoryBtn ? categoryBtn.dataset.val : 'strength';
+  const newEx = { id:newId('ex'), name, videoUrl:video, notes, category };
+  state.training.exercises.push(newEx);
   await saveTraining();
   const overlay = document.getElementById('addExerciseOverlay');
   if(overlay) overlay.remove();
   diagLogEvent('activity', `Added exercise "${name}" manually`);
-  renderMain();
+  // Land on Training → Today with the new exercise already added, ready to
+  // log — regardless of whether this was opened from the Exercise Library's
+  // own button or the "add a new exercise" link inside the day picker.
+  // addExerciseToDay() already handles the navigation guarantee.
+  addExerciseToDay(todayStr(), newEx.id);
   showToast('Exercise added');
+}
+function openEditExerciseModal(id){
+  const ex = state.training.exercises.find(e=>e.id===id);
+  if(!ex) return;
+  const category = ex.category || 'strength';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'editExerciseOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Edit Exercise</h3>
+      <div class="field"><label>Name</label><input type="text" id="editExName" value="${escapeHtml(ex.name)}"></div>
+      <div class="field">
+        <label>Category</label>
+        <div class="radio-pills" id="editExCategoryPills">
+          <button type="button" class="radio-pill ${category==='strength'?'active':''}" data-val="strength" onclick="pickExCategoryUI('editExCategoryPills', this)">Strength</button>
+          <button type="button" class="radio-pill ${category==='walking'?'active':''}" data-val="walking" onclick="pickExCategoryUI('editExCategoryPills', this)">Walking</button>
+        </div>
+        <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
+      </div>
+      <div class="field"><label>Video URL (optional)</label><input type="text" id="editExVideo" value="${escapeHtml(ex.videoUrl||'')}"></div>
+      <div class="field"><label>Notes (optional)</label><input type="text" id="editExNotes" value="${escapeHtml(ex.notes||'')}"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('editExerciseOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitEditExercise('${id}')">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('editExName'); if(el){ el.focus(); el.select(); } }, 50);
+}
+async function submitEditExercise(id){
+  const ex = state.training.exercises.find(e=>e.id===id);
+  if(!ex) return;
+  const name = (document.getElementById('editExName').value||'').trim();
+  if(!name){ showToast('Name required'); return; }
+  ex.name = name;
+  ex.videoUrl = (document.getElementById('editExVideo').value||'').trim();
+  ex.notes = (document.getElementById('editExNotes').value||'').trim();
+  const categoryBtn = document.querySelector('#editExCategoryPills .radio-pill.active');
+  ex.category = categoryBtn ? categoryBtn.dataset.val : 'strength';
+  await saveTraining();
+  const overlay = document.getElementById('editExerciseOverlay');
+  if(overlay) overlay.remove();
+  diagLogEvent('activity', `Edited exercise "${name}"`, { id });
+  renderMain();
+  showToast('Exercise updated');
 }
 
 /* ---------- #1: Assign an existing session to several dates at once ---------- */
@@ -6506,11 +8321,13 @@ create table if not exists health_metric_defs (
 );
 create table if not exists app_settings (
   pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
-  list_folders jsonb default '[]', last_active_date date
+  list_folders jsonb default '[]', week_view_presets jsonb default '[]', calendar_view_presets jsonb default '[]',
+  last_active_date date
 );
 create table if not exists training_exercises (
   pin text not null, id text not null, name text not null,
-  video_url text, notes text, updated_at timestamptz default now(),
+  video_url text, notes text, category text default 'strength',
+  updated_at timestamptz default now(),
   primary key (pin, id)
 );
 create table if not exists training_sessions (
@@ -6525,8 +8342,29 @@ create table if not exists training_calendar (
 );
 create table if not exists training_logs (
   pin text not null, log_date date not null, exercise_id text not null default '__session__',
-  session_id text, completed boolean default false, difficulty int, notes text, logged_at timestamptz,
+  session_id text, completed boolean default false, difficulty int, notes text,
+  sets int, reps text, weight_kg numeric,
+  distance_km numeric, duration_min numeric, avg_heart_rate int, avg_pace text, incline text, calories int,
+  logged_at timestamptz,
   primary key (pin, log_date, exercise_id)
+);
+create table if not exists recipes (
+  pin text not null, id text not null, name text not null,
+  meal_type text, image_url text, base_servings int default 1, steps text,
+  calories numeric, protein_g numeric, carbs_g numeric, fat_g numeric, fiber_g numeric,
+  updated_at timestamptz default now(),
+  primary key (pin, id)
+);
+create table if not exists recipe_ingredients (
+  pin text not null, id text not null, recipe_id text not null,
+  name text not null, amount_grams numeric default 0, sort_order int default 0,
+  primary key (pin, id)
+);
+create table if not exists hydration_logs (
+  pin text not null, id text not null, log_date date not null,
+  container_id text, liquid_type_id text, ml numeric default 0,
+  logged_at timestamptz default now(),
+  primary key (pin, id)
 );
 
 -- Already had these tables from an earlier version? Run these lines instead —
@@ -6540,7 +8378,23 @@ alter table health_logs add column if not exists custom_metrics jsonb default '{
 alter table health_metric_defs add column if not exists core boolean default false;
 alter table health_metric_defs add column if not exists visible boolean default true;
 alter table app_settings add column if not exists list_folders jsonb default '[]';
+alter table app_settings add column if not exists week_view_presets jsonb default '[]';
+alter table app_settings add column if not exists calendar_view_presets jsonb default '[]';
+alter table app_settings add column if not exists hydration_containers jsonb default '[]';
+alter table app_settings add column if not exists hydration_liquid_types jsonb default '[]';
+alter table app_settings add column if not exists hydration_goal_ml int default 2500;
 alter table lists add column if not exists folder text;
+alter table training_logs add column if not exists sets int;
+alter table training_logs add column if not exists reps text;
+alter table training_logs add column if not exists weight_kg numeric;
+alter table training_exercises add column if not exists category text default 'strength';
+alter table training_logs add column if not exists distance_km numeric;
+alter table training_logs add column if not exists duration_min numeric;
+alter table training_logs add column if not exists avg_heart_rate int;
+alter table training_logs add column if not exists avg_speed_kmh numeric; -- superseded by avg_pace below, left in place (unused) rather than dropped
+alter table training_logs add column if not exists avg_pace text;
+alter table training_logs add column if not exists incline text;
+alter table training_logs add column if not exists calories int;
 
 -- BREAKING CHANGE (v3.0.0): training_logs moved from one row per DAY to one
 -- row per EXERCISE per day, so it needs an exercise_id column as part of its
@@ -6556,7 +8410,7 @@ do $$
 declare t text;
 begin
   for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings',
-                                'training_exercises','training_sessions','training_calendar','training_logs'])
+                                'training_exercises','training_sessions','training_calendar','training_logs','recipes','recipe_ingredients','hydration_logs'])
   loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists "allow anon all" on %I;', t);
@@ -7454,7 +9308,10 @@ function computeNewDaySummary(last){
   const total = dueOneTime.length + (dueRecurring.length - missedRecurring);
   const rating = total > 0 ? Math.round((done/total)*100) : null;
 
-  return { dueOneTime: dueOneTime.length, doneOneTime, dueRecurring: dueRecurring.length, doneRecurring, overdueCleared, done, total, rating };
+  const hydrationTotal = getHydrationTotalForDate(last);
+  const hydrationGoal = state.settings.hydrationGoalMl || 2500;
+
+  return { dueOneTime: dueOneTime.length, doneOneTime, dueRecurring: dueRecurring.length, doneRecurring, overdueCleared, done, total, rating, hydrationTotal, hydrationGoal };
 }
 
 // Review list for the New Day screen: everything currently overdue (one-time),
@@ -7513,6 +9370,13 @@ function newDaySummaryRowsHtml(s){
     <div class="row"><span>Recurring tasks completed</span><b>${s.doneRecurring} / ${s.dueRecurring}</b></div>
     <div class="row"><span>Overdue tasks cleared that day</span><b>${s.overdueCleared}</b></div>
     <div class="row newday-rating-row"><span>Day rating</span><b>${s.rating===null?'—':s.rating+'%'}</b></div>
+    <div class="row">
+      <span>Water intake</span>
+      <b>${s.hydrationTotal}ml <span class="page-sub">/ ${s.hydrationGoal}ml</span></b>
+    </div>
+    <div style="height:6px; background:var(--paper-dim); border-radius:999px; overflow:hidden; margin-top:-6px; margin-bottom:4px;">
+      <div style="height:100%; width:${Math.min(100, s.hydrationGoal>0?(s.hydrationTotal/s.hydrationGoal)*100:0)}%; background:var(--teal); border-radius:999px;"></div>
+    </div>
   `;
 }
 // Called after any checkbox/missed toggle while this modal is open, so the
@@ -7826,9 +9690,19 @@ async function init(){
     // check on ITS OWN completion (not on bypass), preserving the existing
     // safety property that New Day review never shows before a real sync
     // attempt has actually resolved.
+    // The .catch() here is a deliberate safety net: this chain previously
+    // had none, so a single uncaught error anywhere in the sync path (any
+    // future one, not just the one already fixed above) would silently
+    // reject the whole chain and skip revealApp() entirely — stranding
+    // someone on the splash screen with no way in except waiting for the
+    // 30s bypass timer. Now, whatever happens, the app still opens.
     runBackgroundSync().then(()=>{
       revealApp();
-    }).then(()=> maybeShowNewDayModal());
+    }).then(()=> maybeShowNewDayModal()).catch((e)=>{
+      console.error('Startup sync chain failed unexpectedly — revealing app anyway', e);
+      diagLogEvent('startup-sync', 'Startup chain threw — revealed app via safety net', { error: e.message||String(e) });
+      revealApp();
+    });
   } else {
     revealApp();
     maybeShowNewDayModal();
@@ -7871,8 +9745,8 @@ function getCommandPaletteResults(){
   const results = [];
   const PAGES = [
     ['dashboard','▣','Dashboard'], ['overdue','⚑','Overdue'], ['tasks','☰','All Tasks'],
-    ['calendar','▦','Calendar'], ['lists','▤','Lists'], ['health','♥','Health Log'],
-    ['training','⛊','Training'], ['settings','⚙','Settings'],
+    ['calendar','▦','Calendar'], ['week','▧','Week'], ['lists','▤','Lists'], ['health','♥','Health Log'],
+    ['training','⛊','Training'], ['recipes','❖','Recipes'], ['progress','◈','Progress'], ['settings','⚙','Settings'],
   ];
   PAGES.forEach(([key,icon,label])=>{
     if(!q || label.toLowerCase().includes(q)){
@@ -7899,8 +9773,6 @@ function getCommandPaletteResults(){
   return results.slice(0,10);
 }
 function renderCommandPalette(){
-  const results = getCommandPaletteResults();
-  if(cmdPaletteIndex >= results.length) cmdPaletteIndex = Math.max(0, results.length-1);
   let overlay = document.getElementById('cmdPaletteOverlay');
   if(!overlay){
     overlay = document.createElement('div');
@@ -7908,31 +9780,63 @@ function renderCommandPalette(){
     overlay.id = 'cmdPaletteOverlay';
     overlay.onclick = (e)=>{ if(e.target===overlay) closeCommandPalette(); };
     document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div class="cmd-palette" onclick="event.stopPropagation();">
-      <input type="text" id="cmdPaletteInput" value="${escapeHtml(cmdPaletteQuery)}" placeholder="Jump to a page, list, or task…"
-             class="cmd-palette-input"
-             oninput="cmdPaletteQuery=this.value; cmdPaletteIndex=0; renderCommandPalette();"
-             onkeydown="handleCmdPaletteKey(event)">
-      <div class="cmd-palette-results">
-        ${results.length ? results.map((r,i)=>`
-          <div class="cmd-palette-item ${i===cmdPaletteIndex?'active':''}" onmousedown="getCommandPaletteResults()[${i}].action()">
-            <span class="cmd-palette-icon">${r.icon}</span>
-            <span class="cmd-palette-label">${escapeHtml(r.label)}</span>
-            <span class="cmd-palette-sub">${escapeHtml(r.sub)}</span>
-          </div>
-        `).join('') : `<div class="page-sub" style="padding:16px 18px;">No matches</div>`}
+    overlay.innerHTML = `
+      <div class="cmd-palette" onclick="event.stopPropagation();">
+        <input type="text" id="cmdPaletteInput" value="${escapeHtml(cmdPaletteQuery)}" placeholder="Jump to a page, list, or task…"
+               class="cmd-palette-input"
+               oninput="cmdPaletteQuery=this.value; cmdPaletteIndex=0; renderCommandPaletteResults();"
+               onkeydown="handleCmdPaletteKey(event)">
+        <div class="cmd-palette-results" id="cmdPaletteResults"></div>
       </div>
+    `;
+    const input = document.getElementById('cmdPaletteInput');
+    if(input) input.focus();
+  }
+  renderCommandPaletteResults();
+}
+// Rebuilding the whole overlay (including the <input>) on every arrow-key
+// press was the cause of the reported flicker — recreating a focused input
+// node causes a visible flash even when focus/value are restored right
+// after. This only ever touches the results list now; the input element is
+// created once and never touched again until the palette closes.
+function renderCommandPaletteResults(){
+  const results = getCommandPaletteResults();
+  if(cmdPaletteIndex >= results.length) cmdPaletteIndex = Math.max(0, results.length-1);
+  const resultsEl = document.getElementById('cmdPaletteResults');
+  if(!resultsEl) return;
+  resultsEl.innerHTML = results.length ? results.map((r,i)=>`
+    <div class="cmd-palette-item ${i===cmdPaletteIndex?'active':''}" data-idx="${i}" onmousedown="getCommandPaletteResults()[${i}].action()">
+      <span class="cmd-palette-icon">${r.icon}</span>
+      <span class="cmd-palette-label">${escapeHtml(r.label)}</span>
+      <span class="cmd-palette-sub">${escapeHtml(r.sub)}</span>
     </div>
-  `;
-  const input = document.getElementById('cmdPaletteInput');
-  if(input){ input.focus(); const v=input.value; input.value=''; input.value=v; }
+  `).join('') : `<div class="page-sub" style="padding:16px 18px;">No matches</div>`;
+  const activeEl = resultsEl.querySelector('.cmd-palette-item.active');
+  if(activeEl && activeEl.scrollIntoView) activeEl.scrollIntoView({ block:'nearest' });
+}
+// Arrow-key navigation must NEVER rebuild the result rows — only toggle
+// which one is highlighted. Rebuilding (via innerHTML) recreates every row
+// as a fresh DOM node, and .cmd-palette-item has a CSS entrance animation
+// that plays whenever a matching element is inserted — so every arrow
+// press was replaying that animation across the whole list (reported: "the
+// list re-animates every time I press an arrow key"). Only
+// renderCommandPaletteResults() (called when the actual result SET
+// changes, i.e. while typing) should ever touch innerHTML here.
+function updateCommandPaletteHighlight(){
+  const resultsEl = document.getElementById('cmdPaletteResults');
+  if(!resultsEl) return;
+  let activeEl = null;
+  resultsEl.querySelectorAll('.cmd-palette-item').forEach(el=>{
+    const isActive = Number(el.dataset.idx) === cmdPaletteIndex;
+    el.classList.toggle('active', isActive);
+    if(isActive) activeEl = el;
+  });
+  if(activeEl && activeEl.scrollIntoView) activeEl.scrollIntoView({ block:'nearest' });
 }
 function handleCmdPaletteKey(e){
   const results = getCommandPaletteResults();
-  if(e.key==='ArrowDown'){ e.preventDefault(); cmdPaletteIndex=Math.min(results.length-1, cmdPaletteIndex+1); renderCommandPalette(); }
-  else if(e.key==='ArrowUp'){ e.preventDefault(); cmdPaletteIndex=Math.max(0, cmdPaletteIndex-1); renderCommandPalette(); }
+  if(e.key==='ArrowDown'){ e.preventDefault(); if(results.length){ cmdPaletteIndex=Math.min(results.length-1, cmdPaletteIndex+1); updateCommandPaletteHighlight(); } }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); if(results.length){ cmdPaletteIndex=Math.max(0, cmdPaletteIndex-1); updateCommandPaletteHighlight(); } }
   else if(e.key==='Enter'){ e.preventDefault(); if(results[cmdPaletteIndex]) results[cmdPaletteIndex].action(); }
   else if(e.key==='Escape'){ closeCommandPalette(); }
 }

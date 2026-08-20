@@ -54,6 +54,15 @@ button{cursor:pointer}
 .brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:#ffffff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:15px}
 .brand h1{font-size:15.5px;font-weight:650;white-space:nowrap}
 .cloud{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.cloud.cloud-static{cursor:default}
+/* The browser's up/down arrows on number fields sat on top of the digits, making a value like
+   50000 look struck through. Amounts are typed, not nudged one at a time, so the arrows are
+   removed rather than given room. */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+@keyframes btnSpin{to{transform:rotate(360deg)}}
+.btn-spin{display:inline-block;width:12px;height:12px;margin-right:7px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:btnSpin .6s linear infinite}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)} .dot.ok{background:var(--green)} .dot.err{background:var(--red)}
 .tbtn{background:var(--chip);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px}
 .tbtn:hover{background:var(--line)}
@@ -92,6 +101,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 .sticky-table th[style*="position:sticky"]::after,
 .sticky-table td[style*="position:sticky"]::after{content:'';position:absolute;top:0;bottom:0;right:-2px;width:2px;background-color:inherit}
 th{text-align:left;color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+table[dir="rtl"] th{text-align:right}
 td{padding:8px 9px;border-bottom:1px solid var(--line)}
 tr.click{cursor:pointer} tr.click:hover td{background:var(--panel2)}
 .num{text-align:right}
@@ -147,6 +157,7 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none}
 .splash-dots span:nth-child(3){animation-delay:.3s}
 @keyframes splashDotBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
 .splash-status{margin-top:14px;font-size:12.5px;color:var(--muted);min-height:16px;opacity:0;animation:splashFadeIn .5s ease .6s forwards}
+.splash-progress-pct{margin-top:6px;font-size:13px;font-weight:700;color:var(--accent);opacity:0;animation:splashFadeIn .5s ease .65s forwards}
 .splash-progress-track{width:180px;height:4px;border-radius:999px;background:var(--chip);overflow:hidden;margin-top:10px;opacity:0;animation:splashFadeIn .5s ease .7s forwards}
 .splash-progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--accent2));border-radius:999px;transition:width .3s ease}
 .splash-bypass{margin-top:20px;background:var(--chip);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 16px;font-size:12.5px;cursor:pointer;opacity:0;transition:opacity .3s ease}
@@ -188,11 +199,24 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none}
 #sidebar .brand{padding:18px 16px 14px;color:var(--sidebar-text)}
 #sidebar .brand .mut{color:var(--sidebar-text-muted)!important}
 nav{display:flex;flex-direction:column;gap:2px;padding:6px 10px;flex:1}
-nav button{background:none;border:none;color:var(--sidebar-text-muted);padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:600;text-align:left;width:100%;opacity:0;animation:navItemIn .32s ease forwards;transition:background-color .18s ease,color .18s ease,padding-left .18s ease}
-nav button:nth-child(1){animation-delay:.02s} nav button:nth-child(2){animation-delay:.05s} nav button:nth-child(3){animation-delay:.08s}
-nav button:nth-child(4){animation-delay:.11s} nav button:nth-child(5){animation-delay:.14s} nav button:nth-child(6){animation-delay:.17s}
-nav button:nth-child(7){animation-delay:.20s} nav button:nth-child(8){animation-delay:.22s} nav button:nth-child(9){animation-delay:.24s}
-nav button:nth-child(n+10){animation-delay:.26s}
+nav button{background:none;border:none;color:var(--sidebar-text-muted);padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:600;text-align:left;width:100%;transition:background-color .18s ease,color .18s ease,padding-left .18s ease}
+/* Entrance animation is scoped to .anim, which renderNav() applies ONLY on the first render of
+   the session. renderNav() rebuilds the nav's innerHTML on every page change, so leaving the
+   animation on the base `nav button` rule made the whole list re-cascade on every navigation. */
+.nav-ico{display:inline-block;width:1.35em;margin-right:7px;text-align:center;font-size:13px;opacity:.95}
+.pg-row{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:5px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px;cursor:grab}
+.pg-row.dragging{opacity:.45}
+.pg-row.drop-above{border-top:2px solid var(--accent)}
+.pg-row.drop-below{border-bottom:2px solid var(--accent)}
+.pg-row.pinned{opacity:.75;cursor:default;background:var(--chip)}
+.pg-grip{color:var(--muted);font-size:14px;line-height:1;user-select:none}
+.pg-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg-lock{font-size:10.5px;color:var(--muted);white-space:nowrap}
+nav button.anim{opacity:0;animation:navItemIn .32s ease forwards}
+nav button.anim:nth-child(1){animation-delay:.02s} nav button.anim:nth-child(2){animation-delay:.05s} nav button.anim:nth-child(3){animation-delay:.08s}
+nav button.anim:nth-child(4){animation-delay:.11s} nav button.anim:nth-child(5){animation-delay:.14s} nav button.anim:nth-child(6){animation-delay:.17s}
+nav button.anim:nth-child(7){animation-delay:.20s} nav button.anim:nth-child(8){animation-delay:.22s} nav button.anim:nth-child(9){animation-delay:.24s}
+nav button.anim:nth-child(n+10){animation-delay:.26s}
 nav button:hover{background:rgba(255,255,255,0.06);color:var(--sidebar-text);padding-left:16px}
 nav button.on{background:var(--accent);color:#fff;box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent)}
 @keyframes navItemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
@@ -285,6 +309,7 @@ main{padding:22px;max-width:var(--content-max-width);margin:0;min-height:100vh;f
   <h1 class="splash-title">LedgerOS</h1>
   <div class="splash-dots"><span></span><span></span><span></span></div>
   <div class="splash-status" id="splashStatus">Loading…</div>
+  <div class="splash-progress-pct" id="splashProgressPct">0%</div>
   <div class="splash-progress-track"><div class="splash-progress-fill" id="splashProgressFill"></div></div>
   <button class="splash-bypass" id="splashBypassBtn" style="display:none" onclick="useCachedDataNow()">Use local copy for now</button>
 </div>
@@ -300,7 +325,7 @@ main{padding:22px;max-width:var(--content-max-width);margin:0;min-height:100vh;f
     <div style="padding:0 10px 8px" class="noprint"><button class="tbtn" style="width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between" onclick="openCmdPalette()">🔍 Search<span class="mut" style="font-size:10.5px">Ctrl+K</span></button></div>
     <nav id="nav"></nav>
     <div class="sidebar-footer noprint">
-      <div class="cloud" id="cloudBtn" onclick="openSettings()"><span class="dot" id="dot"></span><span id="statusTxt">Local only</span></div>
+      <div class="cloud cloud-static" id="cloudBtn" title="Sync status"><span class="dot" id="dot"></span><span id="statusTxt">Local only</span></div>
       <button class="themeBtn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Pin sidebar open on narrow windows">📌</button>
       <button class="themeBtn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
     </div>
@@ -319,12 +344,80 @@ const SEED = {"accounts":[],"ledger":[],"budget":[],"templates":[],"categories":
 <script>
 /* ============================= STATE ============================= */
 // Bump this on every shipped change (major.minor.patch). Shown in Settings.
-const APP_VERSION = '4.6.1';
+const APP_VERSION = '4.16.0';
 // STANDING CONVENTION (as of v3.6.1, applies to every release from here on):
 // every time APP_VERSION is bumped, add a matching entry to CHANGELOG below —
 // version, date (YYYY-MM-DD), and a short bullet list of what changed. This is
 // shown to the person in Settings → Change Log. Do not skip this step.
 const CHANGELOG = [
+  {version:'4.16.0', date:'2026-08-19', changes:[
+    'Investments → Owners: an owner can now be deleted from their edit window. Deletion is blocked while they are attributed units on any transaction, and the window tells you how many are in the way instead of just greying the button out.',
+    'Account statements now open newest-first instead of oldest-first, and the sort choice is remembered on that device once you change it.',
+    'FIXED: the browser\'s up/down arrows on number fields sat on top of the digits, making a value like 50000 look struck through. The arrows are gone; typing is unchanged.',
+  ]},
+  {version:'4.15.0', date:'2026-08-19', changes:[
+    'FIXED: the SAR split showed the wrong units while you were still filling it in. It divided by the amount allocated so far instead of the transaction total, so entering 50,000 of a 100,000 SAR purchase made the first person read as owning the full 1 unit. It now divides by the transaction total, so a half-filled split correctly reads as half the units.',
+    'FIXED: typing in the New Transaction window threw the cursor out of the box. Every keystroke re-rendered the whole modal, which destroyed and recreated the input being typed in. Only the calculated figures are updated now, so focus stays put.',
+    'Units display to 8 decimal places throughout the transaction window, so crypto amounts are no longer truncated on screen. The 2-decimal limit applies to SAR amounts only.',
+    'NEW: Ctrl+Enter (Cmd+Enter on Mac) confirms the primary action of any open window — Save, Done, and so on. It works in every existing window, including adding an investment owner, and will work in any window added later without extra wiring. Delete buttons are never triggered by it.',
+  ]},
+  {version:'4.14.0', date:'2026-08-19', changes:[
+    'New JV: the Post JV button now shows a spinner and reads "Posting…" while the entry is being written. Posting waits on one write per line, so a multi-line JV could previously sit for a moment with no feedback. The button restores itself if posting fails and you are still on the page.',
+    'Investments: a transaction can now be split by SAR instead of units. Enter what each person paid (e.g. 5,000 SAR of BTC — 1,000 yours, 2,000 your wife\'s, 2,000 your mother\'s) and the units are worked out from those amounts. Both the SAR and the units columns are always shown, whichever way you are entering, and reopening a saved transaction back-calculates the SAR split so either view is ready.',
+    'Any rounding remainder in a SAR split is placed on the largest holder, so per-owner units always add up exactly to the transaction total and cost basis cannot drift by a sliver on every split purchase.',
+    'Units keep full precision in a SAR split rather than being rounded to 2 decimals — rounding them would be destructive for crypto, where 0.0125 BTC would become 0.01. The 2-decimal limit applies to the SAR amounts, which is correct for currency.',
+  ]},
+  {version:'4.13.0', date:'2026-08-19', changes:[
+    'Settings is now a proper page in the sidebar (⚙️, pinned to the bottom) rather than something you reach by clicking the sync pill. The pill still shows sync status but is no longer clickable.',
+    'NEW: drag and drop to reorder the sidebar, under Settings → 🧭 Pages. The order is synced across your devices (requires migration_ui_prefs.sql), so the sidebar reads the same on phone and desktop. Page visibility stays per-device, as before.',
+    'Dashboard and Settings no longer have a visibility toggle and are always shown — hiding Settings would remove the only place to un-hide anything. This is enforced in code, not just hidden in the interface.',
+    'A page added by a future version is appended to your saved order rather than dropped, so new pages can never silently fail to appear once you have a custom ordering.',
+  ]},
+  {version:'4.12.0', date:'2026-08-18', changes:[
+    'Every page now has an icon in the sidebar, and it carries through to the mobile top bar, the command palette, and the page-visibility list in Settings.',
+    'NEW: Settings → Database Schema. The complete, runnable SQL to stand up a brand-new LedgerOS database from scratch — every table, index and RLS policy, plus the structural singleton rows the app needs to function. Copy it or download it as a .sql file. It contains no personal data; your accounts and ledger come back via Backup & Restore. A test now checks this script against every table the app actually reads, so it cannot silently go stale as new tables are added.',
+    'Budget → Plan vs Actual: the whole line is now clickable to open that account\'s transactions for the month, instead of only the account number.',
+    'Deleting a JV is no longer possible anywhere. It is replaced by ↩ Reverse this JV, which posts a mirror-image JV dated today with the opposite amounts, so the net effect is zero and the original stays in the ledger as history. Each reversal line is described as "Reversal of JV #… — [original text]" and keeps the historical account name. Reversal lines are deliberately left unallocated; if the original was assigned to an allocation group you are warned so you can revisit it.',
+  ]},
+  {version:'4.11.0', date:'2026-08-18', changes:[
+    'The USD→SAR rate is now SYNCED across devices instead of being stored per-device. The rate directly scales reported portfolio value, so a device-local rate meant the same portfolio could read differently on phone and desktop. Requires migration_inv_settings.sql.',
+    'NEW: Bulk CSV for investments — export transactions and prices, edit in Excel, re-import. Built mainly for back-filling years of historical purchases without going through the modal one row at a time. Import is all-or-nothing: every row is validated first (unknown position or owner, bad date, owner units not summing to the row total) and a dry run checks no owner would end up holding negative units, so a bad file can never half-import and corrupt cost basis.',
+    'NEW: Value vs Cost chart over time, reconstructed properly — units held and price as of each historical date, not today\'s figures projected backwards.',
+    'NEW: Allocation doughnuts by asset class and by platform.',
+    'NEW: Annualised return (XIRR) KPI. Because purchases are spread across years, a naive percentage would misstate performance; this weights each contribution by when it was actually made.',
+    'NEW: Stale price warnings — any held position never priced, or not repriced in 14 days, is surfaced on the page, since an outdated price silently makes the whole portfolio value wrong.',
+    'NEW: Realised gain/loss summarised by calendar year (your own share). Still display-only — posting to the PROFIT account remains a manual ledger entry.',
+  ]},
+  {version:'4.10.0', date:'2026-08-18', changes:[
+    'NEW: Investments tracker (Phase 1). Structured as Platform → Position → Transactions + Valuations, so the same asset held on two platforms is tracked separately but still rolled up into a single total for that asset.',
+    'Cost basis is held in SAR — the amount that actually left your bank, already net of fees — while prices are logged in each asset\'s own currency and converted at one USD→SAR rate you set on the page.',
+    'Co-ownership works by attributing UNITS per owner on each transaction rather than storing percentages. Shares are derived as units ÷ total units, so they re-derive themselves whenever anyone buys more, and each owner is priced in at what the asset cost on the day they bought — an owner joining after a gain does not receive a share of gains earned before they invested.',
+    'Family holdings (money passing through your accounts) are reported separately from your own and are deliberately excluded from Dashboard net worth at this stage.',
+    'Reconciliation check: flags when the tracker\'s remaining cost basis stops matching the ledger (Invested Out minus Withdrawn In), so the two cannot silently drift apart.',
+    'Realised gain/loss on a sale is calculated on a weighted-average-cost basis and displayed on the Investments page only — posting it to your PROFIT account remains a manual ledger action.',
+    '"Log Prices" screen: one date and one price per position, so a weekly or monthly update is a single screen and one save.',
+    'Per-owner Arabic statement showing position details, purchase value, current value, change and portfolio total.',
+    'Requires the accompanying migration_investments.sql to be run first — it creates five new tables and is additive only.',
+  ]},
+  {version:'4.9.0', date:'2026-08-18', changes:[
+    'Arabic Settlement Statement: added a "Round amounts up" toggle on the review screen. When on, the clean output rounds every line up to the next whole number (13.01 and 13.99 both become 14.00; a line already at 13.00 stays as it is), and the total is the sum of those rounded lines so the printed column always adds up to the printed total. The review screen itself keeps showing exact amounts — rounding applies to the clean output only. The toggle starts off each time a statement is generated.',
+    'Fixed the sidebar re-animating on every page change: the whole nav list replayed its staggered fade-in each time you switched pages, because the nav is rebuilt on navigation and the entrance animation sat on every button. The animation now plays once when the app loads, and switching pages just moves the highlight.',
+  ]},
+  {version:'4.8.1', date:'2026-08-16', changes:[
+    'Fixed the account search fix from v4.8.0, which missed 7 other account pickers that were still using the old exact-substring matching: the Ledger page\'s own Account filter (the one actually reported as still broken — this is a separate picker from the JV line one), the Accounts settings search box, Provisions\' account picker, Real Estate\'s account pickers, Smart Rules\' account picker, and both account pickers in JV Templates. All now use the same token-based search as everywhere else.',
+    'Arabic-language tables (Settlement Statement, and any other RTL table) now right-align their column headers instead of defaulting to left-aligned text inside a right-to-left table.',
+  ]},
+  {version:'4.8.0', date:'2026-08-16', changes:[
+    'P&L page: added a "% of Total" column to the Expenses table, showing each line and category subtotal\'s share of Total Period Expenses.',
+    'Fixed account search across the app: it previously required your typed text to appear as one contiguous chunk, so e.g. "gifts expenses" would not find "Gifts - Expenses" because of the hyphen. Search is now token-based — each word you type just needs to appear somewhere in the account name, in any order. Applied everywhere an account can be searched: JV entry/edit, Jamiah\'s linked account, the Allocations account filter, and Accrual Mappings\' Liability/Expense pickers (the last three were previously plain non-searchable dropdowns and are now searchable too).',
+    'Arabic Settlement Statement: added a per-line "Include" checkbox — unchecking a line excludes it from the running total, which updates immediately. Added a "Generate clean output" view: a read-only table (JV No, Date, Arabic description, Amount, Total) reflecting only the included lines, for on-screen review once translation and exclusions are finalized.',
+  ]},
+  {version:'4.7.0', date:'2026-08-13', changes:[
+    'P&L page: fixed the expense variance color using a raw signed subtraction (actual − budget), which could show a genuine surplus in red instead of green depending on an account\'s sign convention. Now compares magnitudes (matching the Total Expenses KPI card above it, which already did this correctly) — positive/green always means under budget, negative/red always means over, regardless of sign convention.',
+    'Added real progress screens (bar + running count) to three operations that could previously run for a while with no feedback: the Forecast page\'s "Always prefer Budget/Provisions" bulk resolver, "Force Full Ledger Refresh" (Settings), and Batch Edit on 4+ accounts at once.',
+    'Ledger page: search box is now debounced (200ms) instead of re-filtering and rebuilding the entire results table on every single keystroke — fixes the lag between typing and seeing it reflected, especially on a large ledger.',
+    'Fixed the loading screen\'s progress bar jumping to ~80-90% almost instantly and then sitting still for the rest of the wait. It was only tracking how many of 16 data sources had *fully* finished — 15 of them are small and resolve instantly, so nearly the whole real wait was for the Ledger (by far the largest), which only counted as "1 of 16" with no visible movement. The bar now blends in the Ledger\'s own real page-by-page download progress, and an explicit percentage number is now shown above it.',
+  ]},
   {version:'4.6.1', date:'2026-08-13', changes:[
     'New: a 📌 pin toggle next to the theme button, off by default — when turned on, it forces the full desktop sidebar to stay visible even if the browser window is narrow (a smaller monitor, split-screen, etc.), instead of collapsing into the mobile drawer treatment. Saved locally per device.',
     'Fixed a real bug from the last release: the mobile-only CSS block (nav drawer, top bar, safe-area padding) had its braces accidentally split while adding the Allocations table fix, so those rules were applying at every screen width instead of only under 760px — could have caused layout issues on desktop depending on browser/zoom. Verified the stylesheet\'s braces now balance correctly and re-ran the full test suite.',
@@ -620,7 +713,7 @@ const CHANGELOG = [
     'Added an iPhone/iPad home-screen icon, so adding the site to your home screen shows a real icon instead of a blank screenshot.',
   ]},
 ];
-let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[]};
+let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[], invOwners:[], invPlatforms:[], invPositions:[], invTransactions:[], invValuations:[], invSettings:{fxUsdSar:3.75}, uiPrefs:{pageOrder:null}};
 let jvDrafts = []; // local-only scratchpad of unfinished JVs — not synced to cloud
 function loadJVDrafts(){ try{ return JSON.parse(localStorage.getItem('jvDrafts_v1')||'[]'); }catch(e){ return []; } }
 function saveJVDraftsList(){ try{ safeSetItem('jvDrafts_v1', JSON.stringify(jvDrafts)); }catch(e){} }
@@ -668,6 +761,62 @@ function accShort(id){ const a=ACC_BY_ID[id]; return a? (a.name? a.name.replace(
 function ledgerAccName(l){ return l.accNameSnapshot || accShort(l.acc); }
 function rebuildIndex(){ ACC_BY_ID={}; D.accounts.forEach(a=>ACC_BY_ID[a.id]=a); }
 function postableAccounts(){ return D.accounts.filter(a=>(a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted' && a.status!=='Inactive').sort((a,b)=>a.id-b.id); }
+// Shared account-search matcher used by every searchable account dropdown in the app.
+// Splits the typed query into whitespace-separated tokens and requires each token to appear
+// SOMEWHERE in "<id> <name>" (in any order) — this is deliberately more forgiving than a single
+// contiguous substring match, which fails on any punctuation/spacing mismatch (e.g. typing
+// "gifts expenses" would not match "Gifts - Expenses" under plain .includes() because of the
+// hyphen between the words).
+function accountSearchMatches(query, accounts){
+  const tokens = (query||'').toLowerCase().split(/\s+/).filter(Boolean);
+  if(!tokens.length) return accounts.slice(0,25);
+  return accounts.filter(a=>{
+    const hay = (String(a.id)+' '+(a.name||'')+' '+(a.category||'')).toLowerCase();
+    return tokens.every(t=>hay.includes(t));
+  }).slice(0,25);
+}
+// ===== Generic searchable account picker (combobox) =====
+// Backs every account dropdown in the app (JV lines have their own longer-standing variant with
+// per-line array state, but Jamiah / Allocations filter / Accrual Mappings all share this one).
+// State is keyed by an arbitrary picker id string so multiple pickers (e.g. one per table row)
+// can coexist without colliding.
+window._acp = window._acp || {};
+function acpOpen(pid, accounts, onSelect){
+  const st = window._acp[pid] = window._acp[pid] || {q:'', hi:-1};
+  st.accounts = accounts; st.onSelect = onSelect;
+}
+function acpInput(pid, val){
+  const st = window._acp[pid]; if(!st) return;
+  st.q = val; st.matches = accountSearchMatches(val, st.accounts); st.hi = -1;
+  acpRenderDrop(pid);
+}
+function acpRenderDrop(pid){
+  const st = window._acp[pid]; const el = document.getElementById('acpdrop_'+pid);
+  if(!el || !st) return;
+  const matches = st.matches || [];
+  const html = matches.map((a,idx)=>
+    `<div class="${idx===st.hi?'hi':''}" onmousedown="acpPick('${pid}',${a.id})">${a.id} — ${esc(accShort(a.id))}</div>`).join('') || (st.q? '<div class="mut">No match</div>' : '');
+  el.innerHTML = html; el.className = html? 'acdrop show' : 'acdrop';
+}
+function acpKey(ev, pid){
+  const st = window._acp[pid]; if(!st) return;
+  const matches = st.matches || [];
+  if(ev.key==='ArrowDown'){ if(matches.length){ ev.preventDefault(); st.hi = Math.min(matches.length-1, st.hi+1); acpRenderDrop(pid); } }
+  else if(ev.key==='ArrowUp'){ if(matches.length){ ev.preventDefault(); st.hi = Math.max(0, st.hi-1); acpRenderDrop(pid); } }
+  else if(ev.key==='Enter'){
+    ev.preventDefault();
+    const pick = st.hi>=0? matches[st.hi] : (matches.length===1? matches[0] : null);
+    if(pick) acpPick(pid, pick.id);
+  } else if(ev.key==='Escape'){ acpClose(pid); }
+}
+function acpClose(pid){ const el = document.getElementById('acpdrop_'+pid); if(el){ el.innerHTML=''; el.className='acdrop'; } }
+function acpPick(pid, accId){
+  const st = window._acp[pid]; if(!st) return;
+  st.q=''; acpClose(pid);
+  const inp = document.getElementById('acpin_'+pid);
+  if(inp) inp.value = accId+' — '+accShort(accId);
+  st.onSelect(accId);
+}
 function filterableAccounts(){ return D.accounts.filter(a=>(a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted').sort((a,b)=>a.id-b.id); }
 function nextJV(){ let m=0; D.ledger.forEach(l=>{ if(l.jv&&l.jv>m) m=l.jv; }); return m+1; }
 function nextAllocNum(){ let m=0; D.ledger.forEach(l=>{ if(l.alloc&&l.alloc>m) m=l.alloc; }); return m+1; }
@@ -779,8 +928,11 @@ function updateSplashStatus(text){
   if(el) el.textContent = text;
 }
 function updateSplashProgress(pct){
+  const clamped = Math.max(0,Math.min(100,Math.round(pct)));
   const el = document.getElementById('splashProgressFill');
-  if(el) el.style.width = Math.max(0,Math.min(100,pct))+'%';
+  if(el) el.style.width = clamped+'%';
+  const pctEl = document.getElementById('splashProgressPct');
+  if(pctEl) pctEl.textContent = clamped+'%';
 }
 // Escape hatch: reveals the app immediately with whatever local/cached data exists, while the
 // real sync keeps trying quietly in the background (matching the existing lightweight sync
@@ -811,6 +963,13 @@ async function boot(){
       if(!Array.isArray(D.provisionGroups)) D.provisionGroups = [];
       if(!Array.isArray(D.accrualMappings)) D.accrualMappings = [];
       if(!Array.isArray(D.jamiahs)) D.jamiahs = [];
+      if(!Array.isArray(D.invOwners)) D.invOwners = [];
+      if(!Array.isArray(D.invPlatforms)) D.invPlatforms = [];
+      if(!Array.isArray(D.invPositions)) D.invPositions = [];
+      if(!Array.isArray(D.invTransactions)) D.invTransactions = [];
+      if(!Array.isArray(D.invValuations)) D.invValuations = [];
+      if(!D.invSettings || typeof D.invSettings!=='object') D.invSettings = {fxUsdSar:3.75};
+      if(!D.uiPrefs || typeof D.uiPrefs!=='object') D.uiPrefs = {pageOrder:null};
       if(!Array.isArray(D.realEstateBuildings)) D.realEstateBuildings = [];
       if(!Array.isArray(D.forecastAccountRules)) D.forecastAccountRules = [];
       if(!Array.isArray(D.customForecastCategories)) D.customForecastCategories = [];
@@ -1201,8 +1360,10 @@ async function getLedgerChangeMarker(){
 }
 async function forceFullLedgerRefresh(){
   if(!usingCloud || !SB){ toast('Not connected to the cloud', true); return; }
-  toast('Forcing a full ledger re-download…');
+  showSplash();
+  updateSplashStatus('Forcing a full ledger re-download…');
   await fetchAllFromCloud(true);
+  hideSplash();
   rebuildIndex();
   persistLocal();
   if(screen==='dashboard') renderDashboard();
@@ -1214,8 +1375,10 @@ async function forceFullLedgerRefresh(){
 async function fetchAllFromCloud(forceFullLedger){
   setStatus('Loading account data…');
   const ledgerProgress = (loaded, total)=>{
-    const pct = total? Math.round(Math.min(loaded,total)/total*100) : 0;
-    setStatus('Loading account data… '+pct+'%');
+    const pct = total? Math.min(loaded,total)/total : 0;
+    setStatus('Loading account data… '+Math.round(pct*100)+'%');
+    ledgerFraction = pct;
+    recomputeSplashProgress();
   };
   const serverLedgerMarker = await getLedgerChangeMarker();
   const localLedgerMarker = localStorage.getItem('ledgerLastChanged');
@@ -1230,15 +1393,20 @@ async function fetchAllFromCloud(forceFullLedger){
     }catch(e){ canSkipLedger = false; }
   }
   if(canSkipLedger) setStatus('Ledger unchanged — skipping re-download…');
-  // Real, non-simulated progress for the splash screen's progress bar — each of these 16 data
-  // sources fetches concurrently, so "percent complete" is simply how many of them have
-  // resolved so far. Harmless to call when the splash isn't showing (e.g. a manual force-refresh).
-  const TOTAL_SOURCES = 16;
-  let completedSources = 0;
-  const tp = (p) => p.then(r=>{ completedSources++; updateSplashProgress(Math.round(completedSources/TOTAL_SOURCES*100)); return r; });
-  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats] = await Promise.all([
+  // Real, non-simulated progress for the splash screen's progress bar. 15 of the 16 sources are
+  // small tables that resolve almost instantly, so counting "sources completed" alone made the bar
+  // jump straight to ~94% and then sit still for the entire Ledger download (by far the largest and
+  // slowest of the 16) with zero visible movement. Ledger's own page-by-page fetch progress
+  // (ledgerProgress below) is blended in as a fraction of its single slot, so the bar now advances
+  // smoothly through that wait instead of appearing to hang.
+  const TOTAL_SOURCES = 23;
+  let completedSources = 0; // counts the 22 non-ledger sources only
+  let ledgerFraction = 0; // 0..1, how far through Ledger's own paginated fetch we are
+  const recomputeSplashProgress = () => updateSplashProgress((completedSources + ledgerFraction) / TOTAL_SOURCES * 100);
+  const tp = (p, isLedger) => p.then(r=>{ if(isLedger) ledgerFraction = 1; else completedSources++; recomputeSplashProgress(); return r; });
+  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats,invOwn,invPlat,invPos,invTx,invVal,invSet,uiPrefs] = await Promise.all([
     tp(fetchAllRows('pd_accounts','id')),
-    tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress)),
+    tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress), true),
     tp(fetchAllRows('pd_budget','id')),
     tp(fetchAllRows('pd_templates','id')),
     tp(fetchAllRows('pd_categories','digit')),
@@ -1253,6 +1421,13 @@ async function fetchAllFromCloud(forceFullLedger){
     tp(fetchAllRows('pd_real_estate_buildings','id')),
     tp(fetchAllRows('pd_forecast_account_rules','id')),
     tp(fetchAllRows('pd_custom_forecast_categories','id')),
+    tp(fetchAllRows('pd_inv_owners','id')),
+    tp(fetchAllRows('pd_inv_platforms','id')),
+    tp(fetchAllRows('pd_inv_positions','id')),
+    tp(fetchAllRows('pd_inv_transactions','id')),
+    tp(fetchAllRows('pd_inv_valuations','id')),
+    tp(fetchAllRows('pd_inv_settings','id')),
+    tp(fetchAllRows('pd_ui_prefs','id')),
   ]);
   if(acc.error||led.error||bud.error||tpl.error){ toast('Cloud load error',true); return; }
   D.accounts = acc.data.map(a=>({id:a.id, descr:a.descr, balance:a.balance, direction:a.direction, acc_type:a.acc_type, name:a.name, cf_type:a.cf_type, category:a.category, status:a.status, is_savings:!!a.is_savings, is_allocatable:!!a.is_allocatable, is_credit_card:!!a.is_credit_card, credit_limit:a.credit_limit, stmt_balance:a.stmt_balance, stmt_available:a.stmt_available, stmt_date:a.stmt_date||null, forecast_category:a.forecast_category||null, updated_at:a.updated_at||null}));
@@ -1271,6 +1446,13 @@ async function fetchAllFromCloud(forceFullLedger){
   if(!reBuild.error){ D.realEstateBuildings = reBuild.data.map(b=>({id:b.id, name:b.name, apartmentAccountIds:b.apartment_account_ids||[], expenseAccountIds:b.expense_account_ids||[], updated_at:b.updated_at||null})); }
   if(!farules.error){ D.forecastAccountRules = farules.data.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, targetOffset:r.target_offset||0, freezeAfterTarget:!!r.freeze_after_target, updated_at:r.updated_at||null})); }
   if(!customCats.error){ D.customForecastCategories = customCats.data.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior, updated_at:c.updated_at||null})); }
+  if(!invOwn.error){ D.invOwners = invOwn.data.map(o=>({id:o.id, name:o.name, nameAr:o.name_ar||'', isSelf:!!o.is_self, outAcc:o.out_acc||null, inAcc:o.in_acc||null, profitAcc:o.profit_acc||null, updated_at:o.updated_at||null})); }
+  if(!invPlat.error){ D.invPlatforms = invPlat.data.map(p=>({id:p.id, name:p.name, outAcc:p.out_acc||null, inAcc:p.in_acc||null, profitAcc:p.profit_acc||null, updated_at:p.updated_at||null})); }
+  if(!invPos.error){ D.invPositions = invPos.data.map(p=>({id:p.id, platformId:p.platform_id, name:p.name, ticker:p.ticker||'', assetClass:p.asset_class||'Other', currency:p.currency||'SAR', status:p.status||'Active', updated_at:p.updated_at||null})); }
+  if(!invTx.error){ D.invTransactions = invTx.data.map(t=>({id:t.id, positionId:t.position_id, date:t.entry_date, kind:t.kind, units:Number(t.units)||0, totalSar:Number(t.total_sar)||0, owners:t.owners||[], note:t.note||'', updated_at:t.updated_at||null})); }
+  if(!invVal.error){ D.invValuations = invVal.data.map(v=>({id:v.id, positionId:v.position_id, date:v.entry_date, price:Number(v.price)||0, updated_at:v.updated_at||null})); }
+  if(!invSet.error && invSet.data.length){ D.invSettings = {fxUsdSar: Number(invSet.data[0].fx_usd_sar)||3.75, updated_at: invSet.data[0].updated_at||null}; }
+  if(!uiPrefs.error && uiPrefs.data.length){ D.uiPrefs = {pageOrder: Array.isArray(uiPrefs.data[0].page_order)? uiPrefs.data[0].page_order : null, updated_at: uiPrefs.data[0].updated_at||null}; }
   syncCustomForecastCategories();
   if(serverLedgerMarker) safeSetItem('ledgerLastChanged', serverLedgerMarker);
 }
@@ -1332,15 +1514,390 @@ async function seedCloud(){
 }
 
 /* ============================= NAV / ROUTER ============================= */
+// [id, label, icon] — the icon is emoji for consistency with the rest of the app's UI.
 const SCREENS = [
-  ['dashboard','Dashboard'], ['newjv','New JV'], ['ledger','Ledger'], ['accounts','Accounts'],
-  ['budget','Budget'], ['pnl','P&L'], ['alloc','Allocations'], ['provisions','Provisions'], ['jamiah','Jamiah'], ['forecast','Forecast'], ['realestate','Real Estate'],
+  ['dashboard','Dashboard','📊'], ['newjv','New JV','✍️'], ['ledger','Ledger','📖'], ['accounts','Accounts','🗂'],
+  ['budget','Budget','🎯'], ['pnl','P&L','📈'], ['alloc','Allocations','🧾'], ['provisions','Provisions','🔮'], ['jamiah','Jamiah','🤝'], ['forecast','Forecast','🌤'], ['realestate','Real Estate','🏢'], ['investments','Investments','💹'],
+  ['settings','Settings','⚙️'],
 ];
+// Pages that can never be hidden and are never reorderable: Dashboard is the safe landing page,
+// and Settings holds the controls for un-hiding and reordering — hiding it would lock you out.
+// Settings is always pinned to the bottom of the sidebar.
+const PINNED_LAST_SCREEN = 'settings';
+const ALWAYS_VISIBLE_SCREENS = ['dashboard','settings'];
+// Page order is SYNCED (stored in pd_ui_prefs) so the sidebar reads the same on every device.
+// Page VISIBILITY remains per-device in localStorage — that was the existing behaviour and
+// wasn't part of this change.
+function getPageOrder(){
+  const saved = (D.uiPrefs||{}).pageOrder;
+  return Array.isArray(saved)? saved.slice() : null;
+}
+// Returns SCREENS in the person's saved order. Any screen missing from the saved order (i.e. a
+// page added by a later version) is appended rather than dropped, so a new page can never
+// silently disappear for someone with a saved ordering. Settings is always forced last.
+function orderedScreens(){
+  const saved = getPageOrder();
+  const byId = {};
+  SCREENS.forEach(s=>{ byId[s[0]] = s; });
+  const out = [];
+  if(saved){
+    saved.forEach(id=>{ if(byId[id] && id!==PINNED_LAST_SCREEN && !out.includes(byId[id])) out.push(byId[id]); });
+  }
+  SCREENS.forEach(s=>{ if(s[0]!==PINNED_LAST_SCREEN && !out.includes(s)) out.push(s); });
+  const pinned = byId[PINNED_LAST_SCREEN];
+  if(pinned) out.push(pinned);
+  return out;
+}
+// The reorderable subset: everything except the pinned Settings entry.
+function reorderableScreens(){ return orderedScreens().filter(s=>s[0]!==PINNED_LAST_SCREEN); }
+async function savePageOrder(ids){
+  D.uiPrefs = D.uiPrefs || {};
+  const base = D.uiPrefs.updated_at||null;
+  D.uiPrefs.pageOrder = ids;
+  D.uiPrefs.updated_at = nowISO();
+  await syncWrite('pd_ui_prefs','upsert',{id:1, page_order:ids}, base);
+  persistLocal();
+}
+/* ============================= FULL DATABASE SCHEMA =============================
+   STANDING CONVENTION (as of v4.12.0, applies to every release from here on):
+   whenever a table or column is added, changed, or removed anywhere in this app,
+   DB_SCHEMA_SQL below must be updated in the same change. It is shown to the person
+   under Settings → Database Schema and is the script they would run to stand up a
+   brand-new empty database. If it goes stale it is worse than useless, because it
+   would silently produce a database the app cannot work against.
+
+   Scope: schema + structural singleton rows only (rows the app needs in order to
+   function at all). It deliberately contains NO personal data — accounts, ledger,
+   budgets and so on come back via Settings → Backup & Restore.
+*/
+const DB_SCHEMA_VERSION = '4.13.0';
+const DB_SCHEMA_SQL = `-- =====================================================================
+-- LedgerOS — complete database schema (v${'4.13.0'})
+-- Run this once against a brand-new Supabase project to create everything
+-- LedgerOS needs. Safe to re-run: every statement is guarded.
+--
+-- After running this, open LedgerOS and use Settings -> Backup & Restore
+-- to load your data. This script creates structure only, never your data.
+-- =====================================================================
+
+-- ---------- Core ledger ----------
+create table if not exists pd_accounts (
+  id                bigint primary key,
+  name              text,
+  descr             text,
+  balance           numeric,
+  direction         text,
+  acc_type          text,
+  cf_type           text,
+  category          text,
+  status            text default 'Active',
+  is_savings        boolean default false,
+  is_allocatable    boolean default false,
+  is_credit_card    boolean default false,
+  credit_limit      numeric,
+  stmt_balance      numeric,
+  stmt_available    numeric,
+  stmt_date         date,
+  forecast_category text,
+  updated_at        timestamptz default now()
+);
+
+create table if not exists pd_ledger (
+  id                bigint primary key,
+  jv                bigint,
+  entry_date        date,
+  acc               bigint,
+  descr             text,
+  amt               numeric,
+  alloc             bigint,
+  allocatable       boolean default false,
+  acc_name_snapshot text,
+  updated_at        timestamptz default now()
+);
+create index if not exists idx_ledger_acc   on pd_ledger(acc);
+create index if not exists idx_ledger_date  on pd_ledger(entry_date);
+create index if not exists idx_ledger_jv    on pd_ledger(jv);
+create index if not exists idx_ledger_alloc on pd_ledger(alloc);
+
+create table if not exists pd_budget (
+  id          bigint primary key,
+  entry_date  date,
+  acc         bigint,
+  descr       text,
+  amt         numeric,
+  updated_at  timestamptz default now()
+);
+create index if not exists idx_budget_acc on pd_budget(acc);
+
+create table if not exists pd_templates (
+  id          bigint primary key,
+  name        text,
+  lines       jsonb default '[]'::jsonb,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_drafts (
+  id          bigint primary key,
+  entry_date  date,
+  lines       jsonb default '[]'::jsonb,
+  saved_at    timestamptz,
+  updated_at  timestamptz default now()
+);
+
+-- ---------- Chart of accounts structure ----------
+create table if not exists pd_categories (
+  digit       int primary key,
+  name        text,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_subcategories (
+  cat_digit   int,
+  sub_code    text,
+  name        text,
+  updated_at  timestamptz default now(),
+  primary key (cat_digit, sub_code)
+);
+
+-- ---------- Provisions & accruals ----------
+create table if not exists pd_provisions (
+  id                     bigint primary key,
+  name                   text,
+  lines                  jsonb default '[]'::jsonb,
+  months                 jsonb default '[]'::jsonb,
+  last_bulk_fill_months  int,
+  dup_balance_exempt     boolean default false,
+  updated_at             timestamptz default now()
+);
+
+create table if not exists pd_accrual_mappings (
+  category      text primary key,
+  liability_acc bigint,
+  expense_acc   bigint,
+  updated_at    timestamptz default now()
+);
+
+-- ---------- Jamiah (ROSCA) ----------
+create table if not exists pd_jamiahs (
+  id               bigint primary key,
+  name             text,
+  account          bigint,
+  start_month      text,
+  duration_months  int,
+  groups           jsonb default '[]'::jsonb,
+  participants     jsonb default '[]'::jsonb,
+  round_group      jsonb default '{}'::jsonb,
+  tags             jsonb default '[]'::jsonb,
+  updated_at       timestamptz default now()
+);
+
+-- ---------- Forecast ----------
+-- pd_forecast_plans is a single-row table: all plans live in one jsonb blob.
+create table if not exists pd_forecast_plans (
+  id          bigint primary key,
+  plans       jsonb default '{}'::jsonb,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_forecast_account_rules (
+  id                   bigint primary key,
+  name                 text,
+  account              bigint,
+  rule                 jsonb default '{}'::jsonb,
+  target_offset        int,
+  freeze_after_target  boolean default false,
+  updated_at           timestamptz default now()
+);
+
+create table if not exists pd_custom_forecast_categories (
+  id          bigint primary key,
+  key         text,
+  label       text,
+  direction   text,
+  behavior    text,
+  updated_at  timestamptz default now()
+);
+
+-- ---------- Translations (single-row blob tables) ----------
+create table if not exists pd_name_translations (
+  id          bigint primary key,
+  names       jsonb default '{}'::jsonb,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_descr_translations (
+  id            bigint primary key,
+  translations  jsonb default '{}'::jsonb,
+  updated_at    timestamptz default now()
+);
+
+-- ---------- Real estate ----------
+create table if not exists pd_real_estate_buildings (
+  id                    bigint primary key,
+  name                  text,
+  apartment_account_ids jsonb default '[]'::jsonb,
+  expense_account_ids   jsonb default '[]'::jsonb,
+  updated_at            timestamptz default now()
+);
+
+-- ---------- Investments ----------
+create table if not exists pd_inv_owners (
+  id          bigint primary key,
+  name        text not null,
+  name_ar     text default '',
+  is_self     boolean default false,
+  out_acc     bigint,
+  in_acc      bigint,
+  profit_acc  bigint,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_inv_platforms (
+  id          bigint primary key,
+  name        text not null,
+  out_acc     bigint,
+  in_acc      bigint,
+  profit_acc  bigint,
+  updated_at  timestamptz default now()
+);
+
+create table if not exists pd_inv_positions (
+  id           bigint primary key,
+  platform_id  bigint,
+  name         text not null,
+  ticker       text default '',
+  asset_class  text default 'Other',
+  currency     text default 'SAR',
+  status       text default 'Active',
+  updated_at   timestamptz default now()
+);
+
+-- owners is a jsonb array attributing units per owner, e.g. [{"ownerId":1,"units":10}].
+-- Ownership percentages are DERIVED from these units and never stored.
+create table if not exists pd_inv_transactions (
+  id           bigint primary key,
+  position_id  bigint,
+  entry_date   date,
+  kind         text default 'buy',
+  units        numeric default 0,
+  total_sar    numeric default 0,
+  owners       jsonb default '[]'::jsonb,
+  note         text default '',
+  updated_at   timestamptz default now()
+);
+
+create table if not exists pd_inv_valuations (
+  id           bigint primary key,
+  position_id  bigint,
+  entry_date   date,
+  price        numeric default 0,
+  updated_at   timestamptz default now()
+);
+
+create table if not exists pd_inv_settings (
+  id          bigint primary key,
+  fx_usd_sar  numeric default 3.75,
+  updated_at  timestamptz default now()
+);
+
+-- ---------- UI preferences ----------
+-- page_order is a jsonb array of screen ids, e.g. ["dashboard","ledger","budget"].
+-- Synced (rather than per-device) so the sidebar reads the same everywhere.
+create table if not exists pd_ui_prefs (
+  id          bigint primary key,
+  page_order  jsonb,
+  updated_at  timestamptz default now()
+);
+
+create index if not exists idx_inv_positions_platform on pd_inv_positions(platform_id);
+create index if not exists idx_inv_tx_position        on pd_inv_transactions(position_id);
+create index if not exists idx_inv_val_position       on pd_inv_valuations(position_id);
+create index if not exists idx_inv_val_date           on pd_inv_valuations(entry_date);
+
+-- =====================================================================
+-- Structural singleton rows.
+-- These are NOT your data — they are rows the app needs to exist at all.
+-- Single-row blob tables need their row present before the app can write to it.
+-- =====================================================================
+insert into pd_forecast_plans (id, plans)            values (1, '{}'::jsonb) on conflict (id) do nothing;
+insert into pd_name_translations (id, names)         values (1, '{}'::jsonb) on conflict (id) do nothing;
+insert into pd_descr_translations (id, translations) values (1, '{}'::jsonb) on conflict (id) do nothing;
+insert into pd_inv_settings (id, fx_usd_sar)         values (1, 3.75)        on conflict (id) do nothing;
+insert into pd_ui_prefs (id, page_order)              values (1, null)        on conflict (id) do nothing;
+
+-- =====================================================================
+-- Row Level Security.
+-- LedgerOS is a single-user app using the anon key, so every table gets one
+-- permissive policy. If you later add real auth, replace these with policies
+-- scoped to auth.uid().
+-- =====================================================================
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'pd_accounts','pd_ledger','pd_budget','pd_templates','pd_drafts',
+    'pd_categories','pd_subcategories','pd_provisions','pd_accrual_mappings',
+    'pd_jamiahs','pd_forecast_plans','pd_forecast_account_rules',
+    'pd_custom_forecast_categories','pd_name_translations','pd_descr_translations',
+    'pd_real_estate_buildings','pd_inv_owners','pd_inv_platforms','pd_inv_positions',
+    'pd_inv_transactions','pd_inv_valuations','pd_inv_settings','pd_ui_prefs'
+  ]
+  loop
+    execute format('alter table %I enable row level security', t);
+    execute format('drop policy if exists "allow all" on %I', t);
+    execute format('create policy "allow all" on %I for all using (true) with check (true)', t);
+  end loop;
+end $$;
+
+-- =====================================================================
+-- Done. Point LedgerOS at this project's URL and anon key, then restore
+-- your backup from Settings -> Backup & Restore.
+-- =====================================================================
+`;
+function copyDbSchemaSql(){
+  const doCopy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = DB_SCHEMA_SQL;
+    ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('Full SQL copied ✓'); }
+    catch(e){ toast('Copy failed — select the text and copy manually', true); }
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(DB_SCHEMA_SQL).then(()=>toast('Full SQL copied ✓')).catch(doCopy);
+  } else doCopy();
+}
+function downloadDbSchemaSql(){
+  const blob = new Blob([DB_SCHEMA_SQL], {type:'text/plain;charset=utf-8;'});
+  const dl = document.createElement('a');
+  dl.href = URL.createObjectURL(blob);
+  dl.download = 'LedgerOS schema v'+DB_SCHEMA_VERSION+'.sql';
+  dl.click();
+  toast('SQL file downloaded ✓');
+}
+
 /* ============================= COMMAND PALETTE (Ctrl/Cmd+K) ============================= */
 let cmdPaletteOpen = false;
 let cmdPaletteHi = -1;
 let cmdPaletteResults = [];
+// Ctrl/Cmd+Enter confirms the primary action of whatever modal is open. Deliberately scoped to
+// modals: it applies to every current one and any added later with no extra wiring, because it
+// finds the primary button rather than being hooked up per-modal. Destructive buttons (.btn.del)
+// are never triggered this way.
+function modalPrimaryButton(){
+  const modal = document.querySelector('#modalRoot .modal');
+  if(!modal) return null;
+  const btns = Array.from(modal.querySelectorAll('button.btn.pri')).filter(b=>!b.disabled && b.offsetParent!==null);
+  // The confirm action sits in the footer, so the LAST primary button is the right one when a
+  // modal has more than one (e.g. an inline "+ New" above the footer's Save).
+  return btns.length? btns[btns.length-1] : null;
+}
 document.addEventListener('keydown', (ev)=>{
+  if((ev.ctrlKey||ev.metaKey) && ev.key==='Enter'){
+    const btn = modalPrimaryButton();
+    if(btn){ ev.preventDefault(); btn.click(); return; }
+  }
   if((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase()==='k'){
     ev.preventDefault();
     cmdPaletteOpen? closeCmdPalette() : openCmdPalette();
@@ -1382,8 +1939,8 @@ function searchCmdPalette(q){
   const query = q.trim().toLowerCase();
   const results = [];
   const hidden = getHiddenPages();
-  SCREENS.filter(([id])=> id==='dashboard' || !hidden.includes(id)).forEach(([id,label])=>{
-    if(!query || label.toLowerCase().includes(query)) results.push({type:'Page', label, sub:'', action:()=>{ closeCmdPalette(); go(id); }});
+  orderedScreens().filter(([id])=> ALWAYS_VISIBLE_SCREENS.includes(id) || !hidden.includes(id)).forEach(([id,label,icon])=>{
+    if(!query || label.toLowerCase().includes(query)) results.push({type:'Page', label:(icon? icon+' '+label : label), sub:'', action:()=>{ closeCmdPalette(); go(id); }});
   });
   if(query){
     const jvQuery = query.replace(/^jv\s*#?/,'').trim();
@@ -1441,12 +1998,15 @@ function closeMobileNav(){
   if(sb) sb.classList.remove('open');
   if(scrim) scrim.classList.remove('show');
 }
+let navHasAnimatedIn = false; // the staggered nav entrance plays once per session, on first render only
 function renderNav(){
   const vEl = document.getElementById('sidebarVersionTag');
   if(vEl && !vEl.textContent) vEl.textContent = 'v'+APP_VERSION;
   const hidden = getHiddenPages();
-  document.getElementById('nav').innerHTML = SCREENS.filter(([id])=> id==='dashboard' || !hidden.includes(id)).map(([id,label])=>
-    `<button class="${screen===id?'on':''}" onclick="go('${id}')">${label}</button>`).join('');
+  const animClass = navHasAnimatedIn? '' : ' anim';
+  document.getElementById('nav').innerHTML = orderedScreens().filter(([id])=> ALWAYS_VISIBLE_SCREENS.includes(id) || !hidden.includes(id)).map(([id,label,icon])=>
+    `<button class="${screen===id?'on':''}${animClass}" onclick="go('${id}')"><span class="nav-ico">${icon||''}</span>${label}</button>`).join('');
+  navHasAnimatedIn = true;
 }
 let pageScrollPositions = {}; // in-memory only, this session — remembers where you were on each page
 let jvReturnScreen = null; // when set, posting a JV returns here instead of the default Ledger/Dashboard fallback
@@ -1458,9 +2018,9 @@ function go(s){
   screen = s; renderNav();
   closeMobileNav();
   const titleEl = document.getElementById('mobileTopbarTitle');
-  if(titleEl){ const found = SCREENS.find(([id])=>id===s); titleEl.textContent = found? found[1] : (s==='settings'?'Settings':s==='statement'?'Statement':s==='forecastSettings'?'Forecast Settings':'LedgerOS'); }
+  if(titleEl){ const found = SCREENS.find(([id])=>id===s); titleEl.textContent = found? (found[2]? found[2]+' '+found[1] : found[1]) : (s==='settings'?'⚙️ Settings':s==='statement'?'📄 Statement':s==='forecastSettings'?'🌤 Forecast Settings':'LedgerOS'); }
   const fn = {dashboard:renderDashboard,newjv:renderNewJV,ledger:renderLedger,accounts:renderAccounts,
-    budget:renderBudget,pnl:renderPnL,alloc:renderAlloc,statement:renderStatement,settings:renderSettings,provisions:renderProvisions,jamiah:renderJamiahPage,forecast:renderForecastPage,forecastSettings:renderForecastSettingsPage,realestate:renderRealEstatePage}[s];
+    budget:renderBudget,pnl:renderPnL,alloc:renderAlloc,statement:renderStatement,settings:renderSettings,provisions:renderProvisions,jamiah:renderJamiahPage,forecast:renderForecastPage,forecastSettings:renderForecastSettingsPage,realestate:renderRealEstatePage,investments:renderInvestmentsPage}[s];
   if(fn) fn();
   requestAnimationFrame(()=>{ window.scrollTo(0, pageScrollPositions[s]||0); });
 }
@@ -2290,26 +2850,31 @@ async function resolveForecastConflictAllMonths(accId, strategy, customValue){
   if(!confirm('Apply '+strategyLabel+' to every currently-mismatched future month for '+accShort(accId)+'? This writes to both Budget and Provisions where each month allows it.')) return;
   const currentMonth = todayStr().slice(0,7);
   const gridEnd = getGridEndMonth();
+  // Pre-scan for the actual list of mismatched months first, so the progress bar reflects real
+  // work about to happen rather than the whole (much longer) date range it's scanning through.
+  const conflictMonths = [];
+  let mk = currentMonth, guard = 0;
+  while(mk<=gridEnd && guard<600){
+    if(computeForecastCell(a, mk, currentMonth).conflict) conflictMonths.push(mk);
+    mk = nextMonthKeyPlain(mk); guard++;
+  }
+  closeModal();
+  if(!conflictMonths.length){ toast('No mismatched months found for '+accShort(accId)); return; }
+  showImportProgress('Resolving '+conflictMonths.length+' month(s) for '+accShort(accId)+'…');
   let resolvedCount = 0;
   const skippedMonths = [];
-  let mk = currentMonth;
-  let guard = 0;
-  while(mk<=gridEnd && guard<600){
-    const cell = computeForecastCell(a, mk, currentMonth);
-    if(cell.conflict){
-      const val = strategy==='provisions'? cell.provPlan : strategy==='budget'? cell.budgetPlan : customValue;
-      const result = await applyForecastResolutionToMonth(accId, mk, val, {strict:true});
-      if(result.ok) resolvedCount++; else skippedMonths.push(mk);
-    }
-    mk = nextMonthKeyPlain(mk);
-    guard++;
+  for(let i=0;i<conflictMonths.length;i++){
+    const cmk = conflictMonths[i];
+    const cell = computeForecastCell(a, cmk, currentMonth);
+    const val = strategy==='provisions'? cell.provPlan : strategy==='budget'? cell.budgetPlan : customValue;
+    const result = await applyForecastResolutionToMonth(accId, cmk, val, {strict:true});
+    if(result.ok) resolvedCount++; else skippedMonths.push(cmk);
+    updateImportProgress(i+1, conflictMonths.length, 'Resolving');
   }
   persistLocal();
-  closeModal();
   let msg = 'Resolved '+resolvedCount+' month(s) for '+accShort(accId)+' using '+strategyLabel+'.';
   if(skippedMonths.length){ msg += ' Skipped '+skippedMonths.length+' month(s) with multiple entries: '+skippedMonths.map(monthLabel).join(', ')+'.'; }
-  toast(msg, skippedMonths.length>0);
-  logActivity('action', 'Bulk-resolved Budget/Provisions mismatch for '+accShort(accId)+' ('+accId+') using '+strategy+' — '+resolvedCount+' month(s) resolved'+(skippedMonths.length? ', '+skippedMonths.length+' skipped':''));
+  finishImportProgress(msg, null, {title: skippedMonths.length? '⚠ Resolved with some skips':'✓ Resolved', logPrefix:'Bulk-resolved Budget/Provisions mismatch using '+strategy+': '});
   renderForecastBody();
 }
 function resolveForecastConflictAllMonthsCustom(accId){
@@ -2880,8 +3445,7 @@ function removeJVLine(i){ jvDraft.lines.splice(i,1); renderNewJV(); }
 function jvAccInput(i,val){
   jvDraft.lines[i]._q = val;
   if(!val){ jvDraft.lines[i].acc=''; }
-  const q = val.toLowerCase();
-  const matches = postableAccounts().filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,25);
+  const matches = accountSearchMatches(val, postableAccounts());
   jvDraft.lines[i]._matches = matches; jvDraft.lines[i]._hi = -1;
   renderAcDrop(i);
 }
@@ -2959,10 +3523,10 @@ async function saveAccrualMappingFromForm(sanitizedKey){
   if(blockIfSyncing()) return;
   const category = expenseCategoriesList().find(c=>sanitizeIdPart(c)===sanitizedKey);
   if(!category) return;
-  const liabEl = document.getElementById('accrLiab_'+sanitizedKey);
-  const expEl = document.getElementById('accrExp_'+sanitizedKey);
-  const liabilityAcc = liabEl && liabEl.value? Number(liabEl.value) : null;
-  const expenseAcc = expEl && expEl.value? Number(expEl.value) : null;
+  const liabEl = document.getElementById('acpin_accrLiab_'+sanitizedKey);
+  const expEl = document.getElementById('acpin_accrExp_'+sanitizedKey);
+  const liabilityAcc = liabEl && liabEl.dataset.acc? Number(liabEl.dataset.acc) : null;
+  const expenseAcc = expEl && expEl.dataset.acc? Number(expEl.dataset.acc) : null;
   if(!liabilityAcc || !expenseAcc){ toast('Pick both a liability account and an accrual expense account', true); return; }
   let m = D.accrualMappings.find(x=>x.category===category);
   if(m){ m.liabilityAcc = liabilityAcc; m.expenseAcc = expenseAcc; } else { m = {category, liabilityAcc, expenseAcc}; D.accrualMappings.push(m); }
@@ -3202,7 +3766,12 @@ async function postJV(){
   if(Math.abs(total)>=0.005){ toast('Lines must net to zero before posting',true); return; }
   if(lines.length<2){ toast('Add at least two lines',true); return; }
   jvPosting = true;
-  const postBtn = document.getElementById('jvPostBtn'); if(postBtn) postBtn.disabled = true;
+  // Posting waits on one Supabase write per line, so a multi-line JV can sit for a moment with
+  // no feedback. The button itself shows the wait rather than an overlay, since that's where
+  // the person is already looking.
+  const postBtn = document.getElementById('jvPostBtn');
+  const postBtnHtml = postBtn? postBtn.innerHTML : '';
+  if(postBtn){ postBtn.disabled = true; postBtn.innerHTML = '<span class="btn-spin"></span>Posting…'; }
   try{
     const jv = nextJV();
     let id = nextLedgerId();
@@ -3222,6 +3791,12 @@ async function postJV(){
     else go('ledger');
   } finally {
     jvPosting = false;
+    // On success the page has already navigated away and the button is gone; only restore it
+    // when it's still on screen (i.e. posting failed and the person is still on New JV).
+    if(postBtn && document.body.contains(postBtn)){
+      postBtn.innerHTML = postBtnHtml;
+      postBtn.disabled = !(jvBalanced() && !syncInProgress);
+    }
   }
 }
 
@@ -3316,12 +3891,16 @@ function renderLedger(){
   renderLedgerResults();
 }
 function clearLedgerFilters(){ ledgerFilter={acc:'',from:'',to:'',q:'',jv:'',preset:'',unallocOnly:false}; ledgerAccPicker={q:'',matches:[],hi:-1}; ledgerPage=0; renderLedger(); }
-function filterLedgerDescr(v){ ledgerFilter.q=v; ledgerPage=0; renderLedgerResults(); }
+let _ledgerSearchDebounce = null;
+function filterLedgerDescr(v){
+  ledgerFilter.q = v;
+  clearTimeout(_ledgerSearchDebounce);
+  _ledgerSearchDebounce = setTimeout(()=>{ ledgerPage=0; renderLedgerResults(); }, 200);
+}
 function ledgerAccInputHandler(val){
   ledgerAccPicker.q = val;
   if(!val){ ledgerFilter.acc=''; }
-  const q = val.toLowerCase();
-  const matches = filterableAccounts().filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,25);
+  const matches = accountSearchMatches(val, filterableAccounts());
   ledgerAccPicker.matches = matches; ledgerAccPicker.hi = -1;
   renderLedgerAcDrop();
 }
@@ -3383,7 +3962,7 @@ function viewJV(jv){
       <button class="btn ghost" onclick="startEditJV(${jv})">✎ Edit</button>
       <button class="btn ghost" onclick="exportJVCSV(${jv})">⬇ Download CSV</button>
       <button class="btn ghost" onclick="duplicateJV(${jv})">⧉ Duplicate as New JV</button>
-      <button class="btn del" onclick="deleteJV(${jv})">Delete this JV</button>
+      <button class="btn del" onclick="reverseJV(${jv})">↩ Reverse this JV</button>
       <button class="btn ghost" onclick="closeModal()">Close</button>
     </div>`, true);
 }
@@ -3466,8 +4045,7 @@ function jveAccInput(i,val){
   const l = jvEditDraft.lines[i];
   l._q = val;
   if(!val){ l.acc=''; }
-  const q = val.toLowerCase();
-  const matches = postableAccounts().filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,25);
+  const matches = accountSearchMatches(val, postableAccounts());
   l._matches = matches; l._hi = -1;
   jveRenderAcDrop(i);
 }
@@ -3604,15 +4182,48 @@ function duplicateJV(jv){
   go('newjv');
   toast('Loaded JV #'+jv+' as a starting point — review and post');
 }
-async function deleteJV(jv){
+// Reversing replaces deleting: the original JV stays in the ledger and a mirror-image JV is
+// posted against it, so history is preserved and the net effect is zero. Deletion is no longer
+// offered anywhere in the JV UI.
+function buildReversalLines(jv, newJvNo, reversalDate, startId){
+  const originals = D.ledger.filter(l=>l.jv===jv).sort((a,b)=>a.id-b.id);
+  let id = startId;
+  return originals.map(l=>({
+    id: id++,
+    jv: newJvNo,
+    date: reversalDate,
+    acc: l.acc,
+    descr: 'Reversal of JV #'+jv+' — '+(l.descr||''),
+    amt: -Number(l.amt),
+    // Deliberately NOT carried over: a reversal is a fresh, unallocated entry. The caller warns
+    // the person when the original was allocated so the allocation can be revisited by hand.
+    alloc: null,
+    allocatable: false,
+    accNameSnapshot: l.accNameSnapshot || accShort(l.acc),
+    updated_at: null,
+  }));
+}
+async function reverseJV(jv){
   if(blockIfSyncing()) return;
-  if(!confirm('Delete JV #'+jv+' and all its lines? This cannot be undone.')) return;
-  const rows = D.ledger.filter(l=>l.jv===jv);
-  D.ledger = D.ledger.filter(l=>l.jv!==jv);
+  const originals = D.ledger.filter(l=>l.jv===jv);
+  if(!originals.length){ toast('JV #'+jv+' not found', true); return; }
+  const allocated = originals.filter(l=>l.alloc);
+  let msg = 'Reverse JV #'+jv+'?\n\nA new JV dated today will be posted with the opposite amounts, so the net effect is zero. The original stays in the ledger.';
+  if(allocated.length){
+    msg += '\n\n⚠ '+allocated.length+' line(s) in this JV are assigned to an allocation group. The reversal lines will NOT be allocated, so you may need to revisit that allocation.';
+  }
+  if(!confirm(msg)) return;
+  const newJvNo = nextJV();
+  const startId = 1 + D.ledger.reduce((m,l)=>Math.max(m, Number(l.id)||0), 0);
+  const rows = buildReversalLines(jv, newJvNo, todayStr(), startId);
+  D.ledger.push(...rows);
   persistLocal(); closeModal(); renderLedger();
-  toast('JV #'+jv+' deleted');
-  logActivity('action', 'Deleted JV #'+jv+' ('+rows.length+' lines)');
-  for(const r of rows){ await syncWrite('pd_ledger', 'delete', {id:r.id}, r.updated_at||null); }
+  toast('JV #'+jv+' reversed by JV #'+newJvNo+' ✓');
+  logActivity('action', 'Reversed JV #'+jv+' with JV #'+newJvNo+' ('+rows.length+' lines)');
+  for(const r of rows){
+    await syncWrite('pd_ledger', 'upsert', {id:r.id, jv:r.jv, entry_date:r.date, acc:r.acc, descr:r.descr, amt:r.amt, alloc:r.alloc, allocatable:r.allocatable, acc_name_snapshot:r.accNameSnapshot}, null);
+  }
+  viewJV(newJvNo);
 }
 
 /* ============================= MODAL ============================= */
@@ -3645,15 +4256,17 @@ function updateImportProgress(current, total, label){
   bar.style.width = pct+'%';
   text.textContent = (label||'Processing')+'… '+current.toLocaleString()+' / '+total.toLocaleString()+' ('+pct+'%)';
 }
-function finishImportProgress(message, errorReport){
+function finishImportProgress(message, errorReport, opts){
   const bar = document.getElementById('importProgressBar');
   const text = document.getElementById('importProgressText');
   if(bar) bar.style.width = '100%';
   if(text) text.textContent = '100% complete';
-  logActivity('action', 'Import finished: '+String(message).replace(/\n/g,' | '));
+  const title = (opts&&opts.title) || '✓ Import Complete';
+  const logPrefix = (opts&&opts.logPrefix) || 'Import finished: ';
+  logActivity('action', logPrefix+String(message).replace(/\n/g,' | '));
   window._importErrorReportData = errorReport || null;
   document.getElementById('modalRoot').innerHTML = `<div class="modal-bg" onmousedown="if(event.target===this)closeModal()"><div class="modal">
-    <h3 style="margin-top:0">✓ Import Complete</h3>
+    <h3 style="margin-top:0">${esc(title)}</h3>
     <div class="mut" style="margin:12px 0 20px;white-space:pre-line">${esc(message)}</div>
     <div class="row" style="justify-content:${errorReport?'space-between':'flex-end'}">
       ${errorReport? `<button class="btn ghost" onclick="exportImportErrorReport()">⬇ Export Error Report (CSV)</button>` : ''}
@@ -3749,9 +4362,20 @@ async function applyBatchEditAccounts(){
   closeModal();
   accSelected.clear();
   renderAccounts();
-  toast('Updated '+touched.length+' account(s) ✓');
   logActivity('action', 'Batch-edited '+touched.length+' accounts: '+[status&&'status='+status, allocVal!==''&&'allocatable='+allocVal, category&&'category='+category, forecastCategory&&'forecast_category='+forecastCategory].filter(Boolean).join(', '));
-  for(const t of touched){ await syncWrite('pd_accounts', 'upsert', {...t.row}, t.base); }
+  if(touched.length<=3){
+    // Small batch — no need for a progress screen, a toast covers it
+    for(const t of touched){ await syncWrite('pd_accounts', 'upsert', {...t.row}, t.base); }
+    toast('Updated '+touched.length+' account(s) ✓');
+  } else {
+    showImportProgress('Syncing '+touched.length+' account(s)…');
+    for(let i=0;i<touched.length;i++){
+      const t = touched[i];
+      await syncWrite('pd_accounts', 'upsert', {...t.row}, t.base);
+      updateImportProgress(i+1, touched.length, 'Syncing');
+    }
+    finishImportProgress('Updated '+touched.length+' account(s) ✓', null, {title:'✓ Batch Edit Complete', logPrefix:''});
+  }
 }
 function toggleAccSelectMode(){
   accSelectMode = !accSelectMode;
@@ -3780,8 +4404,7 @@ function renderAccountResults(){
   const accs = browsableAccounts().filter(a=>{
     if(!accShowDeleted && a.status==='Deleted') return false;
     if(!accQ) return true;
-    const q=accQ.toLowerCase();
-    return String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q) || (a.category||'').toLowerCase().includes(q);
+    return accountSearchMatches(accQ, [a]).length>0;
   });
   const byCat = {};
   accs.forEach(a=>{ (byCat[a.category||'Other'] ??= []).push(a); });
@@ -3956,8 +4579,17 @@ async function restoreAccount(id){
   toast('Account restored');
   await syncWrite('pd_accounts', 'upsert', {...a}, base);
 }
-let statementSortDesc = false;
-function toggleStatementSort(){ statementSortDesc = !statementSortDesc; renderStatement(); }
+// Newest-first by default. Remembered per device (a lightweight view preference, stored the
+// same way page visibility is) so the choice survives reopening an account.
+let statementSortDesc = (function(){
+  const saved = localStorage.getItem('statementSortDesc');
+  return saved===null? true : saved==='true';
+})();
+function toggleStatementSort(){
+  statementSortDesc = !statementSortDesc;
+  safeSetItem('statementSortDesc', String(statementSortDesc));
+  renderStatement();
+}
 function renderStatement(){
   const a = ACC_BY_ID[statementAcc];
   if(!a){ go('accounts'); return; }
@@ -4271,7 +4903,7 @@ function renderBudgetSummaryTable(){
         return `<tr style="background:var(--chip)"><td colspan="2" style="font-weight:700;color:var(--accent)">${esc(cat)}</td>
             <td class="num mono" style="font-weight:700">${money(cp)}</td><td class="num mono" style="font-weight:700">${money(ca)}</td>
             <td class="num mono ${budgetVarClass(ca-cp)}" style="font-weight:700">${money(ca-cp)}</td></tr>` +
-          items.map(r=>`<tr><td class="mono click" style="padding-left:18px" onclick="viewBudgetAccountMonth(${r.acc})">${r.acc}</td><td>${esc(accShort(r.acc))}</td>
+          items.map(r=>`<tr class="click" onclick="viewBudgetAccountMonth(${r.acc})"><td class="mono" style="padding-left:18px">${r.acc}</td><td>${esc(accShort(r.acc))}</td>
             <td class="num mono">${money(r.planned)}</td><td class="num mono">${money(r.actual)}</td>
             <td class="num mono ${budgetVarClass(r.variance)}">${money(r.variance)}</td></tr>`).join('');
       }).join('') || '<tr><td colspan="5" class="empty">No budget or actuals for this month</td></tr>'}</tbody>
@@ -4456,6 +5088,11 @@ function pnlBudgetForAccountInRange(accId, fromDate, toDate){
   }
   return total;
 }
+// Magnitude-based expense variance: positive means under budget (surplus, good), negative means
+// over budget (bad) — correct regardless of which sign convention the underlying account uses.
+// A raw signed subtraction (actual - budget) can flip the wrong way depending on account sign
+// convention, which is exactly the bug this replaces.
+function pnlVarianceMagnitude(budget, actual){ return Math.abs(budget) - Math.abs(actual); }
 function renderPnL(){
   beginForecastFastPath();
   try{
@@ -4481,12 +5118,19 @@ function renderPnL(){
   });
   const expCats = Object.keys(expByCat).sort((x,y)=> Math.min(...expByCat[x].map(i=>i.a.id)) - Math.min(...expByCat[y].map(i=>i.a.id)));
   let expTotal = 0, expBudgetTotal = 0;
-  const expBody = expCats.map(cat=>{
+  const expCatData = expCats.map(cat=>{
     const items = expByCat[cat].sort((a,b)=>a.a.id-b.a.id);
     const catTotal = items.reduce((s,i)=>s+i.actual,0), catBudget = items.reduce((s,i)=>s+i.budget,0);
     expTotal += catTotal; expBudgetTotal += catBudget;
-    return `<tr style="background:var(--chip)"><td style="font-weight:700;color:var(--accent)">${esc(cat)}</td><td class="num mono" style="font-weight:700">${money(catBudget)}</td><td class="num mono" style="font-weight:700">${money(catTotal)}</td><td class="num mono ${moneyClass(catTotal-catBudget)}" style="font-weight:700">${money(catTotal-catBudget)}</td></tr>` +
-      items.map(i=>`<tr><td class="click" style="padding-left:18px" onclick="viewPnLAccountTransactions(${i.a.id})">${esc(accShort(i.a.id))}</td><td class="num mono">${money(i.budget)}</td><td class="num mono">${money(i.actual)}</td><td class="num mono ${moneyClass(i.actual-i.budget)}">${money(i.actual-i.budget)}</td></tr>`).join('');
+    return {cat, items, catTotal, catBudget};
+  });
+  // % of Total: each line/category's share of Total Period Expenses, by magnitude (so it stays
+  // sensible regardless of an account's underlying sign convention). Computed as a second pass
+  // since expTotal isn't final until every category has been summed above.
+  const pctOfTotal = v => Math.abs(expTotal)<0.005? '—' : (Math.abs(v)/Math.abs(expTotal)*100).toFixed(2)+'%';
+  const expBody = expCatData.map(({cat, items, catTotal, catBudget})=>{
+    return `<tr style="background:var(--chip)"><td style="font-weight:700;color:var(--accent)">${esc(cat)}</td><td class="num mono" style="font-weight:700">${money(catBudget)}</td><td class="num mono" style="font-weight:700">${money(catTotal)}</td><td class="num mono" style="font-weight:700">${pctOfTotal(catTotal)}</td><td class="num mono ${moneyClass(pnlVarianceMagnitude(catBudget,catTotal))}" style="font-weight:700">${money(pnlVarianceMagnitude(catBudget,catTotal))}</td></tr>` +
+      items.map(i=>`<tr><td class="click" style="padding-left:18px" onclick="viewPnLAccountTransactions(${i.a.id})">${esc(accShort(i.a.id))}</td><td class="num mono">${money(i.budget)}</td><td class="num mono">${money(i.actual)}</td><td class="num mono">${pctOfTotal(i.actual)}</td><td class="num mono ${moneyClass(pnlVarianceMagnitude(i.budget,i.actual))}">${money(pnlVarianceMagnitude(i.budget,i.actual))}</td></tr>`).join('');
   }).join('');
 
   // Net Result is always Income minus the magnitude of Expenses — matching standard P&L
@@ -4525,11 +5169,11 @@ function renderPnL(){
     </div>
     <div class="panel"><h3>Income</h3><table><tbody>${incBody||'<tr><td class="empty" colspan="2">No income activity</td></tr>'}</tbody>
       <tfoot><tr><td>Total Income</td><td class="num mono g" style="font-size:15px">${money(incTotal)}</td></tr></tfoot></table></div>
-    <div class="panel"><h3>Expenses</h3><table><thead><tr><th></th><th class="num">Budget</th><th class="num">Actual</th><th class="num">Variance</th></tr></thead>
-      <tbody>${expBody||'<tr><td class="empty" colspan="4">No expense activity</td></tr>'}</tbody>
-      <tfoot><tr><td>Total Expenses</td><td class="num mono" style="font-size:15px">${money(expBudgetTotal)}</td><td class="num mono" style="font-size:15px">${money(expTotal)}</td><td class="num mono ${moneyClass(expTotal-expBudgetTotal)}" style="font-size:15px">${money(expTotal-expBudgetTotal)}</td></tr></tfoot></table></div>
+    <div class="panel"><h3>Expenses</h3><table><thead><tr><th></th><th class="num">Budget</th><th class="num">Actual</th><th class="num">% of Total</th><th class="num">Variance</th></tr></thead>
+      <tbody>${expBody||'<tr><td class="empty" colspan="5">No expense activity</td></tr>'}</tbody>
+      <tfoot><tr><td>Total Expenses</td><td class="num mono" style="font-size:15px">${money(expBudgetTotal)}</td><td class="num mono" style="font-size:15px">${money(expTotal)}</td><td class="num mono" style="font-size:15px">${Math.abs(expTotal)<0.005?'—':'100.00%'}</td><td class="num mono ${moneyClass(pnlVarianceMagnitude(expBudgetTotal,expTotal))}" style="font-size:15px">${money(pnlVarianceMagnitude(expBudgetTotal,expTotal))}</td></tr></tfoot></table></div>
     <div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Net Result</h3><div class="num mono" style="font-size:20px;font-weight:700;color:${moneyClass(net)==='r'?'var(--red)':(moneyClass(net)==='g'?'var(--green)':'inherit')}">${money(net)}</div></div>
-    <div class="mut" style="font-size:12px;margin-top:6px">Income is shown as a positive figure. Expenses reflect their real transaction sign — normally negative, but a reversal or credit can show positive. Net Result is always Income minus the magnitude of Expenses. Variance on expenses is Actual − Budget; negative means over budget.</div></div>`;
+    <div class="mut" style="font-size:12px;margin-top:6px">Income is shown as a positive figure. Expenses reflect their real transaction sign — normally negative, but a reversal or credit can show positive. Net Result is always Income minus the magnitude of Expenses. Variance is Budget − Actual, compared by magnitude so it's correct regardless of an account's sign convention: positive (green) means you came in under budget, negative (red) means over budget.</div></div>`;
   } finally {
     endForecastFastPath();
   }
@@ -5104,8 +5748,7 @@ function addProvisionMonth(gid){
 }
 let provPicker = {}; // gid -> {matches, hi}
 function provAccInput(gid, val){
-  const q = val.toLowerCase();
-  const matches = postableAccounts().filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,20);
+  const matches = accountSearchMatches(val, postableAccounts()).slice(0,20);
   provPicker[gid] = {matches, hi:-1};
   renderProvAcDrop(gid, val);
 }
@@ -5299,8 +5942,7 @@ function reAccPickerInput(buildingId, field, val){
   const st = reAccPickerState[key] = reAccPickerState[key] || {};
   st.q = val;
   const pool = field==='apt'? unlinkedApartmentAccounts() : unlinkedExpenseAccounts();
-  const q = val.toLowerCase();
-  st.matches = pool.filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,25);
+  st.matches = accountSearchMatches(val, pool);
   st.hi = -1;
   renderReAccDrop(buildingId, field);
 }
@@ -5330,6 +5972,1186 @@ function reAccPickerSelect(buildingId, field, accId){
 function reAccPickerClose(buildingId, field){
   setTimeout(()=>{ const el = document.getElementById('reAcDrop_'+buildingId+'_'+field); if(el){ el.innerHTML=''; el.className='acdrop'; } }, 150);
 }
+/* ============================= INVESTMENTS =============================
+   Structure: Platform -> Position -> Transactions + Valuations.
+
+   Cost basis is held in SAR (the amount that actually left the bank), because that is exactly
+   what the ledger records and what "SAR used / units bought" produces — so the person's figures
+   are already net of fees with no separate fee field needed. Valuations are logged in the asset's
+   NATIVE price (e.g. USD for a US stock) and converted at one app-wide USD->SAR rate.
+
+   Co-ownership works by attributing UNITS per owner on each transaction, never by storing a
+   percentage. Ownership % is derived as ownerUnits/totalUnits, so it re-derives itself whenever
+   anyone buys more — nothing to keep in sync. This also prices each owner in at what the asset
+   actually cost on the day they bought, so an owner who joins after a gain doesn't get handed a
+   share of gains that happened before they were invested (which is what a contributed-capital
+   percentage would silently do).
+
+   Realised gain/loss is DISPLAYED here only. Posting it to the PROFIT account stays a manual
+   ledger action, per the person's explicit choice.
+*/
+const INV_ASSET_CLASSES = ['Stocks','Crypto','Other'];
+// The USD->SAR rate is SYNCED (not per-device): it directly scales reported portfolio value,
+// so a device-local rate would make the same portfolio read differently on phone vs desktop.
+function getInvFxRate(){ const v = Number((D.invSettings||{}).fxUsdSar); return v>0? v : 3.75; }
+async function setInvFxRate(v){
+  const rate = Number(v)>0? Number(v) : 3.75;
+  D.invSettings = D.invSettings || {};
+  const base = D.invSettings.updated_at||null;
+  D.invSettings.fxUsdSar = rate;
+  D.invSettings.updated_at = nowISO();
+  await syncWrite('pd_inv_settings','upsert',{id:1, fx_usd_sar:rate}, base);
+  persistLocal();
+}
+function invPlatformById(id){ return (D.invPlatforms||[]).find(p=>p.id===id) || null; }
+function invOwnerById(id){ return (D.invOwners||[]).find(o=>o.id===id) || null; }
+function invPositionById(id){ return (D.invPositions||[]).find(p=>p.id===id) || null; }
+function invPositionsForPlatform(pid){ return (D.invPositions||[]).filter(p=>p.platformId===pid).sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
+function invTxForPosition(posId){ return (D.invTransactions||[]).filter(t=>t.positionId===posId).slice().sort((a,b)=> a.date===b.date? (a.id-b.id) : (a.date<b.date?-1:1)); }
+function invLatestValuation(posId){
+  const vals = (D.invValuations||[]).filter(v=>v.positionId===posId).slice().sort((a,b)=> a.date<b.date?-1:1);
+  return vals.length? vals[vals.length-1] : null;
+}
+function invNextId(arr){ return 1 + (arr||[]).reduce((m,x)=>Math.max(m, Number(x.id)||0), 0); }
+function invFxFor(currency){ return currency==='USD'? getInvFxRate() : 1; }
+
+// Weighted-average-cost engine, run per position over its transactions in date order.
+// Returns per-owner units / cost / realised gain, plus position totals.
+function computePositionState(posId){
+  const txs = invTxForPosition(posId);
+  const byOwner = {}; // ownerId -> {units, costSar, realizedSar}
+  const ensure = oid => (byOwner[oid] = byOwner[oid] || {units:0, costSar:0, realizedSar:0});
+  for(const t of txs){
+    const units = Math.abs(Number(t.units)||0);
+    const totalSar = Math.abs(Number(t.totalSar)||0);
+    // Owner attribution; if a transaction has none recorded, fall back to the "self" owner so
+    // older/partial data still computes instead of silently vanishing from the totals.
+    let alloc = Array.isArray(t.owners) && t.owners.length? t.owners : null;
+    if(!alloc){
+      const self = (D.invOwners||[]).find(o=>o.isSelf);
+      alloc = self? [{ownerId:self.id, units}] : [];
+    }
+    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0), 0);
+    if(allocUnits<=0) continue;
+    for(const a of alloc){
+      const oUnits = Math.abs(Number(a.units)||0);
+      if(oUnits<=0) continue;
+      const share = oUnits/allocUnits;
+      const oSar = totalSar*share;
+      const st = ensure(a.ownerId);
+      if(t.kind==='sell'){
+        // Weighted average cost: the cost released is this owner's average cost times units sold.
+        const avg = st.units>0? st.costSar/st.units : 0;
+        const costOut = avg*oUnits;
+        st.realizedSar += (oSar - costOut);
+        st.units -= oUnits;
+        st.costSar -= costOut;
+        if(st.units<1e-12){ st.units = 0; st.costSar = 0; }
+      } else {
+        st.units += oUnits;
+        st.costSar += oSar;
+      }
+    }
+  }
+  let totalUnits=0, totalCostSar=0, totalRealizedSar=0;
+  for(const k in byOwner){ totalUnits+=byOwner[k].units; totalCostSar+=byOwner[k].costSar; totalRealizedSar+=byOwner[k].realizedSar; }
+  return {byOwner, totalUnits, totalCostSar, totalRealizedSar};
+}
+// Full valuation of a position: current market value in SAR and unrealised gain vs cost.
+function computePositionValuation(pos){
+  const st = computePositionState(pos.id);
+  const val = invLatestValuation(pos.id);
+  const price = val? Number(val.price)||0 : 0;
+  const fx = invFxFor(pos.currency);
+  const marketSar = st.totalUnits * price * fx;
+  return {
+    ...st,
+    price, priceDate: val? val.date : null, fx,
+    marketSar,
+    unrealizedSar: val? (marketSar - st.totalCostSar) : 0,
+    hasValuation: !!val,
+  };
+}
+// Per-owner slice of a position's market value, using that owner's share of units.
+function ownerSliceOfPosition(pos, ownerId){
+  const v = computePositionValuation(pos);
+  const o = v.byOwner[ownerId];
+  if(!o || o.units<=0) return null;
+  const marketSar = o.units * v.price * v.fx;
+  return {
+    units:o.units, costSar:o.costSar, realizedSar:o.realizedSar,
+    marketSar, unrealizedSar: v.hasValuation? (marketSar - o.costSar) : 0,
+    pctOfPosition: v.totalUnits>0? (o.units/v.totalUnits*100) : 0,
+    price:v.price, priceDate:v.priceDate, hasValuation:v.hasValuation,
+  };
+}
+// Converts a SAR-based split into units. The person often thinks in money ("1K for me, 2K for
+// my wife") rather than in fractions of a coin, so the modal lets them enter SAR and derives the
+// units from it. Any rounding remainder is placed on the LARGEST holder so the per-owner units
+// always sum exactly to the transaction's units — otherwise cost basis would drift by a sliver
+// on every split purchase. Units keep full precision deliberately: rounding them to 2 decimals
+// would be catastrophic for crypto (0.0125 BTC would become 0.01).
+function invDeriveUnitsFromSar(totalUnits, allocSar, totalSar){
+  const rows = (allocSar||[]).map(a=>({ownerId:a.ownerId, sar: Number(a.sar)||0})).filter(a=>a.sar>0);
+  const sumSar = rows.reduce((s,a)=>s+a.sar,0);
+  if(!(sumSar>0) || !(totalUnits>0)) return [];
+  // Divide by the transaction's TOTAL SAR, not by what's been allocated so far. Using the
+  // running subtotal made a half-filled split read as 100% of the units, so the first person
+  // entered appeared to own the whole position until the rest of the rows were typed in.
+  const denom = Number(totalSar)>0? Number(totalSar) : sumSar;
+  const R = 1e8; // 8 decimal places — enough for crypto; rounding to 2 would destroy a BTC split.
+  const out = rows.map(a=>({ownerId:a.ownerId, units: Math.round(totalUnits*(a.sar/denom)*R)/R}));
+  // Only reconcile the remainder once the split is complete — forcing units to sum to the total
+  // mid-entry would put the whole balance on one person while the other rows are still blank.
+  const fullyAllocated = Math.abs(sumSar-denom)<0.005;
+  if(fullyAllocated){
+    const drift = Math.round((totalUnits - out.reduce((s,o)=>s+o.units,0))*R)/R;
+    if(drift!==0 && out.length){
+      let idx = 0;
+      for(let i=1;i<out.length;i++) if(out[i].units>out[idx].units) idx = i;
+      out[idx].units = Math.round((out[idx].units + drift)*R)/R;
+    }
+  }
+  return out;
+}
+// Units display to 8 decimal places for crypto and stocks, trailing zeros trimmed so whole
+// numbers still read cleanly.
+function invFmtUnits(u){
+  const n = Number(u)||0;
+  if(!n) return '0';
+  return String(Math.round(n*1e8)/1e8);
+}
+// The reverse view: what each owner's units are worth in SAR, for showing both columns at once.
+function invSarForUnits(totalUnits, totalSar, units){
+  if(!(totalUnits>0)) return 0;
+  return Math.round((totalSar*(units/totalUnits))*100)/100;
+}
+function invActivePositions(){ return (D.invPositions||[]).filter(p=>p.status!=='Closed'); }
+// Rolls the same asset up across platforms (the person holds some assets in more than one place).
+function invAssetRollup(){
+  const map = {};
+  for(const pos of (D.invPositions||[])){
+    const key = (pos.ticker||pos.name||'').trim().toLowerCase();
+    if(!key) continue;
+    const v = computePositionValuation(pos);
+    if(v.totalUnits<=0) continue;
+    if(!map[key]) map[key] = {label: pos.ticker||pos.name, assetClass:pos.assetClass, units:0, costSar:0, marketSar:0, platforms:[], anyValuation:false};
+    const m = map[key];
+    m.units += v.totalUnits; m.costSar += v.totalCostSar; m.marketSar += v.marketSar;
+    if(v.hasValuation) m.anyValuation = true;
+    const plat = invPlatformById(pos.platformId);
+    if(plat && !m.platforms.includes(plat.name)) m.platforms.push(plat.name);
+  }
+  return Object.values(map).sort((a,b)=>b.marketSar-a.marketSar);
+}
+// Totals per owner across the whole portfolio. Self and family are reported separately by the UI.
+function invOwnerTotals(){
+  const out = [];
+  for(const o of (D.invOwners||[])){
+    let units=0, costSar=0, marketSar=0, realizedSar=0, valued=true;
+    for(const pos of (D.invPositions||[])){
+      const s = ownerSliceOfPosition(pos, o.id);
+      if(!s) continue;
+      units += s.units; costSar += s.costSar; marketSar += s.marketSar; realizedSar += s.realizedSar;
+      if(!s.hasValuation) valued = false;
+    }
+    out.push({owner:o, units, costSar, marketSar, realizedSar, unrealizedSar: marketSar-costSar, fullyValued:valued});
+  }
+  return out;
+}
+// Reconciliation: the tracker's remaining cost basis for an owner should equal what the ledger
+// says is still out (money invested minus capital returned), since profit is booked separately.
+function invOwnerReconciliation(){
+  return (D.invOwners||[]).map(o=>{
+    let trackerCost = 0;
+    for(const pos of (D.invPositions||[])){
+      const s = ownerSliceOfPosition(pos, o.id);
+      if(s) trackerCost += s.costSar;
+    }
+    const outBal = o.outAcc? Math.abs(accountBalance(o.outAcc)) : 0;
+    const inBal = o.inAcc? Math.abs(accountBalance(o.inAcc)) : 0;
+    const ledgerNet = outBal - inBal;
+    const diff = trackerCost - ledgerNet;
+    return {owner:o, trackerCost, ledgerNet, diff, linked: !!(o.outAcc||o.inAcc), ok: Math.abs(diff)<1};
+  });
+}
+
+/* ---- persistence ---- */
+async function persistInvOwner(o){
+  const base = o.updated_at||null; o.updated_at = nowISO();
+  await syncWrite('pd_inv_owners','upsert',{id:o.id, name:o.name, name_ar:o.nameAr||'', is_self:!!o.isSelf, out_acc:o.outAcc, in_acc:o.inAcc, profit_acc:o.profitAcc}, base);
+  persistLocal();
+}
+async function persistInvPlatform(p){
+  const base = p.updated_at||null; p.updated_at = nowISO();
+  await syncWrite('pd_inv_platforms','upsert',{id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc}, base);
+  persistLocal();
+}
+async function persistInvPosition(p){
+  const base = p.updated_at||null; p.updated_at = nowISO();
+  await syncWrite('pd_inv_positions','upsert',{id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status}, base);
+  persistLocal();
+}
+async function persistInvTransaction(t){
+  const base = t.updated_at||null; t.updated_at = nowISO();
+  await syncWrite('pd_inv_transactions','upsert',{id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||''}, base);
+  persistLocal();
+}
+async function persistInvValuation(v){
+  const base = v.updated_at||null; v.updated_at = nowISO();
+  await syncWrite('pd_inv_valuations','upsert',{id:v.id, position_id:v.positionId, entry_date:v.date, price:v.price}, base);
+  persistLocal();
+}
+
+
+/* ---- Investments: analytics ---- */
+// Units / cost held by a given date, so historical portfolio value can be reconstructed.
+function invPositionStateAsOf(posId, asOfDate, selfOnly){
+  const txs = invTxForPosition(posId).filter(t=>t.date<=asOfDate);
+  const selfIds = new Set((D.invOwners||[]).filter(o=>o.isSelf).map(o=>o.id));
+  let units=0, costSar=0;
+  const byOwner = {};
+  for(const t of txs){
+    const tUnits = Math.abs(Number(t.units)||0);
+    const tSar = Math.abs(Number(t.totalSar)||0);
+    let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
+    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
+    if(allocUnits<=0) continue;
+    for(const a of alloc){
+      if(selfOnly && !selfIds.has(a.ownerId)) continue;
+      const oUnits = Math.abs(Number(a.units)||0);
+      if(oUnits<=0) continue;
+      const oSar = tSar*(oUnits/allocUnits);
+      const st = byOwner[a.ownerId] = byOwner[a.ownerId] || {units:0, costSar:0};
+      if(t.kind==='sell'){
+        const avg = st.units>0? st.costSar/st.units : 0;
+        st.units -= oUnits; st.costSar -= avg*oUnits;
+        if(st.units<1e-12){ st.units=0; st.costSar=0; }
+      } else { st.units += oUnits; st.costSar += oSar; }
+    }
+  }
+  for(const k in byOwner){ units += byOwner[k].units; costSar += byOwner[k].costSar; }
+  return {units, costSar};
+}
+function invPriceAsOf(posId, asOfDate){
+  const vals = (D.invValuations||[]).filter(v=>v.positionId===posId && v.date<=asOfDate).sort((a,b)=>a.date<b.date?-1:1);
+  return vals.length? Number(vals[vals.length-1].price)||0 : 0;
+}
+// Portfolio value and cost at every date a price was logged — the series behind the chart.
+function invPortfolioHistory(selfOnly){
+  const dates = Array.from(new Set((D.invValuations||[]).map(v=>v.date))).sort();
+  return dates.map(d=>{
+    let value=0, cost=0;
+    for(const pos of (D.invPositions||[])){
+      const st = invPositionStateAsOf(pos.id, d, selfOnly);
+      if(st.units<=0){ cost += st.costSar; continue; }
+      value += st.units * invPriceAsOf(pos.id, d) * invFxFor(pos.currency);
+      cost += st.costSar;
+    }
+    return {date:d, value, cost};
+  });
+}
+// Money-weighted annual return (XIRR). Simple percentage return ignores WHEN money went in,
+// which matters a lot here because the person back-fills purchases across years.
+function invXirr(flows){
+  // flows: [{date:'YYYY-MM-DD', amount}] — negative = money in, positive = money out/value.
+  if(flows.length<2) return null;
+  const hasNeg = flows.some(f=>f.amount<0), hasPos = flows.some(f=>f.amount>0);
+  if(!hasNeg || !hasPos) return null;
+  const t0 = new Date(flows[0].date).getTime();
+  const yrs = f => (new Date(f.date).getTime()-t0)/(365.25*24*3600*1000);
+  const npv = r => flows.reduce((s,f)=> s + f.amount/Math.pow(1+r, yrs(f)), 0);
+  let lo=-0.9999, hi=10;
+  if(npv(lo)*npv(hi) > 0) return null;
+  for(let i=0;i<200;i++){
+    const mid=(lo+hi)/2;
+    if(npv(lo)*npv(mid) <= 0) hi=mid; else lo=mid;
+  }
+  const r=(lo+hi)/2;
+  return isFinite(r)? r*100 : null;
+}
+function invPortfolioXirr(selfOnly){
+  const selfIds = new Set((D.invOwners||[]).filter(o=>o.isSelf).map(o=>o.id));
+  const flows = [];
+  for(const t of (D.invTransactions||[]).slice().sort((a,b)=>a.date<b.date?-1:1)){
+    const tUnits = Math.abs(Number(t.units)||0), tSar = Math.abs(Number(t.totalSar)||0);
+    let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
+    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
+    if(allocUnits<=0) continue;
+    let share = 0;
+    for(const a of alloc){ if(!selfOnly || selfIds.has(a.ownerId)) share += Math.abs(Number(a.units)||0); }
+    if(share<=0) continue;
+    const amt = tSar*(share/allocUnits);
+    flows.push({date:t.date, amount: t.kind==='sell'? amt : -amt});
+  }
+  if(!flows.length) return null;
+  let currentValue = 0;
+  for(const pos of (D.invPositions||[])){
+    const st = invPositionStateAsOf(pos.id, todayStr(), selfOnly);
+    currentValue += st.units * invPriceAsOf(pos.id, todayStr()) * invFxFor(pos.currency);
+  }
+  if(currentValue>0) flows.push({date: todayStr(), amount: currentValue});
+  return invXirr(flows);
+}
+function invDaysSince(dateStr){
+  if(!dateStr) return null;
+  return Math.floor((new Date(todayStr()) - new Date(dateStr))/(24*3600*1000));
+}
+// Positions whose price hasn't been refreshed recently — stale prices quietly make the whole
+// portfolio value wrong, so they're surfaced rather than left to be noticed by accident.
+function invStalePositions(dayThreshold){
+  const limit = dayThreshold||14;
+  return invActivePositions().map(p=>{
+    const st = computePositionState(p.id);
+    if(st.totalUnits<=0) return null;
+    const lv = invLatestValuation(p.id);
+    const days = lv? invDaysSince(lv.date) : null;
+    if(lv && days<=limit) return null;
+    return {pos:p, days, never:!lv};
+  }).filter(Boolean);
+}
+function invAllocationBy(keyFn, selfOnly){
+  const map = {};
+  for(const pos of (D.invPositions||[])){
+    const st = invPositionStateAsOf(pos.id, todayStr(), selfOnly);
+    if(st.units<=0) continue;
+    const val = st.units * invPriceAsOf(pos.id, todayStr()) * invFxFor(pos.currency);
+    if(val<=0) continue;
+    const k = keyFn(pos) || '—';
+    map[k] = (map[k]||0) + val;
+  }
+  return Object.entries(map).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);
+}
+// Realised gain grouped by calendar year — useful as a record of what was actually banked.
+function invRealisedByYear(selfOnly){
+  const selfIds = new Set((D.invOwners||[]).filter(o=>o.isSelf).map(o=>o.id));
+  const byYear = {};
+  for(const pos of (D.invPositions||[])){
+    const txs = invTxForPosition(pos.id);
+    const st = {};
+    for(const t of txs){
+      const tUnits = Math.abs(Number(t.units)||0), tSar = Math.abs(Number(t.totalSar)||0);
+      let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
+      const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
+      if(allocUnits<=0) continue;
+      for(const a of alloc){
+        if(selfOnly && !selfIds.has(a.ownerId)) continue;
+        const oUnits = Math.abs(Number(a.units)||0);
+        if(oUnits<=0) continue;
+        const oSar = tSar*(oUnits/allocUnits);
+        const s = st[a.ownerId] = st[a.ownerId] || {units:0, costSar:0};
+        if(t.kind==='sell'){
+          const avg = s.units>0? s.costSar/s.units : 0;
+          const gain = oSar - avg*oUnits;
+          const yr = String(t.date).slice(0,4);
+          byYear[yr] = (byYear[yr]||0) + gain;
+          s.units -= oUnits; s.costSar -= avg*oUnits;
+          if(s.units<1e-12){ s.units=0; s.costSar=0; }
+        } else { s.units += oUnits; s.costSar += oSar; }
+      }
+    }
+  }
+  return Object.entries(byYear).map(([year,gain])=>({year,gain})).sort((a,b)=>a.year<b.year?1:-1);
+}
+
+/* ---- Investments: CSV bulk entry ----
+   Back-filling years of past purchases one modal at a time would be punishing, so transactions
+   and prices can both be round-tripped through CSV. Import is all-or-nothing: every row is
+   validated first and nothing is written unless the whole file passes. */
+function invCsvDownload(name, rows){
+  const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = name+' - '+todayStr()+'.csv'; dl.click();
+}
+function invOwnerAllocToString(owners){
+  return (owners||[]).map(o=>o.ownerId+':'+o.units).join(';');
+}
+function invOwnerAllocFromString(s){
+  return String(s||'').split(';').map(x=>x.trim()).filter(Boolean).map(pair=>{
+    const [oid,u] = pair.split(':');
+    return {ownerId: Number(oid), units: Number(u)};
+  });
+}
+function exportInvTransactionsCSV(){
+  const rows = [['Tx ID','Position ID','Position','Date','Kind','Units','Total SAR','Owners (id:units;…)','Note']];
+  for(const t of (D.invTransactions||[]).slice().sort((a,b)=>a.date<b.date?-1:1)){
+    const pos = invPositionById(t.positionId);
+    rows.push([t.id, t.positionId, pos?pos.name:'', t.date, t.kind, t.units, t.totalSar, invOwnerAllocToString(t.owners), t.note||'']);
+  }
+  invCsvDownload('LedgerOS Investment Transactions', rows);
+  toast('Transactions exported ✓');
+}
+function exportInvValuationsCSV(){
+  const rows = [['Valuation ID','Position ID','Position','Date','Price (native currency)']];
+  for(const v of (D.invValuations||[]).slice().sort((a,b)=>a.date<b.date?-1:1)){
+    const pos = invPositionById(v.positionId);
+    rows.push([v.id, v.positionId, pos?pos.name:'', v.date, v.price]);
+  }
+  invCsvDownload('LedgerOS Investment Prices', rows);
+  toast('Prices exported ✓');
+}
+function openInvCsvTools(){
+  showModal(`
+    <div class="row" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">📁 Bulk CSV</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mut" style="font-size:12px;margin:6px 0 14px">Export to get the exact column layout, edit in Excel, then import. Leave the ID column blank on a new row to add it; keep the ID to update an existing one. Nothing is saved unless every row passes validation.</div>
+    <h3 style="font-size:13.5px;margin-bottom:6px">Transactions</h3>
+    <div class="row" style="gap:8px;margin-bottom:16px">
+      <button class="btn ghost sm" onclick="exportInvTransactionsCSV()">⬇ Export</button>
+      <label class="btn ghost sm" style="cursor:pointer">⬆ Import<input type="file" accept=".csv" style="display:none" onchange="handleInvCsvFile(event,'tx')"></label>
+    </div>
+    <h3 style="font-size:13.5px;margin-bottom:6px">Prices</h3>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost sm" onclick="exportInvValuationsCSV()">⬇ Export</button>
+      <label class="btn ghost sm" style="cursor:pointer">⬆ Import<input type="file" accept=".csv" style="display:none" onchange="handleInvCsvFile(event,'val')"></label>
+    </div>
+    <div class="mut" style="font-size:11.5px;margin-top:14px">Owners column format: <span class="mono">1:10;2:5</span> — owner id, colon, units, semicolon-separated. The units must add up to the row's Units value.</div>`);
+}
+function handleInvCsvFile(ev, which){
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(String(reader.result||''));
+    if(which==='tx') importInvTransactionsCSV(rows); else importInvValuationsCSV(rows);
+  };
+  reader.readAsText(f);
+}
+async function importInvTransactionsCSV(rows){
+  if(!rows.length){ toast('Empty file', true); return; }
+  const body = rows.slice(1).filter(r=>r.some(c=>String(c).trim()!==''));
+  const errors = [], staged = [];
+  const knownOwners = new Set((D.invOwners||[]).map(o=>o.id));
+  body.forEach((r, i)=>{
+    const line = i+2;
+    const [txId, posId, , date, kind, units, totalSar, ownersStr, note] = r;
+    const pid = Number(posId);
+    if(!invPositionById(pid)){ errors.push('Row '+line+': unknown Position ID "'+posId+'"'); return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'').trim())){ errors.push('Row '+line+': date must be YYYY-MM-DD'); return; }
+    const k = String(kind||'').trim().toLowerCase();
+    if(k!=='buy' && k!=='sell'){ errors.push('Row '+line+': Kind must be buy or sell'); return; }
+    const u = Number(units), sar = Number(totalSar);
+    if(!(u>0)){ errors.push('Row '+line+': Units must be greater than zero'); return; }
+    if(!(sar>0)){ errors.push('Row '+line+': Total SAR must be greater than zero'); return; }
+    const owners = invOwnerAllocFromString(ownersStr);
+    if(!owners.length){ errors.push('Row '+line+': Owners column is required'); return; }
+    for(const o of owners){
+      if(!knownOwners.has(o.ownerId)){ errors.push('Row '+line+': unknown owner id '+o.ownerId); return; }
+      if(!(o.units>0)){ errors.push('Row '+line+': owner '+o.ownerId+' has no units'); return; }
+    }
+    const allocTotal = owners.reduce((s,o)=>s+o.units,0);
+    if(Math.abs(allocTotal-u)>1e-6){ errors.push('Row '+line+': owner units ('+allocTotal+') must equal Units ('+u+')'); return; }
+    staged.push({id: String(txId||'').trim()? Number(txId) : null, positionId:pid, date:String(date).trim(), kind:k, units:u, totalSar:sar, owners, note:String(note||'')});
+  });
+  if(errors.length){ showInvCsvErrors(errors); return; }
+  // Dry run: replay every position affected and make sure no owner is ever sold into negative
+  // units. Catching it here keeps a bad file from half-importing and corrupting cost basis.
+  const original = D.invTransactions;
+  const simulated = original.filter(t=>!staged.some(s=>s.id===t.id)).concat(staged.map(s=>({...s, id: s.id||-1})));
+  D.invTransactions = simulated;
+  const negErrors = [];
+  for(const pid of Array.from(new Set(staged.map(s=>s.positionId)))){
+    const st = computePositionState(pid);
+    for(const oid in st.byOwner){
+      if(st.byOwner[oid].units < -1e-6){
+        const o = invOwnerById(Number(oid)); const p = invPositionById(pid);
+        negErrors.push((p?p.name:'Position '+pid)+': '+(o?o.name:'owner '+oid)+' would end up holding negative units');
+      }
+    }
+  }
+  D.invTransactions = original;
+  if(negErrors.length){ showInvCsvErrors(negErrors); return; }
+  for(const s of staged){
+    if(s.id && (D.invTransactions||[]).some(t=>t.id===s.id)){
+      const ex = D.invTransactions.find(t=>t.id===s.id);
+      Object.assign(ex, {positionId:s.positionId, date:s.date, kind:s.kind, units:s.units, totalSar:s.totalSar, owners:s.owners, note:s.note});
+      await persistInvTransaction(ex);
+    } else {
+      const rec = {...s, id: invNextId(D.invTransactions), updated_at:null};
+      D.invTransactions.push(rec);
+      await persistInvTransaction(rec);
+    }
+  }
+  closeModal(); renderInvestmentsPage(); toast(staged.length+' transaction(s) imported ✓');
+}
+async function importInvValuationsCSV(rows){
+  if(!rows.length){ toast('Empty file', true); return; }
+  const body = rows.slice(1).filter(r=>r.some(c=>String(c).trim()!==''));
+  const errors = [], staged = [];
+  body.forEach((r,i)=>{
+    const line = i+2;
+    const [valId, posId, , date, price] = r;
+    const pid = Number(posId);
+    if(!invPositionById(pid)){ errors.push('Row '+line+': unknown Position ID "'+posId+'"'); return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'').trim())){ errors.push('Row '+line+': date must be YYYY-MM-DD'); return; }
+    const p = Number(price);
+    if(!(p>0)){ errors.push('Row '+line+': Price must be greater than zero'); return; }
+    staged.push({id: String(valId||'').trim()? Number(valId) : null, positionId:pid, date:String(date).trim(), price:p});
+  });
+  if(errors.length){ showInvCsvErrors(errors); return; }
+  for(const s of staged){
+    const existing = s.id? (D.invValuations||[]).find(v=>v.id===s.id)
+                         : (D.invValuations||[]).find(v=>v.positionId===s.positionId && v.date===s.date);
+    if(existing){ Object.assign(existing, {positionId:s.positionId, date:s.date, price:s.price}); await persistInvValuation(existing); }
+    else { const rec = {...s, id: invNextId(D.invValuations), updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
+  }
+  closeModal(); renderInvestmentsPage(); toast(staged.length+' price(s) imported ✓');
+}
+function showInvCsvErrors(errors){
+  showModal(`
+    <h3 style="margin-top:0;color:var(--red)">⚠ Import cancelled</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:10px">Nothing was saved. Fix these ${errors.length} issue(s) and import again.</div>
+    <div style="max-height:320px;overflow:auto"><ul style="font-size:12.5px;line-height:1.7;padding-left:18px">${errors.slice(0,80).map(e=>'<li>'+esc(e)+'</li>').join('')}</ul>
+    ${errors.length>80? `<div class="mut" style="font-size:11.5px">…and ${errors.length-80} more</div>`:''}</div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn pri" onclick="openInvCsvTools()">Back</button></div>`);
+}
+
+/* ---- Investments page ---- */
+function invKpiCard(label, value, cls){
+  return `<div class="kpi"><div class="kpi-label">${esc(label)}</div><div class="kpi-value ${cls||''}">${value}</div></div>`;
+}
+function invPctText(cost, market, hasVal){
+  if(!hasVal || Math.abs(cost)<0.005) return '—';
+  return ((market-cost)/Math.abs(cost)*100).toFixed(2)+'%';
+}
+function renderInvestmentsPage(){
+  const platforms = D.invPlatforms||[];
+  const totals = invOwnerTotals();
+  const self = totals.filter(t=>t.owner.isSelf);
+  const family = totals.filter(t=>!t.owner.isSelf);
+  const selfTotal = self.reduce((a,t)=>({cost:a.cost+t.costSar, market:a.market+t.marketSar}), {cost:0,market:0});
+  const famTotal = family.reduce((a,t)=>({cost:a.cost+t.costSar, market:a.market+t.marketSar}), {cost:0,market:0});
+  const recon = invOwnerReconciliation().filter(r=>r.linked && !r.ok);
+  const xirr = invPortfolioXirr(true);
+  const stale = invStalePositions(14);
+  const history = invPortfolioHistory(true);
+  const allocClass = invAllocationBy(p=>p.assetClass, true);
+  const allocPlat = invAllocationBy(p=>{ const pl = invPlatformById(p.platformId); return pl? pl.name : '—'; }, true);
+  document.getElementById('app').innerHTML = `
+    <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div class="mut" style="font-size:12.5px;max-width:540px">Cost basis is what actually left your bank (in SAR). Prices are logged in each asset's own currency and converted at your USD rate. Ownership shares are derived from units, so they update themselves whenever anyone buys more.</div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;align-items:flex-end">
+        <div style="width:140px"><label class="fl">USD → SAR</label><input type="number" step="0.0001" value="${getInvFxRate()}" onchange="setInvFxRate(this.value).then(function(){ renderInvestmentsPage(); toast('Rate saved — synced to all devices ✓'); })"></div>
+        <button class="btn ghost sm" onclick="openInvOwners()">👥 Owners</button>
+        <button class="btn ghost sm" onclick="openInvAddPlatform()">+ Platform</button>
+        <button class="btn ghost sm" onclick="openInvCsvTools()">📁 CSV</button>
+        <button class="btn pri sm" onclick="openInvLogPrices()">💹 Log Prices</button>
+      </div>
+    </div>
+    ${recon.length? `<div class="panel" style="border-left:3px solid var(--red)">
+      <h3 style="margin-top:0">⚠ Reconciliation</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:8px">The tracker's remaining cost basis doesn't match the ledger (invested minus capital returned). One side is likely missing a transaction.</div>
+      <div style="overflow-x:auto"><table style="min-width:480px"><thead><tr><th>Owner</th><th class="num">Tracker cost</th><th class="num">Ledger (Out − In)</th><th class="num">Difference</th></tr></thead>
+      <tbody>${recon.map(r=>`<tr><td>${esc(r.owner.name)}</td><td class="num mono">${money(r.trackerCost)}</td><td class="num mono">${money(r.ledgerNet)}</td><td class="num mono r">${money(r.diff)}</td></tr>`).join('')}</tbody></table></div>
+    </div>` : ''}
+    <div class="cards">
+      ${invKpiCard('Your Cost Basis', money(selfTotal.cost))}
+      ${invKpiCard('Your Current Value', money(selfTotal.market))}
+      ${invKpiCard('Your Unrealised P/L', money(selfTotal.market-selfTotal.cost), moneyClass(selfTotal.market-selfTotal.cost))}
+      ${family.length? invKpiCard('Held for Family', money(famTotal.market)) : ''}
+      ${xirr!==null? invKpiCard('Annualised Return', xirr.toFixed(2)+'%', moneyClass(xirr)) : ''}
+    </div>
+    ${stale.length? `<div class="panel" style="border-left:3px solid var(--amber,#c88)">
+      <h3 style="margin-top:0">⏳ Prices need refreshing</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:8px">A stale price quietly makes the whole portfolio value wrong, so these are flagged rather than left to be spotted by accident.</div>
+      <ul style="font-size:12.5px;line-height:1.8;padding-left:18px;margin:0">${stale.map(s=>`<li>${esc(s.pos.name)} — ${s.never? 'never priced' : s.days+' days old'}</li>`).join('')}</ul>
+    </div>`:''}
+    ${platforms.length? platforms.map(p=>renderInvPlatformSection(p)).join('') : '<div class="panel empty">No platforms yet — click + Platform to add one.</div>'}
+    ${renderInvAssetRollup()}
+    ${renderInvOwnerBreakdown(totals)}
+    ${renderInvRealisedByYear()}
+    ${history.length>1? `<div class="panel"><h3>📈 Your Value vs Cost</h3><div style="height:260px"><canvas id="invHistoryChart"></canvas></div></div>`:''}
+    ${allocClass.length? `<div class="panel"><h3>🥧 Allocation</h3>
+      <div class="row" style="gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px;height:240px"><canvas id="invAllocClassChart"></canvas></div>
+        <div style="flex:1;min-width:220px;height:240px"><canvas id="invAllocPlatChart"></canvas></div>
+      </div></div>`:''}
+  `;
+  drawInvCharts(history, allocClass, allocPlat);
+}
+function renderInvRealisedByYear(){
+  const rows = invRealisedByYear(true).filter(r=>Math.abs(r.gain)>0.005);
+  if(!rows.length) return '';
+  return `<div class="panel"><h3>💰 Realised Gain / Loss by Year</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:8px">Your own share only. These figures are for reference — posting them to your PROFIT account remains a manual ledger entry.</div>
+    <table><thead><tr><th>Year</th><th class="num">Realised</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td class="mono">${esc(r.year)}</td><td class="num mono ${moneyClass(r.gain)}">${money(r.gain)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr style="font-weight:700"><td>Total</td><td class="num mono ${moneyClass(rows.reduce((s,r)=>s+r.gain,0))}">${money(rows.reduce((s,r)=>s+r.gain,0))}</td></tr></tfoot></table></div>`;
+}
+let _invCharts = [];
+function drawInvCharts(history, allocClass, allocPlat){
+  _invCharts.forEach(ch=>{ try{ ch.destroy(); }catch(e){} });
+  _invCharts = [];
+  if(typeof Chart==='undefined') return;
+  const css = getComputedStyle(document.documentElement);
+  const grid = (css.getPropertyValue('--line')||'#ddd').trim();
+  const text = (css.getPropertyValue('--muted')||'#888').trim();
+  const palette = ['#4f8cff','#43c59e','#f6b26b','#e06c75','#b085f5','#56b6c2','#d19a66','#98c379'];
+  const hEl = document.getElementById('invHistoryChart');
+  if(hEl && history.length>1){
+    _invCharts.push(new Chart(hEl, {type:'line', data:{
+      labels: history.map(h=>h.date),
+      datasets:[
+        {label:'Value', data:history.map(h=>h.value), borderColor:'#43c59e', backgroundColor:'rgba(67,197,158,0.12)', fill:true, tension:0.25, pointRadius:2},
+        {label:'Cost', data:history.map(h=>h.cost), borderColor:'#8a93a6', borderDash:[5,4], fill:false, tension:0.25, pointRadius:0},
+      ]}, options:{responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:text}}},
+        scales:{x:{ticks:{color:text,maxTicksLimit:8},grid:{color:grid}}, y:{ticks:{color:text},grid:{color:grid}}}}}));
+  }
+  const mkDoughnut = (elId, data, title) => {
+    const el = document.getElementById(elId);
+    if(!el || !data.length) return;
+    _invCharts.push(new Chart(el, {type:'doughnut', data:{
+      labels: data.map(d=>d.label),
+      datasets:[{data:data.map(d=>d.value), backgroundColor:palette, borderWidth:0}]
+    }, options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom', labels:{color:text, boxWidth:12, font:{size:11}}}, title:{display:true, text:title, color:text}}}}));
+  };
+  mkDoughnut('invAllocClassChart', allocClass, 'By asset class');
+  mkDoughnut('invAllocPlatChart', allocPlat, 'By platform');
+}
+function renderInvPlatformSection(p){
+  const positions = invPositionsForPlatform(p.id);
+  const rows = positions.map(pos=>{
+    const v = computePositionValuation(pos);
+    const ownerTxt = Object.keys(v.byOwner).filter(k=>v.byOwner[k].units>0).map(k=>{
+      const o = invOwnerById(Number(k));
+      const pct = v.totalUnits>0? (v.byOwner[k].units/v.totalUnits*100) : 0;
+      return (o? esc(o.name) : '?')+' '+pct.toFixed(1)+'%';
+    }).join(', ');
+    return `<tr>
+      <td class="click" onclick="openInvPosition(${pos.id})"><b>${esc(pos.name)}</b>${pos.ticker? ` <span class="mut">${esc(pos.ticker)}</span>`:''}<div class="mut" style="font-size:11px">${esc(pos.assetClass)} · ${esc(pos.currency)}${ownerTxt? ' · '+ownerTxt : ''}</div></td>
+      <td class="num mono">${v.totalUnits.toLocaleString(undefined,{maximumFractionDigits:8})}</td>
+      <td class="num mono">${money(v.totalCostSar)}</td>
+      <td class="num mono">${v.hasValuation? money(v.price)+' '+esc(pos.currency) : '—'}</td>
+      <td class="num mono">${v.hasValuation? money(v.marketSar) : '—'}</td>
+      <td class="num mono ${v.hasValuation?moneyClass(v.unrealizedSar):''}">${v.hasValuation? money(v.unrealizedSar) : '—'}</td>
+      <td class="num mono ${v.hasValuation?moneyClass(v.unrealizedSar):''}">${invPctText(v.totalCostSar, v.marketSar, v.hasValuation)}</td>
+      <td class="num mono ${moneyClass(v.totalRealizedSar)}">${Math.abs(v.totalRealizedSar)>0.005? money(v.totalRealizedSar) : '—'}</td>
+    </tr>`;
+  }).join('');
+  const tot = positions.reduce((a,pos)=>{ const v=computePositionValuation(pos); return {c:a.c+v.totalCostSar, m:a.m+v.marketSar, r:a.r+v.totalRealizedSar}; }, {c:0,m:0,r:0});
+  return `<div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:0">🏦 ${esc(p.name)}</h3>
+      <div class="row noprint" style="gap:6px">
+        <button class="btn ghost sm" onclick="openInvAddPosition(${p.id})">+ Position</button>
+        <button class="btn ghost sm" onclick="openInvEditPlatform(${p.id})">✎</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table style="min-width:860px"><thead><tr>
+      <th>Position</th><th class="num">Units</th><th class="num">Cost (SAR)</th><th class="num">Price</th><th class="num">Value (SAR)</th><th class="num">Unrealised</th><th class="num">%</th><th class="num">Realised</th>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="8" class="empty">No positions yet</td></tr>'}</tbody>
+    ${positions.length? `<tfoot><tr style="font-weight:700"><td>Total</td><td></td><td class="num mono">${money(tot.c)}</td><td></td><td class="num mono">${money(tot.m)}</td><td class="num mono ${moneyClass(tot.m-tot.c)}">${money(tot.m-tot.c)}</td><td class="num mono">${invPctText(tot.c,tot.m,true)}</td><td class="num mono ${moneyClass(tot.r)}">${Math.abs(tot.r)>0.005?money(tot.r):'—'}</td></tr></tfoot>`:''}
+    </table></div>
+  </div>`;
+}
+function renderInvAssetRollup(){
+  const roll = invAssetRollup();
+  if(roll.length<2) return '';
+  return `<div class="panel"><h3>📊 By Asset (across platforms)</h3>
+    <div style="overflow-x:auto"><table style="min-width:620px"><thead><tr><th>Asset</th><th>Held on</th><th class="num">Units</th><th class="num">Cost (SAR)</th><th class="num">Value (SAR)</th><th class="num">Unrealised</th></tr></thead>
+    <tbody>${roll.map(r=>`<tr>
+      <td><b>${esc(r.label)}</b><div class="mut" style="font-size:11px">${esc(r.assetClass)}</div></td>
+      <td class="mut" style="font-size:12px">${esc(r.platforms.join(', '))}</td>
+      <td class="num mono">${r.units.toLocaleString(undefined,{maximumFractionDigits:8})}</td>
+      <td class="num mono">${money(r.costSar)}</td>
+      <td class="num mono">${r.anyValuation? money(r.marketSar) : '—'}</td>
+      <td class="num mono ${r.anyValuation?moneyClass(r.marketSar-r.costSar):''}">${r.anyValuation? money(r.marketSar-r.costSar) : '—'}</td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+function renderInvOwnerBreakdown(totals){
+  const withHoldings = totals.filter(t=>t.units>0 || Math.abs(t.costSar)>0.005);
+  if(!withHoldings.length) return '';
+  return `<div class="panel"><h3>👥 By Owner</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:8px">Family holdings are money passing through your accounts — shown separately, and not part of your own net worth.</div>
+    <div style="overflow-x:auto"><table style="min-width:680px"><thead><tr><th>Owner</th><th class="num">Cost (SAR)</th><th class="num">Value (SAR)</th><th class="num">Unrealised</th><th class="num">%</th><th class="num">Realised</th><th class="noprint"></th></tr></thead>
+    <tbody>${withHoldings.map(t=>`<tr>
+      <td><b>${esc(t.owner.name)}</b>${t.owner.isSelf? ' <span class="mut">(you)</span>':''}</td>
+      <td class="num mono">${money(t.costSar)}</td>
+      <td class="num mono">${money(t.marketSar)}</td>
+      <td class="num mono ${moneyClass(t.unrealizedSar)}">${money(t.unrealizedSar)}</td>
+      <td class="num mono ${moneyClass(t.unrealizedSar)}">${invPctText(t.costSar, t.marketSar, true)}</td>
+      <td class="num mono ${moneyClass(t.realizedSar)}">${Math.abs(t.realizedSar)>0.005? money(t.realizedSar):'—'}</td>
+      <td class="noprint"><button class="btn ghost sm" onclick="openInvOwnerStatement(${t.owner.id})">📄 Statement</button></td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ---- Investments: platform / position / owner editors ---- */
+// Shared searchable account field for the investment editors — reuses the app-wide token-based picker.
+function invAccountPickerField(pid, label, currentAcc, field, draftVar){
+  return `<label class="fl">${esc(label)}</label>
+    <div style="position:relative;margin-bottom:12px">
+      <input id="acpin_${pid}" value="${currentAcc? currentAcc+' — '+esc(accShort(currentAcc)) : ''}" placeholder="Search account…"
+        oninput="acpInput('${pid}', this.value)"
+        onfocus="acpOpen('${pid}', postableAccounts(), function(id){ window.${draftVar}.${field}=id; }); acpInput('${pid}','')"
+        onkeydown="acpKey(event,'${pid}')"
+        onblur="setTimeout(function(){ acpClose('${pid}'); },150)">
+      <div class="acdrop" id="acpdrop_${pid}"></div>
+    </div>`;
+}
+function openInvAddPlatform(){ openInvPlatformModal(null); }
+function openInvEditPlatform(id){ openInvPlatformModal(invPlatformById(id)); }
+function openInvPlatformModal(p){
+  window._invPlatDraft = p? {...p} : {id:null, name:'', outAcc:null, inAcc:null, profitAcc:null};
+  const d = window._invPlatDraft;
+  showModal(`
+    <h3 style="margin-top:0">${d.id?'Edit':'New'} Platform</h3>
+    <label class="fl">Name</label><input value="${esc(d.name)}" oninput="window._invPlatDraft.name=this.value" style="margin-bottom:12px">
+    ${invAccountPickerField('platOut','Invested (Out) account', d.outAcc, 'outAcc', '_invPlatDraft')}
+    ${invAccountPickerField('platIn','Withdrawn (In) account', d.inAcc, 'inAcc', '_invPlatDraft')}
+    ${invAccountPickerField('platProfit','Profit account', d.profitAcc, 'profitAcc', '_invPlatDraft')}
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvPlatform(${d.id})">Delete</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn pri" onclick="saveInvPlatform()">Save</button>
+    </div>`);
+}
+async function saveInvPlatform(){
+  const d = window._invPlatDraft;
+  if(!String(d.name||'').trim()){ toast('Name is required', true); return; }
+  if(!d.id){ d.id = invNextId(D.invPlatforms); D.invPlatforms.push(d); }
+  else { Object.assign(invPlatformById(d.id), d); }
+  await persistInvPlatform(invPlatformById(d.id));
+  closeModal(); renderInvestmentsPage(); toast('Platform saved ✓');
+}
+async function deleteInvPlatform(id){
+  if(invPositionsForPlatform(id).length){ toast('Remove its positions first', true); return; }
+  const p = invPlatformById(id); if(!p) return;
+  D.invPlatforms = D.invPlatforms.filter(x=>x.id!==id);
+  await syncWrite('pd_inv_platforms','delete',{id}, p.updated_at||null);
+  persistLocal(); closeModal(); renderInvestmentsPage(); toast('Platform deleted');
+}
+function openInvAddPosition(platformId){ openInvPositionModal({id:null, platformId, name:'', ticker:'', assetClass:'Stocks', currency:'SAR', status:'Active'}); }
+function openInvPositionModal(pos){
+  window._invPosDraft = {...pos};
+  const d = window._invPosDraft;
+  showModal(`
+    <h3 style="margin-top:0">${d.id?'Edit':'New'} Position</h3>
+    <label class="fl">Name</label><input value="${esc(d.name)}" oninput="window._invPosDraft.name=this.value" style="margin-bottom:12px">
+    <label class="fl">Ticker / symbol <span class="mut">(used to roll the same asset up across platforms)</span></label>
+    <input value="${esc(d.ticker||'')}" oninput="window._invPosDraft.ticker=this.value" style="margin-bottom:12px">
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label class="fl">Asset class</label><select onchange="window._invPosDraft.assetClass=this.value">${INV_ASSET_CLASSES.map(c=>`<option ${d.assetClass===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div style="flex:1"><label class="fl">Currency</label><select onchange="window._invPosDraft.currency=this.value"><option ${d.currency==='SAR'?'selected':''}>SAR</option><option ${d.currency==='USD'?'selected':''}>USD</option></select></div>
+      <div style="flex:1"><label class="fl">Status</label><select onchange="window._invPosDraft.status=this.value"><option ${d.status==='Active'?'selected':''}>Active</option><option ${d.status==='Closed'?'selected':''}>Closed</option></select></div>
+    </div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvPosition(${d.id})">Delete</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn pri" onclick="saveInvPosition()">Save</button>
+    </div>`);
+}
+async function saveInvPosition(){
+  const d = window._invPosDraft;
+  if(!String(d.name||'').trim()){ toast('Name is required', true); return; }
+  if(!d.id){ d.id = invNextId(D.invPositions); D.invPositions.push(d); }
+  else { Object.assign(invPositionById(d.id), d); }
+  await persistInvPosition(invPositionById(d.id));
+  closeModal(); renderInvestmentsPage(); toast('Position saved ✓');
+}
+async function deleteInvPosition(id){
+  if(invTxForPosition(id).length){ toast('This position has transactions — delete those first', true); return; }
+  const p = invPositionById(id); if(!p) return;
+  D.invPositions = D.invPositions.filter(x=>x.id!==id);
+  await syncWrite('pd_inv_positions','delete',{id}, p.updated_at||null);
+  persistLocal(); closeModal(); renderInvestmentsPage(); toast('Position deleted');
+}
+function openInvOwners(){
+  const owners = D.invOwners||[];
+  showModal(`
+    <div class="row" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">👥 Owners</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mut" style="font-size:12px;margin:6px 0 12px">Add yourself and each family member you invest for. Their In / Out accounts are used to reconcile the tracker against your ledger.</div>
+    <div style="overflow-x:auto"><table style="min-width:440px"><thead><tr><th>Name</th><th>Arabic</th><th>Out</th><th>In</th><th class="noprint"></th></tr></thead>
+    <tbody>${owners.map(o=>`<tr>
+      <td>${esc(o.name)}${o.isSelf?' <span class="mut">(you)</span>':''}</td>
+      <td dir="rtl">${esc(o.nameAr||'')}</td>
+      <td class="mono">${o.outAcc||'—'}</td>
+      <td class="mono">${o.inAcc||'—'}</td>
+      <td class="noprint"><button class="btn ghost sm" onclick="openInvOwnerModal(${o.id})">✎</button></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">No owners yet</td></tr>'}</tbody></table></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn pri" onclick="openInvOwnerModal(null)">+ New Owner</button></div>`);
+}
+function openInvOwnerModal(id){
+  const existing = id? invOwnerById(id) : null;
+  window._invOwnerDraft = existing? {...existing} : {id:null, name:'', nameAr:'', isSelf:(D.invOwners||[]).length===0, outAcc:null, inAcc:null, profitAcc:null};
+  const d = window._invOwnerDraft;
+  showModal(`
+    <h3 style="margin-top:0">${d.id?'Edit':'New'} Owner</h3>
+    <label class="fl">Name</label><input value="${esc(d.name)}" oninput="window._invOwnerDraft.name=this.value" style="margin-bottom:12px">
+    <label class="fl">Arabic name <span class="mut">(used on their statement)</span></label>
+    <input dir="rtl" value="${esc(d.nameAr||'')}" oninput="window._invOwnerDraft.nameAr=this.value" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer"><input type="checkbox" class="chk" ${d.isSelf?'checked':''} onchange="window._invOwnerDraft.isSelf=this.checked"> This is me (not a family member)</label>
+    ${invAccountPickerField('ownOut','Invested (Out) account', d.outAcc, 'outAcc', '_invOwnerDraft')}
+    ${invAccountPickerField('ownIn','Withdrawn (In) account', d.inAcc, 'inAcc', '_invOwnerDraft')}
+    ${invAccountPickerField('ownProfit','Profit account', d.profitAcc, 'profitAcc', '_invOwnerDraft')}
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      ${d.id? (invOwnerTxCount(d.id)>0
+        ? `<span class="mut" style="margin-right:auto;font-size:11.5px">Can't delete — on ${invOwnerTxCount(d.id)} transaction(s)</span>`
+        : `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvOwner(${d.id})">Delete</button>`) : ''}
+      <button class="btn ghost" onclick="openInvOwners()">Cancel</button>
+      <button class="btn pri" onclick="saveInvOwner()">Save</button>
+    </div>`);
+}
+// Counts the transactions that attribute units to an owner. An owner is only ever referenced
+// through transactions — positions aren't owned directly, ownership comes from the units
+// attributed on each buy — so this is the complete reference check.
+function invOwnerTxCount(ownerId){
+  return (D.invTransactions||[]).filter(t=>(t.owners||[]).some(o=>o.ownerId===ownerId && (Number(o.units)||0)>0)).length;
+}
+async function deleteInvOwner(id){
+  const o = invOwnerById(id); if(!o) return;
+  const n = invOwnerTxCount(id);
+  if(n>0){ toast(o.name+' is on '+n+' transaction(s) — remove those first', true); return; }
+  if(!confirm('Delete owner "'+o.name+'"?')) return;
+  D.invOwners = D.invOwners.filter(x=>x.id!==id);
+  await syncWrite('pd_inv_owners','delete',{id}, o.updated_at||null);
+  persistLocal(); openInvOwners(); renderInvestmentsPage(); toast('Owner deleted');
+}
+async function saveInvOwner(){
+  const d = window._invOwnerDraft;
+  if(!String(d.name||'').trim()){ toast('Name is required', true); return; }
+  if(!d.id){ d.id = invNextId(D.invOwners); D.invOwners.push(d); }
+  else { Object.assign(invOwnerById(d.id), d); }
+  await persistInvOwner(invOwnerById(d.id));
+  openInvOwners(); renderInvestmentsPage(); toast('Owner saved ✓');
+}
+
+/* ---- Investments: position detail + transactions ---- */
+function openInvPosition(posId){
+  const pos = invPositionById(posId); if(!pos) return;
+  const v = computePositionValuation(pos);
+  const txs = invTxForPosition(posId).slice().reverse();
+  const vals = (D.invValuations||[]).filter(x=>x.positionId===posId).slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,6);
+  showModal(`
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h3 style="margin:0">${esc(pos.name)}${pos.ticker? ` <span class="mut">${esc(pos.ticker)}</span>`:''}</h3>
+      <button class="x noprint" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mut" style="font-size:12px;margin:4px 0 12px">${esc(pos.assetClass)} · ${esc(pos.currency)} · ${esc((invPlatformById(pos.platformId)||{}).name||'')}</div>
+    <div class="cards" style="margin-bottom:12px">
+      ${invKpiCard('Units', v.totalUnits.toLocaleString(undefined,{maximumFractionDigits:8}))}
+      ${invKpiCard('Cost (SAR)', money(v.totalCostSar))}
+      ${invKpiCard('Value (SAR)', v.hasValuation? money(v.marketSar):'—')}
+      ${invKpiCard('Unrealised', v.hasValuation? money(v.unrealizedSar):'—', v.hasValuation?moneyClass(v.unrealizedSar):'')}
+    </div>
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:0;font-size:14px">Transactions</h3>
+      <button class="btn pri sm noprint" onclick="openInvTxModal(${posId}, null)">+ Transaction</button>
+    </div>
+    <div style="overflow-x:auto"><table style="min-width:600px"><thead><tr><th>Date</th><th>Type</th><th class="num">Units</th><th class="num">Total SAR</th><th class="num">Per unit</th><th>Owners</th><th class="noprint"></th></tr></thead>
+    <tbody>${txs.map(t=>`<tr>
+      <td class="mono">${esc(t.date)}</td>
+      <td>${t.kind==='sell'?'<span class="r">Sell</span>':'<span class="g">Buy</span>'}</td>
+      <td class="num mono">${Number(t.units).toLocaleString(undefined,{maximumFractionDigits:8})}</td>
+      <td class="num mono">${money(t.totalSar)}</td>
+      <td class="num mono">${t.units? money(t.totalSar/t.units):'—'}</td>
+      <td class="mut" style="font-size:11.5px">${(t.owners||[]).map(a=>{const o=invOwnerById(a.ownerId); return (o?esc(o.name):'?')+' '+Number(a.units).toLocaleString(undefined,{maximumFractionDigits:8});}).join(', ')||'—'}</td>
+      <td class="noprint"><button class="btn ghost sm" onclick="openInvTxModal(${posId}, ${t.id})">✎</button></td>
+    </tr>`).join('') || '<tr><td colspan="7" class="empty">No transactions yet</td></tr>'}</tbody></table></div>
+    <h3 style="font-size:14px;margin-top:16px">Recent prices</h3>
+    <table><thead><tr><th>Date</th><th class="num">Price (${esc(pos.currency)})</th></tr></thead>
+    <tbody>${vals.map(v2=>`<tr><td class="mono">${esc(v2.date)}</td><td class="num mono">${money(v2.price)}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">No prices logged</td></tr>'}</tbody></table>
+    <div class="row noprint" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn ghost" onclick="openInvPositionModal(invPositionById(${posId}))">✎ Edit position</button>
+      <button class="btn pri" onclick="closeModal()">Done</button>
+    </div>`, true);
+}
+function openInvTxModal(posId, txId){
+  const existing = txId? (D.invTransactions||[]).find(t=>t.id===txId) : null;
+  const owners = D.invOwners||[];
+  window._invTxDraft = existing? {...existing, owners:(existing.owners||[]).map(o=>({...o})), splitMode:'units', ownersSar:{}}
+    : {id:null, positionId:posId, date:todayStr(), kind:'buy', units:'', totalSar:'', owners: owners.filter(o=>o.isSelf).map(o=>({ownerId:o.id, units:''})), note:'', splitMode:'units', ownersSar:{}};
+  // Reopening an existing transaction back-calculates the SAR split so either view is ready.
+  if(existing){
+    const tu = Number(existing.units)||0, ts = Number(existing.totalSar)||0;
+    (existing.owners||[]).forEach(o=>{ window._invTxDraft.ownersSar[o.ownerId] = invSarForUnits(tu, ts, Number(o.units)||0); });
+  }
+  renderInvTxModal();
+}
+function renderInvTxModal(){
+  const d = window._invTxDraft;
+  const pos = invPositionById(d.positionId);
+  const owners = D.invOwners||[];
+  const allocTotal = (d.owners||[]).reduce((s,o)=>s+(Number(o.units)||0),0);
+  const unitsNum = Number(d.units)||0;
+  const mismatch = unitsNum>0 && Math.abs(allocTotal-unitsNum)>1e-9;
+  const sarAlloc = Object.keys(d.ownersSar||{}).map(k=>({ownerId:Number(k), sar:Number(d.ownersSar[k])||0})).filter(a=>a.sar>0);
+  const sarAllocTotal = sarAlloc.reduce((s,a)=>s+a.sar,0);
+  const sarMismatch = Number(d.totalSar)>0 && Math.abs(sarAllocTotal-Number(d.totalSar))>0.005;
+  const derived = d.splitMode==='sar'? invDeriveUnitsFromSar(unitsNum, sarAlloc, Number(d.totalSar)) : [];
+  showModal(`
+    <h3 style="margin-top:0">${d.id?'Edit':'New'} Transaction — ${esc(pos?pos.name:'')}</h3>
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label class="fl">Date</label><input type="date" value="${esc(d.date)}" onchange="window._invTxDraft.date=this.value"></div>
+      <div style="flex:1"><label class="fl">Type</label><select onchange="window._invTxDraft.kind=this.value; renderInvTxModal()"><option value="buy" ${d.kind==='buy'?'selected':''}>Buy</option><option value="sell" ${d.kind==='sell'?'selected':''}>Sell</option></select></div>
+    </div>
+    <div class="row" style="gap:10px;margin-top:10px">
+      <div style="flex:1"><label class="fl">Units</label><input type="number" step="any" value="${esc(d.units)}" oninput="window._invTxDraft.units=this.value; invTxRefreshDerived()"></div>
+      <div style="flex:1"><label class="fl">Total SAR ${d.kind==='sell'?'received':'paid'}</label><input type="number" step="0.01" value="${esc(d.totalSar)}" oninput="window._invTxDraft.totalSar=this.value; invTxRefreshDerived()"></div>
+    </div>
+    <div class="mut" id="invTxPPU" style="font-size:11.5px;margin-top:6px">${invTxPpuText(d)}</div>
+    <div class="row" style="justify-content:space-between;align-items:baseline;margin:16px 0 6px">
+      <h3 style="font-size:13.5px;margin:0">Whose share?</h3>
+      <div class="row" style="gap:4px;align-items:center">
+        <span class="mut" style="font-size:11.5px">Split by</span>
+        <button class="btn ghost sm" style="${d.splitMode!=='sar'?'border-color:var(--accent);background:var(--chip);font-weight:600':''}" onclick="setInvTxSplitMode('units')">Units</button>
+        <button class="btn ghost sm" style="${d.splitMode==='sar'?'border-color:var(--accent);background:var(--chip);font-weight:600':''}" onclick="setInvTxSplitMode('sar')">SAR</button>
+      </div>
+    </div>
+    <div class="mut" style="font-size:11.5px;margin-bottom:8px">${d.splitMode==='sar'
+      ? 'Enter how much each person paid — the units are worked out from that. Any rounding remainder goes to the largest holder so the units always add up exactly.'
+      : 'Split the units across owners. Ownership percentages are derived from this, so they stay correct as people buy in at different times.'}</div>
+    <table><thead><tr><th>Owner</th><th class="num">SAR</th><th class="num">Units</th></tr></thead>
+    <tbody>${owners.map(o=>{
+      const row = (d.owners||[]).find(x=>x.ownerId===o.id);
+      const uVal = row? Number(row.units)||0 : 0;
+      const sarVal = d.ownersSar? d.ownersSar[o.id] : '';
+      const derivedUnits = derived.find(x=>x.ownerId===o.id);
+      return `<tr><td>${esc(o.name)}${o.isSelf?' <span class="mut">(you)</span>':''}</td>
+        <td class="num">${d.splitMode==='sar'
+          ? `<input type="number" step="0.01" style="width:120px;text-align:right" value="${sarVal===undefined||sarVal===null?'':esc(sarVal)}" oninput="setInvTxOwnerSar(${o.id}, this.value)">`
+          : `<span class="mono mut" id="invTxDeriv_${o.id}">${unitsNum>0&&Number(d.totalSar)>0? money(invSarForUnits(unitsNum, Number(d.totalSar), uVal)) : '—'}</span>`}</td>
+        <td class="num">${d.splitMode==='sar'
+          ? `<span class="mono mut" id="invTxDeriv_${o.id}">${derivedUnits? invFmtUnits(derivedUnits.units) : '—'}</span>`
+          : `<input type="number" step="any" style="width:120px;text-align:right" value="${row? esc(row.units):''}" oninput="setInvTxOwnerUnits(${o.id}, this.value)">`}</td></tr>`;
+    }).join('') || '<tr><td colspan="3" class="empty">Add owners first (Investments → Owners)</td></tr>'}</tbody></table>
+    <div class="mut" id="invTxAllocSummary" style="font-size:11.5px;margin-top:6px;${(d.splitMode==='sar'?sarMismatch:mismatch)?'color:var(--red)':''}">${invTxAllocText(d)}</div>
+    <label class="fl" style="margin-top:12px">Note</label><input value="${esc(d.note||'')}" oninput="window._invTxDraft.note=this.value">
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvTx(${d.id})">Delete</button>`:''}
+      <button class="btn ghost" onclick="openInvPosition(${d.positionId})">Cancel</button>
+      <button class="btn pri" onclick="saveInvTx()">Save</button>
+    </div>`, true);
+}
+function setInvTxSplitMode(mode){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.splitMode = mode;
+  // Carry the current split across so switching views doesn't discard what was already entered.
+  const unitsNum = Number(d.units)||0, totalSar = Number(d.totalSar)||0;
+  if(mode==='sar'){
+    d.ownersSar = d.ownersSar || {};
+    (d.owners||[]).forEach(o=>{
+      const u = Number(o.units)||0;
+      if(u>0 && !(d.ownersSar[o.ownerId]>0)) d.ownersSar[o.ownerId] = invSarForUnits(unitsNum, totalSar, u);
+    });
+  }
+  renderInvTxModal();
+}
+function setInvTxOwnerSar(ownerId, val){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.ownersSar = d.ownersSar || {};
+  if(String(val).trim()==='') delete d.ownersSar[ownerId];
+  else d.ownersSar[ownerId] = Number(val);
+  invTxRefreshDerived();
+}
+// Text for the "price per unit" hint and the allocation summary, shared by the initial render
+// and the in-place refresh so the two can't drift apart.
+function invTxPpuText(d){
+  const u = Number(d.units)||0, s = Number(d.totalSar)||0;
+  return (u>0 && s>0)? 'Price per unit: '+money(s/u)+' SAR (already net of fees)'
+                     : 'Enter the SAR total that actually moved — price per unit is derived from it.';
+}
+function invTxAllocText(d){
+  const unitsNum = Number(d.units)||0;
+  if(d.splitMode==='sar'){
+    const total = Object.keys(d.ownersSar||{}).reduce((s,k)=>s+(Number(d.ownersSar[k])||0),0);
+    const target = Number(d.totalSar)||0;
+    const bad = target>0 && Math.abs(total-target)>0.005;
+    return 'Allocated: '+money(total)+' of '+money(target)+(bad?' — these must match before saving':'');
+  }
+  const total = (d.owners||[]).reduce((s,o)=>s+(Number(o.units)||0),0);
+  const bad = unitsNum>0 && Math.abs(total-unitsNum)>1e-9;
+  return 'Allocated: '+invFmtUnits(total)+' of '+invFmtUnits(unitsNum)+(bad?' — these must match before saving':'');
+}
+// Patches only the computed parts of the open modal. Re-rendering the whole modal on every
+// keystroke destroyed and recreated the inputs, which is what threw focus out of the box the
+// person was typing in.
+function invTxRefreshDerived(){
+  const d = window._invTxDraft;
+  if(!d) return;
+  const unitsNum = Number(d.units)||0, totalSar = Number(d.totalSar)||0;
+  const ppu = document.getElementById('invTxPPU');
+  if(ppu) ppu.textContent = invTxPpuText(d);
+  const sarAlloc = Object.keys(d.ownersSar||{}).map(k=>({ownerId:Number(k), sar:Number(d.ownersSar[k])||0})).filter(a=>a.sar>0);
+  const derived = d.splitMode==='sar'? invDeriveUnitsFromSar(unitsNum, sarAlloc, totalSar) : [];
+  (D.invOwners||[]).forEach(o=>{
+    const el = document.getElementById('invTxDeriv_'+o.id);
+    if(!el) return;
+    if(d.splitMode==='sar'){
+      const dv = derived.find(x=>x.ownerId===o.id);
+      el.textContent = dv? invFmtUnits(dv.units) : '—';
+    } else {
+      const row = (d.owners||[]).find(x=>x.ownerId===o.id);
+      const uVal = row? Number(row.units)||0 : 0;
+      el.textContent = (unitsNum>0 && totalSar>0)? money(invSarForUnits(unitsNum, totalSar, uVal)) : '—';
+    }
+  });
+  const sum = document.getElementById('invTxAllocSummary');
+  if(sum){
+    sum.textContent = invTxAllocText(d);
+    const bad = /must match/.test(sum.textContent);
+    sum.style.color = bad? 'var(--red)' : '';
+  }
+}
+function setInvTxOwnerUnits(ownerId, val){
+  const d = window._invTxDraft;
+  d.owners = d.owners || [];
+  const row = d.owners.find(x=>x.ownerId===ownerId);
+  if(row) row.units = val; else d.owners.push({ownerId, units:val});
+  d.owners = d.owners.filter(x=>String(x.units).trim()!=='');
+  invTxRefreshDerived();
+}
+// When editing an existing sell, its own units are already netted out of the computed state, so
+// they must be added back before checking whether the new figure is affordable.
+function sellUnitsInExistingTx(txId, ownerId){
+  const t = (D.invTransactions||[]).find(x=>x.id===txId);
+  if(!t || t.kind!=='sell') return 0;
+  const row = (t.owners||[]).find(o=>o.ownerId===ownerId);
+  return row? (Number(row.units)||0) : 0;
+}
+async function saveInvTx(){
+  const d = window._invTxDraft;
+  const units = Number(d.units)||0, totalSar = Number(d.totalSar)||0;
+  if(units<=0){ toast('Units must be greater than zero', true); return; }
+  if(totalSar<=0){ toast('Total SAR must be greater than zero', true); return; }
+  // In SAR mode the person allocates money and the units are derived from it; the stored record
+  // is always units-based, so the ownership maths downstream is identical either way.
+  let owners;
+  if(d.splitMode==='sar'){
+    const sarAlloc = Object.keys(d.ownersSar||{}).map(k=>({ownerId:Number(k), sar:Number(d.ownersSar[k])||0})).filter(a=>a.sar>0);
+    if(!sarAlloc.length){ toast('Assign the SAR amount to at least one owner', true); return; }
+    const sarTotal = sarAlloc.reduce((s,a)=>s+a.sar,0);
+    if(Math.abs(sarTotal-totalSar)>0.005){ toast('Allocated SAR must equal the transaction total ('+money(totalSar)+')', true); return; }
+    owners = invDeriveUnitsFromSar(units, sarAlloc, totalSar).filter(o=>o.units>0);
+    if(!owners.length){ toast('Could not work out units from that split', true); return; }
+  } else {
+    owners = (d.owners||[]).map(o=>({ownerId:o.ownerId, units:Number(o.units)||0})).filter(o=>o.units>0);
+    if(!owners.length){ toast('Assign the units to at least one owner', true); return; }
+    const allocTotal = owners.reduce((s,o)=>s+o.units,0);
+    if(Math.abs(allocTotal-units)>1e-9){ toast('Allocated units must equal the transaction units', true); return; }
+  }
+  // A sell must not remove more units than the owner actually holds — otherwise cost basis and
+  // realised gain both go silently wrong from that point forward.
+  if(d.kind==='sell'){
+    const st = computePositionState(d.positionId);
+    for(const o of owners){
+      const held = ((st.byOwner[o.ownerId]||{units:0}).units) + (d.id? sellUnitsInExistingTx(d.id, o.ownerId) : 0);
+      if(o.units > held + 1e-9){
+        const on = invOwnerById(o.ownerId);
+        toast((on?on.name:'That owner')+' only holds '+held.toLocaleString(undefined,{maximumFractionDigits:8})+' units', true);
+        return;
+      }
+    }
+  }
+  if(d.id){
+    const ex = (D.invTransactions||[]).find(t=>t.id===d.id);
+    Object.assign(ex, {date:d.date, kind:d.kind, units, totalSar, owners, note:d.note||''});
+    await persistInvTransaction(ex);
+  } else {
+    const rec = {id: invNextId(D.invTransactions), positionId:d.positionId, date:d.date, kind:d.kind, units, totalSar, owners, note:d.note||'', updated_at:null};
+    D.invTransactions.push(rec);
+    await persistInvTransaction(rec);
+  }
+  openInvPosition(d.positionId); renderInvestmentsPage(); toast('Transaction saved ✓');
+}
+async function deleteInvTx(id){
+  const t = (D.invTransactions||[]).find(x=>x.id===id); if(!t) return;
+  const posId = t.positionId;
+  D.invTransactions = D.invTransactions.filter(x=>x.id!==id);
+  await syncWrite('pd_inv_transactions','delete',{id}, t.updated_at||null);
+  persistLocal(); openInvPosition(posId); renderInvestmentsPage(); toast('Transaction deleted');
+}
+
+/* ---- Investments: bulk price logging ---- */
+function openInvLogPrices(){
+  const positions = invActivePositions();
+  window._invPriceDraft = {date: todayStr(), prices:{}};
+  positions.forEach(p=>{ const lv = invLatestValuation(p.id); window._invPriceDraft.prices[p.id] = lv? lv.price : ''; });
+  renderInvLogPrices();
+}
+function renderInvLogPrices(){
+  const d = window._invPriceDraft;
+  const positions = invActivePositions();
+  showModal(`
+    <h3 style="margin-top:0">💹 Log Prices</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:10px">Enter the price per unit in each asset's own currency. Values recalculate automatically — one date, one save.</div>
+    <label class="fl">As of date</label><input type="date" value="${esc(d.date)}" onchange="window._invPriceDraft.date=this.value" style="margin-bottom:12px">
+    <div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>Position</th><th>Platform</th><th class="num">Units</th><th class="num">Price</th></tr></thead>
+    <tbody>${positions.map(p=>{
+      const st = computePositionState(p.id);
+      const plat = invPlatformById(p.platformId);
+      return `<tr>
+        <td><b>${esc(p.name)}</b>${p.ticker?` <span class="mut">${esc(p.ticker)}</span>`:''}</td>
+        <td class="mut" style="font-size:12px">${esc(plat?plat.name:'')}</td>
+        <td class="num mono">${st.totalUnits.toLocaleString(undefined,{maximumFractionDigits:8})}</td>
+        <td class="num"><input type="number" step="any" style="width:130px;text-align:right" value="${esc(d.prices[p.id])}" oninput="window._invPriceDraft.prices[${p.id}]=this.value" placeholder="${esc(p.currency)}"></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" class="empty">No active positions</td></tr>'}</tbody></table></div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn pri" onclick="saveInvPrices()">Save prices</button>
+    </div>`, true);
+}
+async function saveInvPrices(){
+  const d = window._invPriceDraft;
+  if(!d.date){ toast('Pick a date', true); return; }
+  let saved = 0;
+  for(const posId of Object.keys(d.prices)){
+    const price = Number(d.prices[posId]);
+    if(!(price>0)) continue;
+    const pid = Number(posId);
+    // One valuation per position per date — re-saving the same day overwrites instead of stacking.
+    const existing = (D.invValuations||[]).find(v=>v.positionId===pid && v.date===d.date);
+    if(existing){ existing.price = price; await persistInvValuation(existing); }
+    else { const rec = {id: invNextId(D.invValuations), positionId:pid, date:d.date, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
+    saved++;
+  }
+  closeModal(); renderInvestmentsPage(); toast(saved+' price(s) saved ✓');
+}
+
+/* ---- Investments: per-owner Arabic statement ---- */
+function openInvOwnerStatement(ownerId){
+  const o = invOwnerById(ownerId); if(!o) return;
+  const rows = [];
+  for(const pos of (D.invPositions||[])){
+    const s = ownerSliceOfPosition(pos, ownerId);
+    if(!s) continue;
+    rows.push({pos, plat: invPlatformById(pos.platformId), s});
+  }
+  const totCost = rows.reduce((a,r)=>a+r.s.costSar,0);
+  const totMarket = rows.reduce((a,r)=>a+r.s.marketSar,0);
+  const displayName = o.nameAr || applyNameTranslations(o.name);
+  showModal(`
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h3 style="margin:0">📄 ${esc(displayName)}</h3>
+      <button class="x noprint" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mut noprint" style="font-size:11px;margin:6px 0 12px">Position details, purchase value, current value and change — as of the latest logged prices.</div>
+    <div style="overflow-x:auto"><table dir="rtl" style="width:100%;min-width:640px">
+      <thead><tr><th>الأصل</th><th>المنصة</th><th class="num">الوحدات</th><th class="num">الحصة</th><th class="num">قيمة الشراء</th><th class="num">القيمة الحالية</th><th class="num">التغير</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td><b>${esc(r.pos.name)}</b>${r.pos.ticker?` <span class="mut">${esc(r.pos.ticker)}</span>`:''}</td>
+        <td>${esc(r.plat?r.plat.name:'')}</td>
+        <td class="num mono">${r.s.units.toLocaleString(undefined,{maximumFractionDigits:8})}</td>
+        <td class="num mono">${r.s.pctOfPosition.toFixed(1)}%</td>
+        <td class="num mono">${money(r.s.costSar)}</td>
+        <td class="num mono">${r.s.hasValuation? money(r.s.marketSar):'—'}</td>
+        <td class="num mono ${r.s.hasValuation?moneyClass(r.s.unrealizedSar):''}">${r.s.hasValuation? money(r.s.unrealizedSar):'—'}</td>
+      </tr>`).join('') || '<tr><td colspan="7" class="empty">لا توجد مراكز</td></tr>'}</tbody>
+      <tfoot><tr style="font-weight:700">
+        <td colspan="4">الإجمالي</td>
+        <td class="num mono">${money(totCost)}</td>
+        <td class="num mono">${money(totMarket)}</td>
+        <td class="num mono ${moneyClass(totMarket-totCost)}">${money(totMarket-totCost)}</td>
+      </tr></tfoot>
+    </table></div>
+    <div class="row noprint" style="justify-content:flex-end;margin-top:14px"><button class="btn pri" onclick="closeModal()">تم — Done</button></div>
+  `, true);
+}
+
 function nextBuildingId(){ return 1 + (D.realEstateBuildings||[]).reduce((m,b)=>Math.max(m, Number(b.id)||0), 0); }
 async function persistBuilding(b, base){
   persistLocal();
@@ -5421,8 +7243,7 @@ function renderForecastAccountRuleModal(){
 }
 function sraAccInput(v){
   const d = window._sraDraft;
-  const q = v.toLowerCase();
-  const matches = postableAccounts().filter(a=>String(a.id).includes(q)||(a.name||'').toLowerCase().includes(q)).slice(0,20);
+  const matches = accountSearchMatches(v, postableAccounts()).slice(0,20);
   d._matches = matches; d._hi = -1;
   renderSraAcDrop();
 }
@@ -5750,7 +7571,7 @@ function renderJamiahDetail(id){
   const j = findJamiah(id);
   if(!j){ jamiahDetailId=null; renderJamiahPage(); return; }
   const rounds = jamiahRounds(j);
-  const accOptions = postableAccounts().map(a=>`<option value="${a.id}" ${j.account===a.id?'selected':''}>${a.id} — ${esc(accShort(a.id))}</option>`).join('');
+
 
   document.getElementById('app').innerHTML = `
     <div class="row noprint" style="margin-bottom:12px;justify-content:space-between">
@@ -5768,7 +7589,16 @@ function renderJamiahDetail(id){
       <h3>${esc(j.name)}</h3>
       <div class="grid2">
         <div><label class="fl">Name</label><input value="${esc(j.name)}" onchange="setJamiahField(${j.id},'name',this.value)"></div>
-        <div><label class="fl">Ledger Account</label><select onchange="setJamiahField(${j.id},'account',Number(this.value)||null)"><option value="">Select account…</option>${accOptions}</select></div>
+        <div><label class="fl">Ledger Account</label>
+          <div style="position:relative">
+            <input id="acpin_jamiah_${j.id}" value="${j.account? j.account+' — '+esc(accShort(j.account)) : ''}" placeholder="Search account…"
+              oninput="acpInput('jamiah_${j.id}', this.value)"
+              onfocus="acpOpen('jamiah_${j.id}', postableAccounts(), function(id){ setJamiahField(${j.id},'account',id); }); acpInput('jamiah_${j.id}','')"
+              onkeydown="acpKey(event,'jamiah_${j.id}')"
+              onblur="setTimeout(function(){ acpClose('jamiah_${j.id}'); },150)">
+            <div class="acdrop" id="acpdrop_jamiah_${j.id}"></div>
+          </div>
+        </div>
         <div><label class="fl">Starting Month</label><input type="month" value="${j.startMonth||''}" onchange="setJamiahField(${j.id},'startMonth',this.value)"></div>
         <div><label class="fl">Duration (rounds)</label><input type="number" min="1" value="${j.durationMonths||1}" onchange="setJamiahField(${j.id},'durationMonths',Math.max(1,parseInt(this.value,10)||1))"></div>
       </div>
@@ -6064,25 +7894,26 @@ async function openSettlementStatement(acc){
   showModal(`<h3>📄 Generating Arabic statement…</h3><div class="mut" style="margin:16px 0">Translating ${lines.length} line(s) — this can take a few seconds for anything the saved phrases and pattern rules don't already cover.</div>`, true);
   const translated = await Promise.all(lines.map(async l=>{
     const r = await translateDescriptionToArabic(l.descr);
-    return {id:l.id, date:l.date, amt:Number(l.amt), original:l.descr, arText:r.text, source:r.source};
+    return {id:l.id, jv:l.jv, date:l.date, amt:Number(l.amt), original:l.descr, arText:r.text, source:r.source, excluded:false};
   }));
-  settlementDraft = {acc, lines: translated};
+  settlementDraft = {acc, lines: translated, roundUp:false};
   renderSettlementStatement();
 }
 function renderSettlementStatement(){
   const d = settlementDraft;
   if(!d) return;
-  const total = d.lines.reduce((s,l)=>s+l.amt,0);
+  const total = d.lines.filter(l=>!l.excluded).reduce((s,l)=>s+l.amt,0);
   const partyName = applyNameTranslations(accShort(d.acc));
   showModal(`
     <div class="row" style="justify-content:space-between;align-items:baseline">
       <h3 style="margin:0">📄 ${esc(partyName)} — ${d.acc}</h3>
       <button class="x noprint" onclick="closeModal()">✕</button>
     </div>
-    <div class="mut noprint" style="font-size:11px;margin:6px 0 12px">Review and correct any flagged lines before screenshotting — corrections are remembered automatically for next time.</div>
-    <div style="overflow-x:auto"><table dir="rtl" style="width:100%;min-width:480px">
-      <thead><tr><th>التاريخ</th><th>الوصف</th><th class="num">المبلغ</th></tr></thead>
-      <tbody>${d.lines.map((l,i)=>`<tr style="${l.source==='ai'||l.source==='failed'?'background:rgba(70,110,200,0.08)':''}">
+    <div class="mut noprint" style="font-size:11px;margin:6px 0 12px">Review and correct any flagged lines. Uncheck "Include" to exclude a line from the total — the total below updates immediately. Corrections are remembered automatically for next time.</div>
+    <div style="overflow-x:auto"><table dir="rtl" style="width:100%;min-width:520px">
+      <thead><tr><th>تضمين</th><th>التاريخ</th><th>الوصف</th><th class="num">المبلغ</th></tr></thead>
+      <tbody>${d.lines.map((l,i)=>`<tr style="${l.excluded?'opacity:0.45':(l.source==='ai'||l.source==='failed'?'background:rgba(70,110,200,0.08)':'')}">
+        <td class="noprint" style="text-align:center"><input type="checkbox" ${l.excluded?'':'checked'} onchange="toggleSettlementExclude(${i})"></td>
         <td class="mono" style="white-space:nowrap">${esc(l.date)}</td>
         <td><input dir="rtl" value="${esc(l.arText)}" style="width:100%" onblur="editSettlementLine(${i}, this.value)">
           ${l.source==='ai'? '<div class="mut noprint" style="font-size:10px">🌐 ترجمة تلقائية — راجع من فضلك</div>' : ''}
@@ -6090,10 +7921,37 @@ function renderSettlementStatement(){
         </td>
         <td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td>
       </tr>`).join('')}</tbody>
-      <tfoot><tr style="font-weight:700"><td colspan="2">الإجمالي لهذه الفترة</td><td class="num mono ${moneyClass(total)}">${money(total)}</td></tr></tfoot>
+      <tfoot><tr style="font-weight:700"><td colspan="3">الإجمالي لهذه الفترة</td><td class="num mono ${moneyClass(total)}">${money(total)}</td></tr></tfoot>
     </table></div>
-    <div class="row noprint" style="justify-content:flex-end;margin-top:14px"><button class="btn pri" onclick="closeModal()">تم — Done</button></div>
+    <div class="row noprint" style="justify-content:space-between;align-items:center;margin-top:14px;gap:8px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;color:var(--muted)">
+        <input type="checkbox" class="chk" ${d.roundUp?'checked':''} onchange="toggleSettlementRoundUp(this.checked)">
+        تقريب المبالغ لأعلى — Round amounts up (clean output only)
+      </label>
+      <div class="row" style="gap:8px">
+        <button class="btn ghost" onclick="showSettlementCleanOutput()">📋 Generate clean output</button>
+        <button class="btn pri" onclick="closeModal()">تم — Done</button>
+      </div>
+    </div>
   `, true);
+}
+// Mathematical ceiling, applied per line: 13.01 -> 14.00, 13.99 -> 14.00, 13.00 stays 13.00,
+// and -13.01 -> -13.00 (true ceiling, not away-from-zero). The toFixed(2) pass first is deliberate:
+// without it, a stored value of 13.000000000001 from floating-point drift would ceil to 14.
+function settlementRoundAmt(v, roundUp){
+  if(!roundUp) return v;
+  return Math.ceil(Number(Number(v).toFixed(2)));
+}
+function toggleSettlementRoundUp(on){
+  const d = settlementDraft;
+  if(!d) return;
+  d.roundUp = !!on;
+}
+function toggleSettlementExclude(i){
+  const d = settlementDraft;
+  if(!d || !d.lines[i]) return;
+  d.lines[i].excluded = !d.lines[i].excluded;
+  renderSettlementStatement();
 }
 async function editSettlementLine(i, newVal){
   const d = settlementDraft;
@@ -6106,6 +7964,41 @@ async function editSettlementLine(i, newVal){
     line.source = 'learned';
     toast('Correction saved for next time ✓');
   }
+}
+// Read-only clean output table, generated on demand once review/translation/exclusion is done.
+// Shows only included lines: JV No, Date, Description (Arabic, as translated/corrected), Amount, Total.
+// On-screen only — no export — per the person's request; "Back to review" returns to the editable view.
+function showSettlementCleanOutput(){
+  const d = settlementDraft;
+  if(!d) return;
+  const included = d.lines.filter(l=>!l.excluded);
+  // Each line is rounded independently and the total is the sum of those rounded lines, so the
+  // printed column always adds up to the printed total (rounding the true total once instead
+  // would leave the table visibly not summing correctly).
+  const shown = included.map(l=>({...l, shownAmt: settlementRoundAmt(l.amt, d.roundUp)}));
+  const total = shown.reduce((s,l)=>s+l.shownAmt,0);
+  const partyName = applyNameTranslations(accShort(d.acc));
+  const excludedCount = d.lines.length - included.length;
+  showModal(`
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h3 style="margin:0">📋 ${esc(partyName)} — ${d.acc}</h3>
+      <button class="x noprint" onclick="closeModal()">✕</button>
+    </div>
+    ${excludedCount||d.roundUp? `<div class="mut noprint" style="font-size:11px;margin:6px 0 12px">${excludedCount? `${excludedCount} excluded line(s) not shown below.` : ''}${excludedCount&&d.roundUp? ' ' : ''}${d.roundUp? 'Amounts rounded up to the nearest whole number.' : ''}</div>` : ''}
+    <div style="overflow-x:auto"><table dir="rtl" style="width:100%;min-width:520px">
+      <thead><tr><th>رقم القيد</th><th>التاريخ</th><th>الوصف</th><th class="num">المبلغ</th></tr></thead>
+      <tbody>${shown.map(l=>`<tr>
+        <td class="mono">#${l.jv}</td>
+        <td class="mono" style="white-space:nowrap">${esc(l.date)}</td>
+        <td>${esc(l.arText)}</td>
+        <td class="num mono ${moneyClass(l.shownAmt)}">${money(l.shownAmt)}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="empty">No included lines</td></tr>'}</tbody>
+      <tfoot><tr style="font-weight:700"><td colspan="3">الإجمالي</td><td class="num mono ${moneyClass(total)}">${money(total)}</td></tr></tfoot>
+    </table></div>
+    <div class="row noprint" style="justify-content:flex-end;margin-top:14px">
+      <button class="btn ghost" onclick="renderSettlementStatement()">← Back to review</button>
+    </div>
+  `, true);
 }
 function monthLabelAr(ym){ const [y,m] = ym.split('-').map(Number); return AR_MONTHS[m-1]+' '+y; }
 const JAMIAH_AR = {
@@ -6762,11 +8655,23 @@ function allocatableAccountsWithData(){
   return [...new Set(raw.map(l=>l.acc))].sort((a,b)=>a-b);
 }
 function renderAllocUnalloc(){
-  const accOptions = allocatableAccountsWithData().map(id=>`<option value="${id}" ${String(allocAccFilter)===String(id)?'selected':''}>${id} — ${esc(accShort(id))}</option>`).join('');
+  const allocFilterAcc = allocAccFilter? ACC_BY_ID[Number(allocAccFilter)] : null;
   document.getElementById('allocBody').innerHTML = `
     <div class="panel noprint">
       <div class="row">
-        <div style="width:240px"><label class="fl">Account</label><select onchange="allocAccFilter=this.value; renderAllocUnalloc()"><option value="">All accounts</option>${accOptions}</select></div>
+        <div style="width:240px"><label class="fl">Account</label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <div style="position:relative;flex:1">
+              <input id="acpin_allocfilter" value="${allocFilterAcc? allocFilterAcc.id+' — '+esc(accShort(allocFilterAcc.id)) : ''}" placeholder="All accounts"
+                oninput="acpInput('allocfilter', this.value)"
+                onfocus="acpOpen('allocfilter', allocatableAccountsWithData().map(id=>ACC_BY_ID[id]), function(id){ allocAccFilter=id; renderAllocUnalloc(); }); acpInput('allocfilter','')"
+                onkeydown="acpKey(event,'allocfilter')"
+                onblur="setTimeout(function(){ acpClose('allocfilter'); },150)">
+              <div class="acdrop" id="acpdrop_allocfilter"></div>
+            </div>
+            ${allocAccFilter? `<button type="button" class="x" title="Clear filter" onclick="allocAccFilter=''; renderAllocUnalloc()">✕</button>` : ''}
+          </div>
+        </div>
         <div style="flex:1;min-width:200px"><label class="fl">Search description</label><input id="allocQInput" value="${esc(allocQ)}" oninput="filterAllocUnalloc(this.value)"></div>
       </div>
     </div>
@@ -6945,6 +8850,77 @@ async function unassignLine(id,n){
 function openSettings(){ go('settings'); }
 let settingsTab = 'appearance';
 function goSettingsTab(tab){ settingsTab = tab; renderSettings(); }
+/* ---- Page order: drag and drop ---- */
+let _pgDragId = null;
+function pgDragStart(ev, id){
+  _pgDragId = id;
+  ev.dataTransfer.effectAllowed = 'move';
+  try{ ev.dataTransfer.setData('text/plain', id); }catch(e){}
+  const row = ev.currentTarget; if(row) row.classList.add('dragging');
+}
+function pgDragEnd(){
+  _pgDragId = null;
+  document.querySelectorAll('.pg-row').forEach(r=>r.classList.remove('dragging','drop-above','drop-below'));
+}
+function pgDragOver(ev, id){
+  if(!_pgDragId || _pgDragId===id) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'move';
+  const row = ev.currentTarget;
+  const rect = row.getBoundingClientRect();
+  const above = (ev.clientY - rect.top) < rect.height/2;
+  document.querySelectorAll('.pg-row').forEach(r=>r.classList.remove('drop-above','drop-below'));
+  row.classList.add(above? 'drop-above' : 'drop-below');
+}
+function pgDragLeave(ev){
+  const row = ev.currentTarget;
+  if(row) row.classList.remove('drop-above','drop-below');
+}
+async function pgDrop(ev, targetId){
+  ev.preventDefault();
+  const dragged = _pgDragId;
+  const row = ev.currentTarget;
+  const rect = row? row.getBoundingClientRect() : null;
+  const above = rect? (ev.clientY - rect.top) < rect.height/2 : true;
+  pgDragEnd();
+  if(!dragged || dragged===targetId) return;
+  const ids = reorderableScreens().map(s=>s[0]);
+  const from = ids.indexOf(dragged);
+  if(from<0) return;
+  ids.splice(from, 1);
+  let to = ids.indexOf(targetId);
+  if(to<0) to = ids.length; else if(!above) to = to+1;
+  ids.splice(to, 0, dragged);
+  await savePageOrder(ids);
+  renderNav();
+  renderSettings();
+  toast('Page order saved ✓');
+}
+function renderPageOrderSection(hidden){
+  const rows = reorderableScreens().map(([id,label,icon])=>`
+    <div class="pg-row" draggable="true"
+      ondragstart="pgDragStart(event,'${id}')" ondragend="pgDragEnd()"
+      ondragover="pgDragOver(event,'${id}')" ondragleave="pgDragLeave(event)" ondrop="pgDrop(event,'${id}')">
+      <span class="pg-grip" title="Drag to reorder">⠿</span>
+      <span class="pg-name">${icon||''} ${esc(label)}</span>
+      ${ALWAYS_VISIBLE_SCREENS.includes(id)
+        ? '<span class="pg-lock">always visible</span>'
+        : `<input type="checkbox" class="chk" ${!hidden.includes(id)?'checked':''} onchange="togglePageVisibility('${id}', this.checked)" title="Show in sidebar">`}
+    </div>`).join('');
+  const pinned = SCREENS.find(s=>s[0]===PINNED_LAST_SCREEN);
+  return `
+    <div class="panel">
+      <h3>🧭 Pages</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:12px">Drag to reorder the sidebar, and untick a page to hide it. Dashboard and Settings can't be hidden, so you can never lock yourself out. The order is synced to all your devices; visibility stays per-device.</div>
+      ${rows}
+      ${pinned? `<div class="pg-row pinned" title="Settings is always last">
+        <span class="pg-grip" style="opacity:.35">⠿</span>
+        <span class="pg-name">${pinned[2]||''} ${esc(pinned[1])}</span>
+        <span class="pg-lock">pinned last</span>
+      </div>`:''}
+    </div>`;
+}
+
 function renderSettings(){
   const url = localStorage.getItem('sb_url')||'', key = localStorage.getItem('sb_key')||'';
   const curAccent = localStorage.getItem('accentColor')||'indigo';
@@ -7071,14 +9047,16 @@ function renderSettings(){
           </select>` : `<div class="mut" style="font-size:11.5px">Fills most of the available width, adjusting as you resize the window.</div>`}
         </div>
       </div>`},
-    visibility: {label:'👁 Page Visibility', html: `
+    visibility: {label:'🧭 Pages', html: renderPageOrderSection(hidden)},
+    dbschema: {label:'🗄 Database Schema', html: `
       <div class="panel">
-        <h3>👁 Page Visibility</h3>
-        <div class="mut" style="font-size:12px;margin-bottom:10px">Hide pages you don't use from the top navigation. Dashboard always stays visible so you can never lock yourself out.</div>
-        ${SCREENS.filter(([id])=>id!=='dashboard').map(([id,label])=>`
-          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" class="chk" ${!hidden.includes(id)?'checked':''} onchange="togglePageVisibility('${id}', this.checked)"> ${esc(label)}
-          </label>`).join('')}
+        <h3>🗄 Full Database Schema</h3>
+        <div class="mut" style="font-size:12px;margin-bottom:12px">Everything needed to stand up a brand-new LedgerOS database from scratch — all ${DB_SCHEMA_SQL.split('create table if not exists').length-1} tables, indexes, RLS policies, and the structural rows the app needs to function. Run it once against a new Supabase project, then restore your data from Backup &amp; Restore. It contains no personal data. Safe to re-run.</div>
+        <div class="row" style="gap:8px;margin-bottom:12px">
+          <button class="btn pri sm" onclick="copyDbSchemaSql()">📋 Copy SQL</button>
+          <button class="btn ghost sm" onclick="downloadDbSchemaSql()">⬇ Download .sql</button>
+        </div>
+        <pre style="background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:460px;font-size:11.5px;line-height:1.5;white-space:pre;margin:0">${esc(DB_SCHEMA_SQL)}</pre>
       </div>`},
     driftdetection: {label:'📉 Drift Detection', html: `
       <div class="panel">
@@ -7148,13 +9126,28 @@ function renderSettings(){
         <table><thead><tr><th>Category</th><th>Liability Account</th><th>Accrual (99) Expense Account</th><th></th></tr></thead>
         <tbody>${expenseCategoriesList().map(cat=>{
           const m = D.accrualMappings.find(x=>x.category===cat);
-          const liabOptions = postableAccounts().filter(a=>firstDigit(a.id)===2).map(a=>`<option value="${a.id}" ${m&&m.liabilityAcc===a.id?'selected':''}>${a.id} — ${esc(accShort(a.id))}</option>`).join('');
-          const expOptions = postableAccounts().filter(a=>firstDigit(a.id)===6).map(a=>`<option value="${a.id}" ${m&&m.expenseAcc===a.id?'selected':''}>${a.id} — ${esc(accShort(a.id))}</option>`).join('');
+          const cid = sanitizeIdPart(cat);
+          const liabAcc = m&&m.liabilityAcc? m.liabilityAcc : null;
+          const expAcc = m&&m.expenseAcc? m.expenseAcc : null;
           return `<tr>
             <td>${esc(cat)}</td>
-            <td><select id="accrLiab_${sanitizeIdPart(cat)}"><option value="">— none —</option>${liabOptions}</select></td>
-            <td><select id="accrExp_${sanitizeIdPart(cat)}"><option value="">— none —</option>${expOptions}</select></td>
-            <td><button class="btn ghost sm" onclick="saveAccrualMappingFromForm('${sanitizeIdPart(cat)}')">Save</button>${m? ` <button class="x" onclick="deleteAccrualMapping('${sanitizeIdPart(cat)}')">✕</button>`:''}</td>
+            <td>
+              <input id="acpin_accrLiab_${cid}" value="${liabAcc? liabAcc+' — '+esc(accShort(liabAcc)) : ''}" placeholder="— none —"
+                oninput="acpInput('accrLiab_${cid}', this.value)"
+                onfocus="acpOpen('accrLiab_${cid}', postableAccounts().filter(a=>firstDigit(a.id)===2), function(id){ document.getElementById('acpin_accrLiab_${cid}').dataset.acc=id; document.getElementById('acpin_accrLiab_${cid}').value=id+' — '+accShort(id); }); acpInput('accrLiab_${cid}','')"
+                onkeydown="acpKey(event,'accrLiab_${cid}')"
+                onblur="setTimeout(function(){ acpClose('accrLiab_${cid}'); },150)" data-acc="${liabAcc||''}">
+              <div class="acdrop" id="acpdrop_accrLiab_${cid}"></div>
+            </td>
+            <td>
+              <input id="acpin_accrExp_${cid}" value="${expAcc? expAcc+' — '+esc(accShort(expAcc)) : ''}" placeholder="— none —"
+                oninput="acpInput('accrExp_${cid}', this.value)"
+                onfocus="acpOpen('accrExp_${cid}', postableAccounts().filter(a=>firstDigit(a.id)===6), function(id){ document.getElementById('acpin_accrExp_${cid}').dataset.acc=id; document.getElementById('acpin_accrExp_${cid}').value=id+' — '+accShort(id); }); acpInput('accrExp_${cid}','')"
+                onkeydown="acpKey(event,'accrExp_${cid}')"
+                onblur="setTimeout(function(){ acpClose('accrExp_${cid}'); },150)" data-acc="${expAcc||''}">
+              <div class="acdrop" id="acpdrop_accrExp_${cid}"></div>
+            </td>
+            <td><button class="btn ghost sm" onclick="saveAccrualMappingFromForm('${cid}')">Save</button>${m? ` <button class="x" onclick="deleteAccrualMapping('${cid}')">✕</button>`:''}</td>
           </tr>`;
         }).join('') || '<tr><td colspan="4" class="empty">No expense categories found</td></tr>'}</tbody></table>
       </div>`},
@@ -7289,6 +9282,13 @@ async function restoreFromBackup(parsed){
   await SB.from('pd_real_estate_buildings').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_forecast_account_rules').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_custom_forecast_categories').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_valuations').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_transactions').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_positions').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_platforms').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_owners').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_settings').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_ui_prefs').delete().neq('id',-1); bump('Clearing old data');
   if(D.accounts.length) await insertWithRetry('pd_accounts', D.accounts.map(a=>({id:a.id,descr:a.descr,balance:a.balance,direction:a.direction,acc_type:a.acc_type,name:a.name,cf_type:a.cf_type,category:a.category,status:a.status,is_savings:!!a.is_savings,is_allocatable:!!a.is_allocatable,is_credit_card:!!a.is_credit_card,credit_limit:a.credit_limit,stmt_balance:a.stmt_balance,stmt_available:a.stmt_available,stmt_date:a.stmt_date,forecast_category:a.forecast_category||null})));
   bump('Restoring accounts');
   if(D.templates.length) await insertWithRetry('pd_templates', D.templates.map(t=>({id:t.id,name:t.name,lines:t.lines})));
@@ -7310,6 +9310,14 @@ async function restoreFromBackup(parsed){
   if(D.forecastAccountRules.length) await insertWithRetry('pd_forecast_account_rules', D.forecastAccountRules.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, target_offset:r.targetOffset||0, freeze_after_target:!!r.freezeAfterTarget})));
   bump('Restoring Smart Rules');
   if(D.customForecastCategories.length) await insertWithRetry('pd_custom_forecast_categories', D.customForecastCategories.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior})));
+  if((D.invOwners||[]).length) await insertWithRetry('pd_inv_owners', D.invOwners.map(o=>({id:o.id, name:o.name, name_ar:o.nameAr||'', is_self:!!o.isSelf, out_acc:o.outAcc, in_acc:o.inAcc, profit_acc:o.profitAcc})));
+  if((D.invPlatforms||[]).length) await insertWithRetry('pd_inv_platforms', D.invPlatforms.map(p=>({id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc})));
+  if((D.invPositions||[]).length) await insertWithRetry('pd_inv_positions', D.invPositions.map(p=>({id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status})));
+  if((D.invTransactions||[]).length) await insertWithRetry('pd_inv_transactions', D.invTransactions.map(t=>({id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||''})));
+  if((D.invValuations||[]).length) await insertWithRetry('pd_inv_valuations', D.invValuations.map(v=>({id:v.id, position_id:v.positionId, entry_date:v.date, price:v.price})));
+  if(D.invSettings && D.invSettings.fxUsdSar) await insertWithRetry('pd_inv_settings', [{id:1, fx_usd_sar:D.invSettings.fxUsdSar}]);
+  if(D.uiPrefs && D.uiPrefs.pageOrder) await insertWithRetry('pd_ui_prefs', [{id:1, page_order:D.uiPrefs.pageOrder}]);
+  bump('Restoring Investments');
   bump('Restoring Custom Categories');
   if(Object.keys(D.forecastPlans).length) await insertWithRetry('pd_forecast_plans', [{id:1, plans:D.forecastPlans}]);
   bump('Restoring Forecast data');
@@ -7454,8 +9462,7 @@ function renderTplLineRuleEditor(){
     </div>`);
 }
 function tplRuleAccInput(v){
-  const q = v.toLowerCase();
-  const matches = postableAccounts().filter(a=>String(a.id).includes(q)||(a.name||'').toLowerCase().includes(q)).slice(0,20);
+  const matches = accountSearchMatches(v, postableAccounts()).slice(0,20);
   const drop = document.getElementById('tplRuleAcDrop');
   if(!drop) return;
   drop.className = 'acdrop show';
@@ -7514,8 +9521,7 @@ function tplAccInput(i, val){
   const l = window._tplDraft.lines[i];
   l._q = val;
   if(!val){ l.acc = ''; }
-  const q = val.toLowerCase();
-  const matches = postableAccounts().filter(a=> String(a.id).includes(q) || (a.name||'').toLowerCase().includes(q)).slice(0,25);
+  const matches = accountSearchMatches(val, postableAccounts());
   l._matches = matches; l._hi = -1;
   renderTplAcDrop(i);
 }
@@ -7915,6 +9921,13 @@ async function clearEverything(){
     await SB.from('pd_real_estate_buildings').delete().neq('id',-1);
     await SB.from('pd_forecast_account_rules').delete().neq('id',-1);
     await SB.from('pd_custom_forecast_categories').delete().neq('id',-1);
+    await SB.from('pd_inv_valuations').delete().neq('id',-1);
+    await SB.from('pd_inv_transactions').delete().neq('id',-1);
+    await SB.from('pd_inv_positions').delete().neq('id',-1);
+    await SB.from('pd_inv_platforms').delete().neq('id',-1);
+    await SB.from('pd_inv_owners').delete().neq('id',-1);
+    await SB.from('pd_inv_settings').delete().neq('id',-1);
+    await SB.from('pd_ui_prefs').delete().neq('id',-1);
   }
   go('dashboard');
 }
@@ -8038,6 +10051,9 @@ function applySemanticColors(){
 }
 function getHiddenPages(){ try{ return JSON.parse(localStorage.getItem('hiddenPages')||'[]'); }catch(e){ return []; } }
 function togglePageVisibility(id, visible){
+  // Guarded rather than relying on the UI alone: hiding Settings would remove the only place
+  // to un-hide it, and hiding Dashboard would remove the safe landing page.
+  if(!visible && ALWAYS_VISIBLE_SCREENS.includes(id)){ toast('This page can\'t be hidden', true); return; }
   let hidden = getHiddenPages();
   if(visible){ hidden = hidden.filter(x=>x!==id); } else { if(!hidden.includes(id)) hidden.push(id); }
   const ok = safeSetItemWarn('hiddenPages', JSON.stringify(hidden));
