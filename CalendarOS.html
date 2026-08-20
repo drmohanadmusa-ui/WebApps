@@ -687,15 +687,15 @@ select.filter-select, input.filter-date{
 .density-count{font-family:var(--font-mono); font-size:9.5px; color:var(--slate);}
 
 .mini-cal-grid{
-  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+  display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
 }
 .mini-cal-dow{
-  text-align:center; font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase;
+  text-align:center; font-family:var(--font-mono); font-size:8px; text-transform:uppercase;
   color:var(--slate-light); padding-bottom:2px;
 }
 .mini-cal-cell{
   aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
-  border-radius:6px; font-size:11.5px; background:var(--paper-dim);
+  border-radius:5px; font-size:9.5px; background:var(--paper-dim);
 }
 .mini-cal-cell.empty{background:transparent;}
 .mini-cal-cell.today{box-shadow:0 0 0 2px var(--brass) inset;}
@@ -1400,7 +1400,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.16.0';
+const APP_VERSION = '4.21.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1408,6 +1408,31 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.21.0', changes: [
+    'FOUND THE REAL CAUSE of the recurring "storage is full" errors. The usage panel reported only 53.5 KB while saves were failing against a ~5 MB limit — which made no sense until the key detail: browsers cap local storage PER DOMAIN, shared by every app on it, not per app. CalendarOS and LedgerOS are both served from the same GitHub Pages domain, so they draw on the same pool. The previous panel only counted keys with the CalendarOS prefix, so it showed ~1% while the rest of the pool was being consumed by the other app — hiding the actual cause completely.',
+    'The Local Storage Usage panel now scans everything on the domain, splits the total into "CalendarOS" vs "Other apps on this domain", tags foreign entries as OTHER-APP, and shows a warning when another app is the main consumer, explaining that clearing CalendarOS caches will not help in that case.',
+    'Eviction remains strictly limited to CalendarOS\'s own disposable caches — it will never touch another app\'s data, which is verified by a test.',
+  ]},
+  { v:'4.20.0', changes: [
+    'Follow-up to the storage-quota data loss, after seeing the actual error ("Setting the value of cos_dispatch:lists exceeded the quota"). Evicting disposable caches alone was not enough — the critical data itself had grown too large. The completions safety buffer (made unbounded in 4.18.0 so old completions could never be lost again) is now stored in a compact encoding instead of raw JSON: about 59% smaller measured on a realistic 40-tasks x 400-days history. Full history is still kept, losslessly; it just costs far less space. Existing buffers written by older versions still load correctly.',
+    'New "Local Storage Usage" panel in Settings → Activity & Error Log: shows exactly how much space each item uses, how close you are to the browser limit, and whether each item is CRITICAL (only exists on this device until it syncs) or DISPOSABLE (a cache that re-downloads from Supabase). Includes a one-click button to clear the disposable ones. This makes the quota problem visible and fixable instead of appearing as a random failure toast.',
+  ]},
+  { v:'4.19.0', changes: [
+    'ROOT CAUSE of the recent data loss found — and it was the "local storage is full" error you have been seeing almost daily. Critical local writes (the completions safety buffer, and the lists cache that holds folder assignments) were wrapped in bare try/catch blocks that only logged to the console. When the quota filled, those writes failed with NO visible sign, so the local cache kept serving stale data — and on the next partial sync that stale copy won the merge. That is why completed tasks came back as pending AND lists lost their folder assignments in the same incident: one shared cause, not two separate bugs.',
+    'Fix 1 — storage is now tiered. Caches that can be re-downloaded from Supabase (hydration, training, recipes, health, ratings, metric defs, sync error history) are marked disposable. Anything that only exists locally (completions buffer, lists, tasks, settings) is critical. When a critical write hits the quota, disposable caches are automatically evicted to make room and the write is retried — so the data that cannot be recovered always wins the fight for space.',
+    'Fix 2 — a failed write to a critical key now always warns you, even when the calling code asked for a silent save. Silence was precisely what allowed the original loss to go unnoticed for weeks.',
+    'Fix 3 — Ctrl+K now searches items INSIDE your lists, not just list titles. Each result shows which list it belongs to and whether it is already checked off.',
+  ]},
+  { v:'4.18.0', changes: [
+    'DATA INTEGRITY FIX for a real, reported incident: completions from ~2-3 weeks earlier silently reverted to pending after a partial/failed sync (browser had served a cached copy of the app). Root cause: completion history is deliberately not kept in the main local task cache, so the only local record of it was a safety buffer capped at 14 DAYS. Anything older than that had no local copy to restore from, so when a pull came back without it, it was simply gone. The 2-3 week age of the affected tasks put them exactly outside that window.',
+    'Fix 1 — the completions safety buffer is now UNBOUNDED (was 14 days). Completions are tiny records, so keeping the full history locally costs almost nothing next to the cost of ever losing one.',
+    'Fix 2 — a hard invariant is now enforced on every sync: a pull can NEVER un-complete a task. If something is complete locally and a pull comes back without it, that is treated as a partial/stale pull, the completion is restored, and the corrected state is pushed back to Supabase. Un-completing remains possible only as an explicit action you take, which goes through the separate delete path. Both are covered by tests that reproduce the original incident.',
+    'Restorations are logged to Settings → Activity & Error Log, so if this ever triggers again you can see exactly how many entries were rescued and when.',
+  ]},
+  { v:'4.17.0', changes: [
+    'Progress page mini calendar made smaller, with a color legend (Completed/Missed/Moved/Today) placed right next to it.',
+    'Hydration: removed Liquid Types entirely (settings modal is now just "Manage Containers"). The daily log now shows one consolidated line per container instead of a separate line for every tap — e.g. "Glass ×5 — 1250ml" instead of five identical rows — with the container name shown and a way to remove just one occurrence at a time.',
+  ]},
   { v:'4.16.0', changes: [
     '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds two new columns on training_logs (avg_pace text, incline text). Additive/idempotent, safe to run anytime; the old avg_speed_kmh column is left in place unused rather than dropped.',
     'Walking training: "Avg Speed (km/h)" replaced with "Avg Pace (min/km)" — type it directly, e.g. "6:30". Added a new Incline (%) field alongside it.',
@@ -1778,12 +1803,11 @@ const DEFAULT_SETTINGS_EXTRAS = {
   // Unlike the above, this DOES sync — it's real data (a managed set of
   // folder names for grouping Lists), not a device display preference.
   listFolders: [],
-  // Hydration tracker: user-defined containers/liquid types, both real
-  // data (not device preferences), same treatment as listFolders. Log
-  // entries themselves live in state.hydrationLogs / a dedicated table —
-  // these two arrays are just the managed definitions, like locations/silos.
+  // Hydration tracker: user-defined containers, real data (not device
+  // preferences), same treatment as listFolders. Log entries themselves
+  // live in state.hydrationLogs / a dedicated table — this array is just
+  // the managed definitions, like locations/silos.
   hydrationContainers: [], // [{id, name, ml, icon}]
-  hydrationLiquidTypes: [], // [{id, name, color}]
   hydrationGoalMl: 2500,
   hydrationDefaultsSeeded: false, // local-only flag, same pattern as healthCoreMetricsSeeded
   // Named filter presets for Week/Calendar — also real data (not a display
@@ -1832,7 +1856,7 @@ const STORAGE_KEYS = {
   HEALTH_METRIC_DEFS: 'dispatch:healthmetricdefs', // [ {id, name, type, unit, sortOrder} ]
   TRAINING: 'dispatch:training', // { exercises:[], sessions:[], calendar:[], logs:[] }
   RECIPES: 'dispatch:recipes', // { items:[ {id,name,mealType,imageUrl,baseServings,ingredients:[],steps,macros} ] }
-  HYDRATION: 'dispatch:hydration', // [ {id,date,containerId,liquidTypeId,ml,loggedAt} ]
+  HYDRATION: 'dispatch:hydration', // [ {id,date,containerId,ml,loggedAt} ]
   SYNC_ERROR_HISTORY: 'dispatch:syncerrorhistory', // durable, bounded, local-only — see recordSyncErrorHistory()
 };
 
@@ -1842,7 +1866,7 @@ const state = {
   tasks: { oneTime: [], recurring: [], completions: {} }, // completions: { taskId: [dateStr,...] }
   lists: [],
   health: [],
-  hydrationLogs: [], // [{id, date, containerId, liquidTypeId, ml, loggedAt}]
+  hydrationLogs: [], // [{id, date, containerId, ml, loggedAt}]
   settings: { locations: [], silos: [], lastActiveDate: null, sync: null },
   selectedDate: todayStr(),
   dashboardFilter: 'Today', // Today | Next7 | Next30 | Custom
@@ -2318,7 +2342,7 @@ async function loadAll(){
       try{
         const recentRes = await safeGet(STORAGE_KEYS.RECENT_COMPLETIONS);
         if(recentRes){
-          const buffer = JSON.parse(recentRes.value);
+          const buffer = decodeCompletionsBuffer(JSON.parse(recentRes.value));
           const { merged } = mergeRecentCompletionsIntoRemote(state.tasks.completions, buffer);
           state.tasks.completions = merged;
         }
@@ -2600,10 +2624,10 @@ function rowToRecipeIngredient(r){
 }
 function hydrationLogToRow(l){
   const s = state.settings.sync;
-  return { pin:s.pin, id:l.id, log_date:l.date, container_id:l.containerId||null, liquid_type_id:l.liquidTypeId||null, ml:l.ml||0, logged_at:l.loggedAt||new Date().toISOString() };
+  return { pin:s.pin, id:l.id, log_date:l.date, container_id:l.containerId||null, ml:l.ml||0, logged_at:l.loggedAt||new Date().toISOString() };
 }
 function rowToHydrationLog(r){
-  return { id:r.id, date:r.log_date, containerId:r.container_id, liquidTypeId:r.liquid_type_id, ml:r.ml||0, loggedAt:r.logged_at };
+  return { id:r.id, date:r.log_date, containerId:r.container_id, ml:r.ml||0, loggedAt:r.logged_at };
 }
 function trainingLogToRow(l){
   const s = state.settings.sync;
@@ -2696,7 +2720,7 @@ async function pushFullStateToSupabase(onProgress){
     ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
     ()=> flushPendingMetricDefDeletes(),
     ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
-    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_liquid_types: state.settings.hydrationLiquidTypes, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
   // Training runs AFTER the core steps and is deliberately fault-isolated
   // from them: if the training-tables SQL migration hasn't been run yet in
@@ -2850,7 +2874,7 @@ async function pullFromSupabase(onProgress){
     try{
       const recentRes = await safeGet(STORAGE_KEYS.RECENT_COMPLETIONS);
       if(recentRes){
-        const buffer = JSON.parse(recentRes.value);
+        const buffer = decodeCompletionsBuffer(JSON.parse(recentRes.value));
         const { merged, hadNewerLocal } = mergeRecentCompletionsIntoRemote(completions, buffer);
         state.tasks.completions = merged;
         needsReconcilePush = hadNewerLocal;
@@ -2914,7 +2938,6 @@ async function pullFromSupabase(onProgress){
       if(settingsRows[0].week_view_presets) state.settings.weekViewPresets = settingsRows[0].week_view_presets;
       if(settingsRows[0].calendar_view_presets) state.settings.calendarViewPresets = settingsRows[0].calendar_view_presets;
       if(settingsRows[0].hydration_containers) state.settings.hydrationContainers = settingsRows[0].hydration_containers;
-      if(settingsRows[0].hydration_liquid_types) state.settings.hydrationLiquidTypes = settingsRows[0].hydration_liquid_types;
       if(settingsRows[0].hydration_goal_ml!=null) state.settings.hydrationGoalMl = settingsRows[0].hydration_goal_ml;
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
@@ -2931,16 +2954,16 @@ async function pullFromSupabase(onProgress){
     // called in that case), so only the small, bounded task/list structure
     // gets cached locally — completion/health/ratings history stays in
     // memory and in Supabase only, never written to local storage here.
-    try{ await window.storage.set(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), false); } catch(e){ console.error('local cache write failed (tasks)', e); }
-    try{ await window.storage.set(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), false); } catch(e){}
-    try{ await window.storage.set(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), false); } catch(e){ console.error('local cache write failed (lists)', e); }
+    await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks');
+    await safeStorageSet(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), 'completions safety buffer');
+    await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
     try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
     try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
     try{ await window.storage.set(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), false); } catch(e){ console.error('local cache write failed (metric defs)', e); }
     if(trainingPulled){ try{ await window.storage.set(STORAGE_KEYS.TRAINING, JSON.stringify(state.training), false); } catch(e){ console.error('local cache write failed (training)', e); } }
     if(recipesPulled){ try{ await window.storage.set(STORAGE_KEYS.RECIPES, JSON.stringify(state.recipes), false); } catch(e){ console.error('local cache write failed (recipes)', e); } }
     if(hydrationPulled){ try{ await window.storage.set(STORAGE_KEYS.HYDRATION, JSON.stringify(state.hydrationLogs), false); } catch(e){ console.error('local cache write failed (hydration)', e); } }
-    try{ await window.storage.set(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), false); } catch(e){ console.error('local cache write failed (settings)', e); }
+    await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
 
     if(needsReconcilePush){
       // this device had offline activity Supabase didn't know about — push
@@ -2983,10 +3006,65 @@ function isQuotaError(e){
   return e.name === 'QuotaExceededError' || msg.includes('quota') || msg.includes('exceeded');
 }
 
+// ---------------------------------------------------------------
+// STORAGE PRIORITY TIERS
+//
+// A full local cache used to cause SILENT data loss: writes for lists and
+// the completions buffer were wrapped in bare try/catch blocks that only
+// console.error'd. When the quota filled up (which was happening ~daily),
+// those writes failed unnoticed, the local cache kept serving STALE data,
+// and on the next partial sync that stale data won the merge — which is how
+// completed tasks came back as pending and lists lost their folder
+// assignments. Fixing the quota problem IS fixing that data loss.
+//
+// DISPOSABLE = pure caches. Every one of these is fully recoverable from
+// Supabase on the next successful pull, so throwing them away costs nothing
+// but a moment of load time. They are also the biggest and fastest-growing
+// things in local storage (hydration grows every time you log a drink;
+// training logs grow every session; recipes can hold long text).
+//
+// CRITICAL = the local-only safety net. If these are lost, the data is
+// genuinely gone or silently reverted. They must always win the fight for
+// space, so we evict disposables to make room for them rather than the
+// other way around.
+const DISPOSABLE_STORAGE_KEYS = [
+  'dispatch:hydration',
+  'dispatch:training',
+  'dispatch:recipes',
+  'dispatch:health',
+  'dispatch:ratings',
+  'dispatch:healthmetricdefs',
+  'dispatch:syncerrorhistory',
+];
+const CRITICAL_STORAGE_KEYS = [
+  'dispatch:recentcompletions', // the ONLY local record of completion history
+  'dispatch:lists',             // holds folder assignments
+  'dispatch:tasks',
+  'dispatch:settings',
+];
+async function evictDisposableCaches(exceptKey){
+  let evicted = [];
+  for(const key of DISPOSABLE_STORAGE_KEYS){
+    if(key === exceptKey) continue;
+    try{
+      const existing = await window.storage.get(key, false);
+      if(existing){
+        await window.storage.delete(key, false);
+        evicted.push(key);
+      }
+    } catch(e){ /* key absent or unreadable — nothing to reclaim, keep going */ }
+  }
+  if(evicted.length){
+    diagLogEvent('local-save', `Local storage full — evicted ${evicted.length} disposable cache(s) to protect critical data`, { evicted });
+  }
+  return evicted;
+}
+
 async function safeStorageSet(key, value, label, opts){
   opts = opts || {};
   const delays = [0, 300, 900];
   let lastErr = null;
+  let triedEviction = false;
   for(let i=0;i<delays.length;i++){
     if(delays[i]) await new Promise(r=>setTimeout(r, delays[i]));
     try{
@@ -2995,14 +3073,37 @@ async function safeStorageSet(key, value, label, opts){
       return true;
     } catch(e){
       lastErr = e;
-      // a full local cache won't fix itself by waiting and retrying the same payload
-      if(isQuotaError(e)) break;
+      if(isQuotaError(e)){
+        // Retrying the same payload against a full cache is pointless — but
+        // making ROOM and then retrying is not. Disposable caches are all
+        // re-fetchable from Supabase, so we trade them for the write we're
+        // trying to land. Only done once per call, and only for quota errors.
+        if(!triedEviction){
+          triedEviction = true;
+          const evicted = await evictDisposableCaches(key);
+          if(evicted.length){
+            try{
+              await window.storage.set(key, value, false);
+              diagLogEvent('local-save', `OK "${label||key}" (after evicting ${evicted.length} disposable cache(s))`, { bytes: value.length, evicted });
+              if(!opts.silent) showToast(`Local storage was full — cleared ${evicted.length} re-downloadable cache${evicted.length===1?'':'s'} to make room`);
+              return true;
+            } catch(e2){ lastErr = e2; }
+          }
+        }
+        break; // still no room even after eviction
+      }
     }
   }
   console.error(`Local save failed for "${label||key}" after retries:`, lastErr);
   diagLogEvent('local-save', `FAILED "${label||key}"`, { bytes: value.length, error: lastErr&&lastErr.message, isQuota: isQuotaError(lastErr) });
-  if(!opts.silent){
-    showToast(`⚠ Save failed: ${lastErr && lastErr.message ? lastErr.message : 'storage unavailable'}`);
+  // A failed write to a CRITICAL key is a data-integrity event, not a cosmetic
+  // one — it must never pass silently, regardless of the caller's silent flag,
+  // because silence here is exactly what let the original data loss happen.
+  const isCritical = CRITICAL_STORAGE_KEYS.includes(key);
+  if(!opts.silent || isCritical){
+    showToast(isCritical
+      ? `⚠ Could not save ${label||key} locally — your Supabase copy is still authoritative, but avoid working offline until this clears`
+      : `⚠ Save failed: ${lastErr && lastErr.message ? lastErr.message : 'storage unavailable'}`);
   }
   return { ok:false, err:lastErr };
 }
@@ -3019,37 +3120,94 @@ async function safeStorageSet(key, value, label, opts){
 // is gone with no local trace at all. This buffer is small enough (a couple
 // weeks, not years) to never recreate the original quota problem, while
 // still surviving a realistic offline session.
-const RECENT_COMPLETIONS_WINDOW_DAYS = 14;
-function buildRecentCompletionsBuffer(completions){
-  const cutoff = addDays(todayStr(), -RECENT_COMPLETIONS_WINDOW_DAYS);
-  const buffer = {};
-  Object.entries(completions).forEach(([taskId, byDate])=>{
-    const kept = {};
-    Object.entries(byDate).forEach(([dateStr, o])=>{ if(dateStr >= cutoff) kept[dateStr] = o; });
-    if(Object.keys(kept).length) buffer[taskId] = kept;
-  });
-  return buffer;
+// RETIRED (was 14): the completions safety buffer is now unbounded. This
+// window is deliberately no longer used — see buildRecentCompletionsBuffer
+// for why capping it caused real data loss.
+const RECENT_COMPLETIONS_WINDOW_DAYS = null;
+// The buffer is stored in a COMPACT encoding rather than raw state shape.
+// Raw form per entry is ~55 bytes: {"status":"done","loggedAt":"2026-01-01T00:00:00.000Z"}
+// Compact form is ~14: "d|1767225600"  (status char + epoch SECONDS)
+// With years of daily recurring tasks this is the difference between a
+// buffer that fits comfortably and one that trips the storage quota — which
+// matters because this buffer is the only local record of completion
+// history and must never be the thing that gets dropped.
+function encodeCompletionEntry(o){
+  const statusChar = (o && o.status === 'missed') ? 'm' : 'd';
+  if(!o || !o.loggedAt) return statusChar;
+  const secs = Math.floor(new Date(o.loggedAt).getTime()/1000);
+  return isNaN(secs) ? statusChar : `${statusChar}|${secs}`;
 }
-// Merges a local recent-completions buffer into freshly-pulled remote data —
-// for any (task, date) where the local entry is newer (or remote is simply
-// missing it, meaning it never successfully synced), the local version wins.
-// Returns whether anything local actually needed to win, so the caller knows
-// to push the reconciled result back to Supabase afterward.
+function decodeCompletionEntry(v){
+  // Tolerates the OLD object format too, so an existing buffer written by a
+  // previous version still loads correctly instead of being discarded.
+  if(v && typeof v === 'object') return { status: v.status || 'done', loggedAt: v.loggedAt || null };
+  const s = String(v||'d');
+  const [statusChar, secs] = s.split('|');
+  return {
+    status: statusChar === 'm' ? 'missed' : 'done',
+    loggedAt: secs ? new Date(Number(secs)*1000).toISOString() : null,
+  };
+}
+function encodeCompletionsBuffer(completions){
+  const out = {};
+  Object.entries(completions||{}).forEach(([taskId, byDate])=>{
+    const kept = {};
+    Object.entries(byDate||{}).forEach(([dateStr, o])=>{ kept[dateStr] = encodeCompletionEntry(o); });
+    if(Object.keys(kept).length) out[taskId] = kept;
+  });
+  return out;
+}
+function decodeCompletionsBuffer(raw){
+  const out = {};
+  Object.entries(raw||{}).forEach(([taskId, byDate])=>{
+    const kept = {};
+    Object.entries(byDate||{}).forEach(([dateStr, v])=>{ kept[dateStr] = decodeCompletionEntry(v); });
+    if(Object.keys(kept).length) out[taskId] = kept;
+  });
+  return out;
+}
+// Previously this kept only a 14-day window. That window was the exact
+// mechanism behind a real, reported data-loss incident: completions from
+// 2-3 weeks earlier (i.e. JUST outside the window) silently reverted to
+// pending after a partial/failed sync, because there was no local copy left
+// to restore them from — completion history is deliberately not kept in the
+// main task cache, so this buffer is the ONLY local record of it.
+// It is now unbounded, but stored compactly (see encodeCompletionsBuffer).
+function buildRecentCompletionsBuffer(completions){
+  return encodeCompletionsBuffer(completions);
+}
+// Merges a local completions buffer into freshly-pulled remote data — for any
+// (task, date) where the local entry is newer, OR where remote is simply
+// missing it, the local version wins and gets pushed back.
+//
+// INVARIANT this enforces: a pull can NEVER un-complete something. If a task
+// is marked done locally and the pull doesn't mention it, that means the pull
+// was partial/stale — NOT that the task was un-completed. Un-completing is an
+// explicit user action, and that path goes through pendingCompletionDeletes
+// (which actually tells Supabase to delete the row), never through here.
+// Without this, a partial pull silently reverts completions to pending —
+// exactly the reported data-loss incident.
 function mergeRecentCompletionsIntoRemote(remoteCompletions, localBuffer){
   const merged = JSON.parse(JSON.stringify(remoteCompletions||{}));
   let hadNewerLocal = false;
+  let restoredCount = 0;
   Object.entries(localBuffer||{}).forEach(([taskId, byDate])=>{
     Object.entries(byDate).forEach(([dateStr, localEntry])=>{
       const remoteEntry = merged[taskId] && merged[taskId][dateStr];
-      const localIsNewer = !remoteEntry || (localEntry.loggedAt && (!remoteEntry.loggedAt || localEntry.loggedAt > remoteEntry.loggedAt));
+      const remoteMissing = !remoteEntry;
+      const localIsNewer = remoteMissing || (localEntry.loggedAt && (!remoteEntry.loggedAt || localEntry.loggedAt > remoteEntry.loggedAt));
       if(localIsNewer){
         if(!merged[taskId]) merged[taskId] = {};
         merged[taskId][dateStr] = localEntry;
         hadNewerLocal = true;
+        if(remoteMissing) restoredCount++;
       }
     });
   });
-  return { merged, hadNewerLocal };
+  if(restoredCount){
+    diagLogEvent('sync', `Pull was missing ${restoredCount} completion(s) that exist locally — restored them and re-pushing (a pull can never un-complete a task)`, { restoredCount });
+  }
+  return { merged, hadNewerLocal, restoredCount };
 }
 
 function pruneCompletionsForCache(tasks, maxDays){
@@ -3207,10 +3365,10 @@ async function saveTasks(){
     await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks', {silent:true});
     // ...but DO keep a small bounded window of just the most recent activity
     // locally too — the offline safety net (see buildRecentCompletionsBuffer).
-    try{
-      const buffer = buildRecentCompletionsBuffer(state.tasks.completions);
-      await window.storage.set(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buffer), false);
-    } catch(e){ console.error('recent-completions buffer write failed', e); }
+    // NOT silent and NOT a bare try/catch: this buffer is the only local
+    // record of completion history, so a failure here must surface loudly
+    // (and safeStorageSet will evict disposable caches to make room first).
+    await safeStorageSet(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), 'completions safety buffer');
   } else {
     // No sync configured — local storage is the ONLY copy, so it needs the
     // full trim-fallback safety net to avoid ever losing data outright.
@@ -3318,7 +3476,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_liquid_types: state.settings.hydrationLiquidTypes, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
     ]);
   }
 }
@@ -3668,15 +3826,29 @@ function renderProgressMiniCalendar(allEntries){
     cells += `<div class="mini-cal-cell ${isToday?'today':''}" style="${style}" title="${escapeHtml(title)}">${day}</div>`;
   }
   return `
-    <div class="card" style="padding:14px 16px; margin:14px 0;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-        <button class="btn ghost sm" onclick="shiftProgressCalMonth(-1)">←</button>
-        <b style="font-family:var(--font-display);">${MONTH_NAMES[month]} ${year}</b>
-        <button class="btn ghost sm" onclick="shiftProgressCalMonth(1)">→</button>
+    <div class="card" style="padding:10px 12px; margin:14px 0; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="width:150px; flex-shrink:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <button class="btn ghost sm" onclick="shiftProgressCalMonth(-1)">←</button>
+          <b style="font-family:var(--font-display); font-size:11.5px;">${MONTH_NAMES[month]} ${year}</b>
+          <button class="btn ghost sm" onclick="shiftProgressCalMonth(1)">→</button>
+        </div>
+        <div class="mini-cal-grid">
+          ${DOW_ABBR.map(d=>`<div class="mini-cal-dow">${d[0]}</div>`).join('')}
+          ${cells}
+        </div>
       </div>
-      <div class="mini-cal-grid">
-        ${DOW_ABBR.map(d=>`<div class="mini-cal-dow">${d[0]}</div>`).join('')}
-        ${cells}
+      <div style="display:flex; flex-direction:column; gap:6px; padding-top:2px;">
+        ${['done','missed','moved'].map(status=>`
+          <span style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft);">
+            <span style="width:12px; height:12px; border-radius:4px; background:${progressStatusColor(status)}; flex-shrink:0;"></span>
+            ${progressStatusLabel(status)}
+          </span>
+        `).join('')}
+        <span style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); margin-top:2px;">
+          <span style="width:12px; height:12px; border-radius:4px; box-shadow:0 0 0 2px var(--brass) inset; flex-shrink:0;"></span>
+          Today
+        </span>
       </div>
     </div>
   `;
@@ -5655,7 +5827,6 @@ function coreFieldFor(metricId){
 // metric would just get it silently re-added the next time this runs (e.g.
 // on the next page render), since it'd still look "missing".
 const HYDRATION_ICON_CHOICES = ['🥛','🍶','🧴','☕','🍵','🥤','🧃','💧'];
-const HYDRATION_COLOR_CHOICES = ['#2E7BA6','#6F4E37','#8B5E3C','#B5583E','#3E7A72','#7A8F4A','#9A7FE0','#5C6A8C'];
 function ensureHydrationDefaults(){
   if(!state.settings.hydrationDefaultsSeeded){
     if(!state.settings.hydrationContainers.length){
@@ -5664,14 +5835,6 @@ function ensureHydrationDefaults(){
         { id:'cont_bottle_s', name:'Small Bottle', ml:500, icon:'🍶' },
         { id:'cont_bottle_l', name:'Large Bottle', ml:1000, icon:'🧴' },
         { id:'cont_mug', name:'Mug', ml:300, icon:'☕' },
-      ];
-    }
-    if(!state.settings.hydrationLiquidTypes.length){
-      state.settings.hydrationLiquidTypes = [
-        { id:'liq_water', name:'Water', color:'#2E7BA6' },
-        { id:'liq_coffee', name:'Coffee', color:'#6F4E37' },
-        { id:'liq_tea', name:'Tea', color:'#8B5E3C' },
-        { id:'liq_milk', name:'Milk', color:'#B5583E' },
       ];
     }
     state.settings.hydrationDefaultsSeeded = true;
@@ -5724,10 +5887,10 @@ function getHydrationLogsForDate(date){
 function getHydrationTotalForDate(date){
   return getHydrationLogsForDate(date).reduce((sum,l)=> sum+(l.ml||0), 0);
 }
-async function logHydration(date, containerId, liquidTypeId){
+async function logHydration(date, containerId){
   const container = state.settings.hydrationContainers.find(c=>c.id===containerId);
   if(!container) return;
-  state.hydrationLogs.push({ id:newId('hyd'), date, containerId, liquidTypeId, ml:container.ml, loggedAt:new Date().toISOString() });
+  state.hydrationLogs.push({ id:newId('hyd'), date, containerId, ml:container.ml, loggedAt:new Date().toISOString() });
   await saveHydration();
   renderMain();
   showToast(`Logged ${container.ml}ml`);
@@ -5737,6 +5900,16 @@ async function deleteHydrationLog(id){
   pendingHydrationDeletes.push({ table:'hydration_logs', match:{ id } });
   await saveHydration();
   renderMain();
+}
+// The daily log now shows one consolidated line per container (e.g. "Glass
+// ×5") instead of 5 separate lines — this removes just the most recently
+// logged occurrence in that group, decrementing the count by one, rather
+// than clearing the whole group at once.
+async function deleteHydrationLogOccurrence(date, containerId){
+  const matches = state.hydrationLogs.filter(l=>l.date===date && l.containerId===containerId);
+  if(!matches.length) return;
+  const mostRecent = matches.reduce((a,b)=> (a.loggedAt||'') > (b.loggedAt||'') ? a : b);
+  await deleteHydrationLog(mostRecent.id);
 }
 async function setHydrationGoal(ml){
   const n = Number(ml);
@@ -5803,63 +5976,6 @@ async function deleteHydrationContainer(id){
   refreshHydrationSettingsModalIfOpen();
 }
 
-let hydrationLiquidDraftColor = null;
-function openHydrationLiquidTypeModal(existingId){
-  const existing = existingId ? state.settings.hydrationLiquidTypes.find(l=>l.id===existingId) : null;
-  hydrationLiquidDraftColor = existing ? existing.color : HYDRATION_COLOR_CHOICES[0];
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'hydLiquidOverlay';
-  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal">
-      <h3>${existing?'Edit':'Add'} Liquid Type</h3>
-      <div class="field"><label>Name</label><input type="text" id="hydLiquidName" value="${existing?escapeHtml(existing.name):''}" placeholder="e.g. Iced Tea"></div>
-      <div class="field">
-        <label>Color</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;" id="hydLiquidColorSwatches">
-          ${HYDRATION_COLOR_CHOICES.map(c=>`<button type="button" data-color="${c}" onclick="pickHydrationColor('${c}')" style="width:28px; height:28px; border-radius:50%; background:${c}; border:2px solid ${hydrationLiquidDraftColor===c?'var(--ink)':'transparent'}; cursor:pointer;"></button>`).join('')}
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn secondary" onclick="document.getElementById('hydLiquidOverlay').remove();">Cancel</button>
-        <button class="btn brass" onclick="submitHydrationLiquidType('${existingId||''}')">${existing?'Save':'Add'}</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  setTimeout(()=>{ const el = document.getElementById('hydLiquidName'); if(el) el.focus(); }, 50);
-}
-function pickHydrationColor(color){
-  hydrationLiquidDraftColor = color;
-  document.querySelectorAll('#hydLiquidColorSwatches button').forEach(b=>{
-    b.style.borderColor = (b.dataset.color === color) ? 'var(--ink)' : 'transparent';
-  });
-}
-async function submitHydrationLiquidType(existingId){
-  const name = (document.getElementById('hydLiquidName').value||'').trim();
-  if(!name){ showToast('Name required'); return; }
-  if(existingId){
-    const l = state.settings.hydrationLiquidTypes.find(l=>l.id===existingId);
-    l.name = name; l.color = hydrationLiquidDraftColor;
-  } else {
-    state.settings.hydrationLiquidTypes.push({ id:newId('liq'), name, color:hydrationLiquidDraftColor });
-  }
-  await saveSettings();
-  const overlay = document.getElementById('hydLiquidOverlay');
-  if(overlay) overlay.remove();
-  renderMain();
-  refreshHydrationSettingsModalIfOpen();
-  showToast(existingId?'Liquid type updated':'Liquid type added');
-}
-async function deleteHydrationLiquidType(id){
-  if(!confirm('Delete this liquid type? Past log entries using it are kept, just without a matching type anymore.')) return;
-  state.settings.hydrationLiquidTypes = state.settings.hydrationLiquidTypes.filter(l=>l.id!==id);
-  await saveSettings();
-  renderMain();
-  refreshHydrationSettingsModalIfOpen();
-}
-
 function renderHydrationBottleSvg(pct){
   const clamped = Math.max(0, Math.min(100, pct));
   const bottleTop = 10, bottleBottom = 195, bottleHeight = bottleBottom - bottleTop;
@@ -5879,18 +5995,27 @@ function renderHydrationBottleSvg(pct){
 function renderHydrationSection(date){
   ensureHydrationDefaults();
   const containers = state.settings.hydrationContainers;
-  const liquidTypes = state.settings.hydrationLiquidTypes;
   const goal = state.settings.hydrationGoalMl || 2500;
   const total = getHydrationTotalForDate(date);
   const pct = goal>0 ? (total/goal)*100 : 0;
-  const logs = getHydrationLogsForDate(date).slice().reverse();
-  const defaultLiquidId = liquidTypes[0] ? liquidTypes[0].id : '';
+  const logs = getHydrationLogsForDate(date);
+
+  // Consolidate today's entries into one line per container (e.g. "Glass
+  // ×5 — 1250ml") instead of a separate line for every single tap.
+  const groups = {};
+  const groupOrder = [];
+  logs.forEach(l=>{
+    const key = l.containerId || 'unknown';
+    if(!groups[key]){ groups[key] = { containerId:l.containerId, count:0, totalMl:0 }; groupOrder.push(key); }
+    groups[key].count++;
+    groups[key].totalMl += l.ml||0;
+  });
 
   return `
     <div class="section">
       <div class="section-head">
         <h2>Hydration</h2>
-        <button class="icon-btn" title="Manage containers &amp; liquid types" onclick="openHydrationSettingsModal()">⚙</button>
+        <button class="icon-btn" title="Manage containers" onclick="openHydrationSettingsModal()">⚙</button>
       </div>
       <div class="card" style="padding:18px;">
         <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center;">
@@ -5902,11 +6027,11 @@ function renderHydrationSection(date){
               <span class="page-sub">Daily goal (ml)</span>
               <input type="number" min="1" value="${goal}" style="width:90px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);" onchange="setHydrationGoal(this.value)">
             </div>
-            ${liquidTypes.length ? `
+            ${containers.length ? `
               <div class="page-sub" style="margin-bottom:6px;">Quick log:</div>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 ${containers.map(c=>`
-                  <button class="btn secondary sm" style="display:flex; align-items:center; gap:6px;" onclick="logHydration('${date}','${c.id}','${defaultLiquidId}')" title="${escapeHtml(c.name)} — ${c.ml}ml">
+                  <button class="btn secondary sm" style="display:flex; align-items:center; gap:6px;" onclick="logHydration('${date}','${c.id}')" title="${escapeHtml(c.name)} — ${c.ml}ml">
                     <span style="font-size:15px;">${c.icon}</span> ${escapeHtml(c.name)} <span class="page-sub">${c.ml}ml</span>
                   </button>
                 `).join('')}
@@ -5917,17 +6042,17 @@ function renderHydrationSection(date){
       </div>
     </div>
 
-    ${logs.length ? `
+    ${groupOrder.length ? `
       <div class="section">
         <div class="section-head"><h2>Today's Log</h2></div>
         <div class="card" style="padding:4px 16px;">
-          ${logs.map(l=>{
-            const container = containers.find(c=>c.id===l.containerId);
-            const liquid = liquidTypes.find(t=>t.id===l.liquidTypeId);
+          ${groupOrder.map(key=>{
+            const g = groups[key];
+            const container = containers.find(c=>c.id===g.containerId);
             return `
-              <div class="metric-manage-row" style="border-left:3px solid ${liquid?liquid.color:'var(--brass)'}; padding-left:8px;">
-                <span class="metric-manage-name">${container?container.icon:'💧'} ${liquid?escapeHtml(liquid.name):'—'} <span class="page-sub">${l.ml}ml</span></span>
-                <button class="icon-btn" title="Delete" onclick="deleteHydrationLog('${l.id}')">✕</button>
+              <div class="metric-manage-row">
+                <span class="metric-manage-name">${container?container.icon:'💧'} ${container?escapeHtml(container.name):'Unknown container'} ${g.count>1?`<span class="page-sub">×${g.count}</span>`:''} <span class="page-sub">${g.totalMl}ml</span></span>
+                <button class="icon-btn" title="Remove one" onclick="deleteHydrationLogOccurrence('${date}','${g.containerId}')">✕</button>
               </div>
             `;
           }).join('')}
@@ -5938,10 +6063,9 @@ function renderHydrationSection(date){
 }
 function renderHydrationSettingsModalBody(){
   const containers = state.settings.hydrationContainers;
-  const liquidTypes = state.settings.hydrationLiquidTypes;
   return `
     <div class="modal">
-      <h3>Manage Containers &amp; Liquid Types</h3>
+      <h3>Manage Containers</h3>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <b class="page-sub" style="text-transform:uppercase; font-size:11px;">Containers</b>
         <button class="btn secondary sm" onclick="openHydrationContainerModal()">+ Add Container</button>
@@ -5953,18 +6077,6 @@ function renderHydrationSettingsModalBody(){
           <button class="icon-btn" title="Delete" onclick="deleteHydrationContainer('${c.id}')">✕</button>
         </div>
       `).join('') || `<div class="page-sub" style="padding:6px 0;">No containers yet.</div>`}
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 6px;">
-        <b class="page-sub" style="text-transform:uppercase; font-size:11px;">Liquid Types</b>
-        <button class="btn secondary sm" onclick="openHydrationLiquidTypeModal()">+ Add Liquid Type</button>
-      </div>
-      ${liquidTypes.map(l=>`
-        <div class="metric-manage-row">
-          <span class="metric-manage-name"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${l.color}; margin-right:4px;"></span>${escapeHtml(l.name)}</span>
-          <button class="icon-btn" title="Edit" onclick="openHydrationLiquidTypeModal('${l.id}')">✎</button>
-          <button class="icon-btn" title="Delete" onclick="deleteHydrationLiquidType('${l.id}')">✕</button>
-        </div>
-      `).join('') || `<div class="page-sub" style="padding:6px 0;">No liquid types yet.</div>`}
 
       <div class="modal-actions">
         <button class="btn secondary" onclick="document.getElementById('hydSettingsOverlay').remove();">Done</button>
@@ -8599,10 +8711,107 @@ function renderSettingsPages(){
   `;
 }
 
+function formatBytes(n){
+  if(n < 1024) return `${n} B`;
+  if(n < 1024*1024) return `${(n/1024).toFixed(1)} KB`;
+  return `${(n/(1024*1024)).toFixed(2)} MB`;
+}
+// IMPORTANT: localStorage quota is per-ORIGIN, not per-app. CalendarOS and
+// LedgerOS are served from the same GitHub Pages domain, which means they
+// share ONE ~5MB pool. An earlier version of this panel only counted keys
+// with our own "cos_" prefix, which produced a badly misleading picture:
+// it reported ~53KB while saves were failing with quota errors, because the
+// space was being consumed by a DIFFERENT app on the same origin. This now
+// scans everything so the real cause is visible.
+function getLocalStorageUsage(){
+  const rows = [];
+  let total = 0;
+  let foreignTotal = 0;
+  try{
+    Object.keys(localStorage).forEach(k=>{
+      // Size cost is key + value; both count against the quota.
+      const bytes = ((localStorage.getItem(k)||'').length + k.length);
+      total += bytes;
+      const isOurs = k.startsWith('cos_');
+      const logicalKey = isOurs ? k.slice(4) : k;
+      if(!isOurs) foreignTotal += bytes;
+      rows.push({
+        key: logicalKey,
+        rawKey: k,
+        bytes,
+        isOurs,
+        tier: !isOurs ? 'other-app'
+            : CRITICAL_STORAGE_KEYS.includes(logicalKey) ? 'critical'
+            : DISPOSABLE_STORAGE_KEYS.includes(logicalKey) ? 'disposable' : 'other',
+      });
+    });
+  } catch(e){ return null; }
+  rows.sort((a,b)=>b.bytes-a.bytes);
+  return { rows, total, foreignTotal };
+}
+async function clearDisposableCachesManually(){
+  if(!confirm('Clear all re-downloadable caches (hydration, training, recipes, health, ratings, metric defs, error history)?\n\nNothing is lost — these all come back from Supabase on the next sync. Your tasks, completions, lists and settings are NOT touched.')) return;
+  const evicted = await evictDisposableCaches(null);
+  showToast(evicted.length ? `Cleared ${evicted.length} cache${evicted.length===1?'':'s'}` : 'Nothing to clear');
+  renderMain();
+}
+function renderStorageUsagePanel(){
+  const usage = getLocalStorageUsage();
+  if(!usage) return '';
+  const LIMIT_APPROX = 5 * 1024 * 1024; // browsers are typically ~5MB per ORIGIN
+  const pct = Math.min(100, (usage.total/LIMIT_APPROX)*100);
+  const barColor = pct > 85 ? 'var(--flag)' : pct > 60 ? 'var(--brass)' : 'var(--teal)';
+  const oursTotal = usage.total - usage.foreignTotal;
+  const foreignRows = usage.rows.filter(r=>!r.isOurs);
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Local Storage Usage</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:12px;">
+          Browsers cap local storage at roughly 5&nbsp;MB <b>per domain — shared by every app hosted on it</b>, not per app. Since CalendarOS and LedgerOS are served from the same GitHub Pages domain, they draw on the same pool. When it fills, saves fail — and a failed save means this device keeps showing stale data, which is how completed tasks and list folder assignments have previously appeared to revert.
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <b style="font-family:var(--font-display); font-size:18px;">${formatBytes(usage.total)}</b>
+          <span class="page-sub">~${Math.round(pct)}% of the typical per-domain limit</span>
+        </div>
+        <div style="height:8px; background:var(--paper-dim); border-radius:999px; overflow:hidden; margin-bottom:6px;">
+          <div style="height:100%; width:${pct}%; background:${barColor}; border-radius:999px;"></div>
+        </div>
+        <div class="page-sub" style="margin-bottom:14px;">
+          CalendarOS: <b>${formatBytes(oursTotal)}</b> · Other apps on this domain: <b style="color:${usage.foreignTotal > oursTotal ? 'var(--flag)' : 'inherit'};">${formatBytes(usage.foreignTotal)}</b>
+        </div>
+
+        ${usage.foreignTotal > oursTotal ? `
+          <div class="card" style="padding:12px 14px; margin-bottom:14px; border:1px solid var(--flag); background:var(--flag-soft);">
+            <b>⚠ Most of the space is being used by another app on this domain, not CalendarOS.</b>
+            <div class="page-sub" style="margin-top:6px; line-height:1.6;">
+              CalendarOS is only using ${formatBytes(oursTotal)}, so clearing CalendarOS caches will not fix quota errors. The ${foreignRows.length} item${foreignRows.length===1?'':'s'} listed below with the <b>OTHER-APP</b> tag are the ones filling the shared pool — most likely LedgerOS, which lives on the same GitHub Pages domain. Freeing space there (or moving one app to its own domain/subdomain) is what will actually resolve this.
+            </div>
+          </div>
+        ` : ''}
+
+        ${usage.rows.map(r=>`
+          <div class="metric-manage-row">
+            <span class="metric-manage-name">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:${r.tier==='critical'?'var(--flag)':r.tier==='disposable'?'var(--teal)':r.tier==='other-app'?'var(--brass)':'var(--slate-light)'};"></span>
+              ${escapeHtml(r.key)}
+              <span class="page-sub" style="font-size:10px; text-transform:uppercase; letter-spacing:0.03em; margin-left:4px;">${r.tier}</span>
+            </span>
+            <span class="page-sub">${formatBytes(r.bytes)}</span>
+          </div>
+        `).join('')}
+        <div class="modal-actions" style="justify-content:flex-start; margin-top:12px;">
+          <button class="btn secondary sm" onclick="clearDisposableCachesManually()">Clear re-downloadable CalendarOS caches</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
 function renderSettingsDiagnostics(){
   const recent = diagLog.slice(-15).reverse();
   const errHistory = (state.syncErrorHistory||[]).slice().reverse();
   return `
+    ${renderStorageUsagePanel()}
     <div class="section">
       <div class="section-head"><h2>Sync Error History</h2></div>
       <div class="card" style="padding:16px;">
@@ -9758,6 +9967,21 @@ function getCommandPaletteResults(){
       if(l.title.toLowerCase().includes(q)){
         results.push({ icon:'▤', label:l.title, sub:'List', action:()=>{ setView('lists'); selectList(l.id); closeCommandPalette(); } });
       }
+    });
+    // Items INSIDE lists — the list name is carried in the sub-label so a
+    // match like "milk" tells you which list it's sitting in. Selecting it
+    // opens the containing list.
+    state.lists.forEach(l=>{
+      (l.items||[]).forEach(item=>{
+        if(item.text && item.text.toLowerCase().includes(q)){
+          results.push({
+            icon: item.done ? '☑' : '☐',
+            label: item.text,
+            sub: `In list: ${l.title}${item.done?' · done':''}`,
+            action:()=>{ setView('lists'); selectList(l.id); closeCommandPalette(); },
+          });
+        }
+      });
     });
     state.tasks.oneTime.forEach(t=>{
       if(!t.done && t.name.toLowerCase().includes(q)){
