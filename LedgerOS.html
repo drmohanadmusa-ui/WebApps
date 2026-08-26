@@ -344,12 +344,79 @@ const SEED = {"accounts":[],"ledger":[],"budget":[],"templates":[],"categories":
 <script>
 /* ============================= STATE ============================= */
 // Bump this on every shipped change (major.minor.patch). Shown in Settings.
-const APP_VERSION = '4.18.0';
+const APP_VERSION = '4.28.0';
 // STANDING CONVENTION (as of v3.6.1, applies to every release from here on):
 // every time APP_VERSION is bumped, add a matching entry to CHANGELOG below —
 // version, date (YYYY-MM-DD), and a short bullet list of what changed. This is
 // shown to the person in Settings → Change Log. Do not skip this step.
 const CHANGELOG = [
+  {version:'4.28.0', date:'2026-08-24', changes:[
+    'Investments page: the four top widgets (Your Cost Basis, Your Current Value, Your Unrealised P/L, Held for Family) and the four widgets inside a position\u2019s detail window now show USD (bold) and SAR (smaller, underneath) together, instead of SAR only.',
+    'Removed the price-date line under each position\u2019s price in the platform table \u2014 it was cluttering the table. The price itself is always plain text now. Stale-price alerts live only in Log Prices going forward; the separate \u201cPrices need refreshing\u201d panel on the main Investments page is gone.',
+    'NEW: platforms on the Investments page are collapsible, and start COLLAPSED every time the app loads. A collapsed platform shows its USD cash balance, your portion of its value, and your family\u2019s portion, right on the header. Expand/collapse choices are remembered while you\u2019re using the app, but reset on reload.',
+    'NEW: Reconciliation \u2192 combined CSV export/import across every platform in one file, for batch updates \u2014 same convention as the price-log CSV (a single writable \u201cNew Statement Value\u201d column; a blank cell leaves that entry untouched rather than clearing it).',
+    'Each position in the Reconciliation table now shows its OWN last-checked date, red past 7 days \u2014 previously only one aggregate date was shown per platform. The platform-level summary stays alongside it.',
+    'Reconciliation inputs: pressing Enter now jumps to the next field, the same as Tab \u2014 down each platform\u2019s Statement units column, into its Cash row, then straight into the next platform.',
+  ]},
+  {version:'4.27.0', date:'2026-08-24', changes:[
+    'FIXED: the USD entry field from v4.26.0 only appeared for cash and opening-balance funding \u2014 a buy funded straight from the bank on a USD-denominated position (most US stocks, most crypto) still showed \'Total SAR paid\'. It now shows a USD field whenever the POSITION itself trades in USD, regardless of funding source; the SAR figure is still what actually posts, derived at your configured rate.',
+    'Price per unit follows the same rule \u2014 reads in USD whenever the position trades in USD, not only for cash/opening transactions.',
+    'Editing an older transaction on a USD-denominated position now back-fills the USD field from its stored SAR total, instead of showing a blank USD figure next to a populated SAR one.',
+  ]},
+  {version:'4.26.0', date:'2026-08-24', changes:[
+    'Opening balance transactions now use a USD entry field, same as platform-cash transactions \u2014 SAR is derived at your configured rate. The field also accepts a typed calculation (e.g. 105*10), evaluated when you leave the field.',
+    'Price per unit on the transaction modal now reads in USD whenever a USD amount was entered (cash or opening balance), instead of always showing SAR.',
+    'FIXED: leaving USD blank on a cash or opening-balance transaction used to show \'Total SAR must be greater than zero\' \u2014 confusing, since that field is derived and disabled. It now correctly says to enter the USD amount.',
+    'The Cash log button moved into the same row as + Position / Deposit / Withdraw / Transfer, instead of sitting alone on the balance line.',
+    'NEW: manual price entry, alongside the existing CSV import/export \u2014 Investments \u2192 Log Prices now opens with a table of every position, its last known price and how long ago it was set, editable directly. Prices not updated in over 7 days show in red, both there and in the position\'s own Price column on the Portfolio tab.',
+    'FIXED: the Reconciliation page\'s tables used independent column widths per platform, so a platform with a long position name (\'Marathon Digital Holdings Inc\') drifted out of alignment against one with short names (\'Virgo\'). Every platform table now shares one fixed column layout.',
+    'Reconciliation panels now show when each platform was last reconciled (the most recent of its cash figure or any position\'s unit count), in red if that was more than 7 days ago.',
+  ]},
+  {version:'4.25.0', date:'2026-08-24', changes:[
+    'FIXED: New Position was still defaulting to Stocks / SAR despite the earlier intent to default to Crypto / USD \u2014 the change was never actually made. Fixed.',
+    'The Ticker / Symbol field on a position is now forced to uppercase as you type, and normalised again on save as a safety net for anything pasted in.',
+  ]},
+  {version:'4.24.0', date:'2026-08-24', changes:[
+    'The account export buttons (Current Balances, Monthly Movement) moved from Settings \u2192 Chart of Accounts to the Accounts page itself, next to Select and + Add Account.',
+    'NEW: Accounts page Grid view (List / Grid toggle at the top). Every account with its current balance and a 12-month scrolling window of monthly movement \u2014 the same figures as the two CSV exports, browsable on screen with Prev / Next and Jump to current month.',
+  ]},
+  {version:'4.23.0', date:'2026-08-22', changes:[
+    'Investments \u2192 Reconciliation start date. If older ledger entries are known to be booked incorrectly, set a start date and the reconciliation switches to comparing CHANGE since that date on both sides, instead of full history \u2014 whatever was wrong before the start date cancels out of the comparison equally on both sides, so the check becomes \'is everything booked correctly from here on\'.',
+    'NEW: Opening balance funding source on a buy \u2014 declares a holding you already had before you started tracking, with no bank or platform-cash movement. Excluded from Reconciliation, since there is no ledger entry to match it against.',
+    'NEW: transfer units of the same asset between platforms (\u21c4 Transfer on a position). If a matching position already exists on the destination it merges in, otherwise a new one is created there automatically. Partial transfers are supported, and a network/withdrawal fee is entered in the asset\'s own units. Ownership proportions carry over unchanged \u2014 nothing is re-entered manually. The fee\'s value is recorded as a small realised loss, split across the current owners in their existing proportions, using the ordinary weighted-average-cost engine rather than a separate calculation.',
+    'Price logging is now CSV-based instead of typed one row at a time \u2014 Investments \u2192 Log Prices exports Position, Ticker, Platform, Units Held, Last Price, Last Price Date and Amount Total, you fill in New Price for whatever you checked, and re-import. Rows left blank keep their last known price rather than being cleared.',
+    'NEW: Settings \u2192 Chart of Accounts \u2192 Export Accounts. Current Balances (Account #, Name, Category, Balance) and Monthly Movement (every account, one column per month, from the earliest ledger entry through this month) as two separate CSV exports.',
+    'Real Estate: a collapsed building now shows its net figure for the current month right on the header, instead of only being visible after expanding.',
+    'DATABASE CHANGE: adds pd_inv_settings.recon_start_date and pd_inv_transactions.link_id / fee_units. Copy and run the script under Settings \u2192 Database Schema \u2014 it upgrades an existing database in place.',
+  ]},
+  {version:'4.22.0', date:'2026-08-22', changes:[
+    'There is now ONE database script instead of two. Settings \u2192 Database Schema both builds a new database from nothing and brings an existing one up to date. The separate Migrations section has been removed.',
+    'This closes a real trap rather than just tidying up. \'create table if not exists\' is skipped WHOLESALE when the table is already there \u2014 including any column added in a later version \u2014 and it reports success either way. Running the old full script against your live database would have created the new tables while silently leaving the new columns out, and the app would then have failed to save those fields with nothing obvious to show for it.',
+    'The upgrade half of the script is generated from the table definitions rather than kept as a separate list, so it cannot fall behind when a column is added. There is no second list to forget to update.',
+    'Rule of thumb: after any update whose notes mention a database change, copy the script and run it. Nothing bad happens if you run it when you did not need to.',
+  ]},
+  {version:'4.21.0', date:'2026-08-22', changes:[
+    'FIXED: adding a line to a JV while reconciling an account pre-filled the new line with that same account \u2014 which looked like the first line\'s account copying itself down the voucher. New lines now always start blank. Starting a reconciliation still fills line 1, and the \u2934 button still copies the account from the line above when you want it.',
+    'The JV account, description and amount fields now tell the browser not to autofill them, so its own saved form values can no longer drop into a voucher.',
+    'The Dashboard\'s This Month Expense card now shows the plain over/under against the month\'s budget. The \'on pace\' figure and its day count have been removed. Clicking the line still opens the P&L for this month.',
+    'NEW: Settings \u2192 Database Schema now also lists the MIGRATIONS \u2014 the additive scripts that upgrade a database you already have. The full schema script only builds a database from nothing; run against a live one it silently does nothing, so a newly added column would never appear. Each version can be copied on its own or all together.',
+    'FIXED: the schema script was missing pd_sync_meta, the table behind \'skip re-downloading the ledger when nothing changed\'. The app reaches it directly rather than through the usual fetch path, which is how it escaped the check that is supposed to catch exactly this. That check now covers both paths. A database built from the old script worked, but always re-downloaded the full ledger on every load; the v4.21.0 migration adds it.',
+    'DATABASE CHANGE: optional. Run the v4.21.0 migration (Settings \u2192 Database Schema) to enable the ledger-skip optimisation. Everything else in this version works without it.',
+  ]},
+  {version:'4.20.0', date:'2026-08-22', changes:[
+    'NEW: platform cash balances. Selling an asset and leaving the proceeds on the platform as USD is now tracked properly instead of the money vanishing from the picture. Each platform carries its own USD balance, shown on its panel along with its SAR equivalent.',
+    'Buys and sells now say where the money comes from or goes to \u2014 your bank, or the platform\'s own USD cash. When cash is the counterparty you type the USD figure and the SAR is derived at your configured rate, so the two can never disagree.',
+    'NEW: deposits, withdrawals and transfers between platforms. Transfers take a fee, charged to you alone rather than shared with the family owners. Withdrawals are split into their capital and profit portions, mirroring how you would book the JV (capital to the In account, profit to the Profit account).',
+    'NEW: management fee. Set a default percentage once and it is applied consistently to every family owner. On a BUY it is taken in units \u2014 100 units split 50/50 at 5% gives them 47.5 and you 52.5 \u2014 while the SAR split stays as entered, so their average cost rises and yours falls. On a SELL it comes out of their proceeds and is credited to you.',
+    'Fee income is reported in its own table, separate from realised gain, because it is earned by managing rather than by investing \u2014 folding it in would flatter the portfolio\'s performance.',
+    'NEW: Reconciliation sub-page on the Investments page. Enter what each platform\'s own statement shows \u2014 the unit count for every position and the USD cash balance \u2014 and anything that disagrees with the tracker is flagged. Entries are saved and synced per platform, so a half-finished check survives a reload.',
+    'The owner reconciliation now shows the full bridge: cost basis, plus platform cash, less realised profit still sitting in that cash, against the ledger\'s Invested minus Withdrawn. Profit retained on a platform is excluded because it is booked to the Profit account and never passes through those two.',
+    'DATABASE CHANGE: run the migration SQL shipped alongside this version before using it. It adds the pd_inv_cash_movements table and several new columns. It is additive only \u2014 nothing existing is altered or dropped.',
+  ]},
+  {version:'4.19.0', date:'2026-08-22', changes:[
+    'Allocation numbers are now clickable. The Alloc badge on the Ledger page opens that allocation\'s detail window directly, and the Journal Voucher window has gained an Alloc column showing which allocation each line belongs to (blank when the line is not allocated), also clickable.',
+    'The Dashboard\'s This Month Expense card now shows how you are tracking against budget, using exactly the same budget figures as the P&L page\'s Total Expenses card. Two readings are given: against the full month\'s budget, and \'on pace\' — the budget scaled to the days elapsed so far, which is the one that actually tells you anything before month end. Clicking the line opens the P&L for this month.',
+  ]},
   {version:'4.18.0', date:'2026-08-19', changes:[
     'The offline cache has moved out of localStorage and into IndexedDB. localStorage is capped at roughly 5 MB PER DOMAIN — shared with every other app on the same hostname — and a full ledger history no longer fits. IndexedDB has its own far larger quota, stores structured data natively, and does not compete with other apps for that 5 MB.',
     'The move runs once on your next load, with a progress screen. It is non-destructive: the old data is copied, read back, and verified record-by-record, and only then is the old key removed. If it is interrupted or fails verification, the original cache is left completely untouched and the move simply runs again next time.',
@@ -727,7 +794,7 @@ const CHANGELOG = [
     'Added an iPhone/iPad home-screen icon, so adding the site to your home screen shows a real icon instead of a blank screenshot.',
   ]},
 ];
-let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[], invOwners:[], invPlatforms:[], invPositions:[], invTransactions:[], invValuations:[], invSettings:{fxUsdSar:3.75}, uiPrefs:{pageOrder:null}};
+let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[], invOwners:[], invPlatforms:[], invPositions:[], invTransactions:[], invValuations:[], invCashMovements:[], invSettings:{fxUsdSar:3.75, mgmtFeePct:0}, uiPrefs:{pageOrder:null}};
 let jvDrafts = []; // local-only scratchpad of unfinished JVs — not synced to cloud
 function loadJVDrafts(){ try{ return JSON.parse(localStorage.getItem('jvDrafts_v1')||'[]'); }catch(e){ return []; } }
 function saveJVDraftsList(){ try{ safeSetItem('jvDrafts_v1', JSON.stringify(jvDrafts)); }catch(e){} }
@@ -1221,7 +1288,9 @@ async function boot(){
       if(!Array.isArray(D.invPositions)) D.invPositions = [];
       if(!Array.isArray(D.invTransactions)) D.invTransactions = [];
       if(!Array.isArray(D.invValuations)) D.invValuations = [];
-      if(!D.invSettings || typeof D.invSettings!=='object') D.invSettings = {fxUsdSar:3.75};
+      if(!D.invSettings || typeof D.invSettings!=='object') D.invSettings = {fxUsdSar:3.75, mgmtFeePct:0};
+      if(!Array.isArray(D.invCashMovements)) D.invCashMovements = [];
+      if(D.invSettings.reconStartDate===undefined) D.invSettings.reconStartDate = null;
       if(!D.uiPrefs || typeof D.uiPrefs!=='object') D.uiPrefs = {pageOrder:null};
       if(!Array.isArray(D.realEstateBuildings)) D.realEstateBuildings = [];
       if(!Array.isArray(D.forecastAccountRules)) D.forecastAccountRules = [];
@@ -1664,12 +1733,12 @@ async function fetchAllFromCloud(forceFullLedger){
   // slowest of the 16) with zero visible movement. Ledger's own page-by-page fetch progress
   // (ledgerProgress below) is blended in as a fraction of its single slot, so the bar now advances
   // smoothly through that wait instead of appearing to hang.
-  const TOTAL_SOURCES = 23;
-  let completedSources = 0; // counts the 22 non-ledger sources only
+  const TOTAL_SOURCES = 24;
+  let completedSources = 0; // counts the 23 non-ledger sources only
   let ledgerFraction = 0; // 0..1, how far through Ledger's own paginated fetch we are
   const recomputeSplashProgress = () => updateSplashProgress((completedSources + ledgerFraction) / TOTAL_SOURCES * 100);
   const tp = (p, isLedger) => p.then(r=>{ if(isLedger) ledgerFraction = 1; else completedSources++; recomputeSplashProgress(); return r; });
-  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats,invOwn,invPlat,invPos,invTx,invVal,invSet,uiPrefs] = await Promise.all([
+  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats,invOwn,invPlat,invPos,invTx,invVal,invCash,invSet,uiPrefs] = await Promise.all([
     tp(fetchAllRows('pd_accounts','id')),
     tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress), true),
     tp(fetchAllRows('pd_budget','id')),
@@ -1691,6 +1760,7 @@ async function fetchAllFromCloud(forceFullLedger){
     tp(fetchAllRows('pd_inv_positions','id')),
     tp(fetchAllRows('pd_inv_transactions','id')),
     tp(fetchAllRows('pd_inv_valuations','id')),
+    tp(fetchAllRows('pd_inv_cash_movements','id')),
     tp(fetchAllRows('pd_inv_settings','id')),
     tp(fetchAllRows('pd_ui_prefs','id')),
   ]);
@@ -1712,11 +1782,12 @@ async function fetchAllFromCloud(forceFullLedger){
   if(!farules.error){ D.forecastAccountRules = farules.data.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, targetOffset:r.target_offset||0, freezeAfterTarget:!!r.freeze_after_target, updated_at:r.updated_at||null})); }
   if(!customCats.error){ D.customForecastCategories = customCats.data.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior, updated_at:c.updated_at||null})); }
   if(!invOwn.error){ D.invOwners = invOwn.data.map(o=>({id:o.id, name:o.name, nameAr:o.name_ar||'', isSelf:!!o.is_self, outAcc:o.out_acc||null, inAcc:o.in_acc||null, profitAcc:o.profit_acc||null, updated_at:o.updated_at||null})); }
-  if(!invPlat.error){ D.invPlatforms = invPlat.data.map(p=>({id:p.id, name:p.name, outAcc:p.out_acc||null, inAcc:p.in_acc||null, profitAcc:p.profit_acc||null, updated_at:p.updated_at||null})); }
-  if(!invPos.error){ D.invPositions = invPos.data.map(p=>({id:p.id, platformId:p.platform_id, name:p.name, ticker:p.ticker||'', assetClass:p.asset_class||'Other', currency:p.currency||'SAR', status:p.status||'Active', updated_at:p.updated_at||null})); }
-  if(!invTx.error){ D.invTransactions = invTx.data.map(t=>({id:t.id, positionId:t.position_id, date:t.entry_date, kind:t.kind, units:Number(t.units)||0, totalSar:Number(t.total_sar)||0, owners:t.owners||[], note:t.note||'', updated_at:t.updated_at||null})); }
+  if(!invPlat.error){ D.invPlatforms = invPlat.data.map(p=>({id:p.id, name:p.name, outAcc:p.out_acc||null, inAcc:p.in_acc||null, profitAcc:p.profit_acc||null, stmtCashUsd:(p.stmt_cash_usd===null||p.stmt_cash_usd===undefined)?null:Number(p.stmt_cash_usd), stmtDate:p.stmt_date||null, updated_at:p.updated_at||null})); }
+  if(!invPos.error){ D.invPositions = invPos.data.map(p=>({id:p.id, platformId:p.platform_id, name:p.name, ticker:p.ticker||'', assetClass:p.asset_class||'Other', currency:p.currency||'SAR', status:p.status||'Active', stmtUnits:(p.stmt_units===null||p.stmt_units===undefined)?null:Number(p.stmt_units), stmtDate:p.stmt_date||null, updated_at:p.updated_at||null})); }
+  if(!invTx.error){ D.invTransactions = invTx.data.map(t=>({id:t.id, positionId:t.position_id, date:t.entry_date, kind:t.kind, units:Number(t.units)||0, totalSar:Number(t.total_sar)||0, owners:t.owners||[], note:t.note||'', cashSide:t.cash_side||'bank', usdAmount:Number(t.usd_amount)||0, feePct:Number(t.fee_pct)||0, linkId:t.link_id||null, feeUnits:Number(t.fee_units)||0, updated_at:t.updated_at||null})); }
   if(!invVal.error){ D.invValuations = invVal.data.map(v=>({id:v.id, positionId:v.position_id, date:v.entry_date, price:Number(v.price)||0, updated_at:v.updated_at||null})); }
-  if(!invSet.error && invSet.data.length){ D.invSettings = {fxUsdSar: Number(invSet.data[0].fx_usd_sar)||3.75, updated_at: invSet.data[0].updated_at||null}; }
+  if(!invCash.error){ D.invCashMovements = invCash.data.map(m=>({id:m.id, platformId:m.platform_id, date:m.entry_date, kind:m.kind||'deposit', usdAmount:Number(m.usd_amount)||0, toPlatformId:m.to_platform_id||null, feeUsd:Number(m.fee_usd)||0, capitalUsd:Number(m.capital_usd)||0, profitUsd:Number(m.profit_usd)||0, owners:m.owners||[], note:m.note||'', updated_at:m.updated_at||null})); }
+  if(!invSet.error && invSet.data.length){ D.invSettings = {fxUsdSar: Number(invSet.data[0].fx_usd_sar)||3.75, mgmtFeePct: Number(invSet.data[0].mgmt_fee_pct)||0, reconStartDate: invSet.data[0].recon_start_date||null, updated_at: invSet.data[0].updated_at||null}; }
   if(!uiPrefs.error && uiPrefs.data.length){ D.uiPrefs = {pageOrder: Array.isArray(uiPrefs.data[0].page_order)? uiPrefs.data[0].page_order : null, updated_at: uiPrefs.data[0].updated_at||null}; }
   syncCustomForecastCategories();
   if(serverLedgerMarker) safeSetItem('ledgerLastChanged', serverLedgerMarker);
@@ -1978,9 +2049,23 @@ function clearLocalLedgerCache(){
    Scope: schema + structural singleton rows only (rows the app needs in order to
    function at all). It deliberately contains NO personal data — accounts, ledger,
    budgets and so on come back via Settings → Backup & Restore.
+
+   ONE SCRIPT, BOTH JOBS (as of v4.22.0): DB_SCHEMA_SQL is DB_SCHEMA_CORE below plus a
+   generated "column top-up" — an `alter table ... add column if not exists` for every column
+   of every table. That second half is what lets the single script work against a database
+   that ALREADY exists: `create table if not exists` is skipped WHOLESALE when the table is
+   there, including any column added in a later version, and it reports success either way.
+
+   The top-up is DERIVED from the create-table blocks below, never written out by hand. A
+   hand-kept second copy of every column is exactly the thing that goes stale the first time
+   someone adds a column and updates only one of the two lists. Add a column to its table
+   below and existing databases are upgraded automatically; there is no second list.
+
+   Adding a column is the only safe automatic operation. Changing an existing column's type
+   or default is deliberately NOT generated — that needs a considered migration.
 */
-const DB_SCHEMA_VERSION = '4.13.0';
-const DB_SCHEMA_SQL = `-- =====================================================================
+const DB_SCHEMA_VERSION = '4.23.0';
+const DB_SCHEMA_CORE = `-- =====================================================================
 -- LedgerOS — complete database schema (v${'4.13.0'})
 -- Run this once against a brand-new Supabase project to create everything
 -- LedgerOS needs. Safe to re-run: every statement is guarded.
@@ -2161,13 +2246,18 @@ create table if not exists pd_inv_owners (
   updated_at  timestamptz default now()
 );
 
+-- stmt_cash_usd / stmt_date hold what the platform's own statement says the USD cash balance
+-- is, for the Reconciliation sub-page. Synced rather than per-device so the check reads the
+-- same on every device.
 create table if not exists pd_inv_platforms (
-  id          bigint primary key,
-  name        text not null,
-  out_acc     bigint,
-  in_acc      bigint,
-  profit_acc  bigint,
-  updated_at  timestamptz default now()
+  id            bigint primary key,
+  name          text not null,
+  out_acc       bigint,
+  in_acc        bigint,
+  profit_acc    bigint,
+  stmt_cash_usd numeric,
+  stmt_date     date,
+  updated_at    timestamptz default now()
 );
 
 create table if not exists pd_inv_positions (
@@ -2178,11 +2268,29 @@ create table if not exists pd_inv_positions (
   asset_class  text default 'Other',
   currency     text default 'SAR',
   status       text default 'Active',
+  stmt_units   numeric,   -- units per the platform's own statement (Reconciliation sub-page)
+  stmt_date    date,
   updated_at   timestamptz default now()
 );
 
 -- owners is a jsonb array attributing units per owner, e.g. [{"ownerId":1,"units":10}].
 -- Ownership percentages are DERIVED from these units and never stored.
+-- cash_side: where the money comes from (buy) or goes to (sell) — 'bank' or 'cash'.
+--   'cash' means the platform's own USD cash balance, so no money moves at the bank.
+-- usd_amount: the USD figure typed when cash is the counterparty (SAR is derived from it at the
+--   configured rate, so the two can never disagree).
+-- fee_pct: management fee charged to FAMILY owners on this transaction. Deliberately stored as
+--   the rate rather than as an already-adjusted owners array, so the attribution stays derived
+--   and editing the rate re-derives cleanly instead of compounding.
+-- cash_side also accepts 'opening' (a pre-existing holding declared with no funding source, so
+-- it never gets a matching ledger entry to reconcile against) and 'transfer' (one leg of a
+-- position moved between platforms — see link_id / fee_units below).
+-- link_id ties the two legs of a cross-platform position transfer together (the sell-shaped
+-- "leaving" row and the buy-shaped "arriving" row share the same link_id) so they can be shown
+-- and edited as a pair. NULL for every ordinary transaction.
+-- fee_units is the quantity of the asset lost to a transfer fee, recorded on the leaving leg
+-- only, purely for display — the actual realised loss falls out of the normal weighted-average
+-- engine because the arriving leg's cost is deliberately smaller by that amount.
 create table if not exists pd_inv_transactions (
   id           bigint primary key,
   position_id  bigint,
@@ -2192,7 +2300,35 @@ create table if not exists pd_inv_transactions (
   total_sar    numeric default 0,
   owners       jsonb default '[]'::jsonb,
   note         text default '',
+  cash_side    text default 'bank',
+  usd_amount   numeric default 0,
+  fee_pct      numeric default 0,
+  link_id      bigint,
+  fee_units    numeric default 0,
   updated_at   timestamptz default now()
+);
+
+-- Platform-level cash movements that aren't tied to any position.
+--   kind 'deposit'    — money wired from the bank onto the platform.
+--   kind 'withdrawal' — money taken off the platform back to the bank. capital_usd/profit_usd
+--                       split it the same way the JV would be booked (capital to the In account,
+--                       profit to the Profit account), which is what keeps the reconciliation
+--                       bridge exact.
+--   kind 'transfer'   — moves cash to to_platform_id. fee_usd is borne by the self owner alone.
+-- owners is a jsonb array attributing the USD across owners, e.g. [{"ownerId":1,"usd":500}].
+create table if not exists pd_inv_cash_movements (
+  id              bigint primary key,
+  platform_id     bigint,
+  entry_date      date,
+  kind            text default 'deposit',
+  usd_amount      numeric default 0,
+  to_platform_id  bigint,
+  fee_usd         numeric default 0,
+  capital_usd     numeric default 0,
+  profit_usd      numeric default 0,
+  owners          jsonb default '[]'::jsonb,
+  note            text default '',
+  updated_at      timestamptz default now()
 );
 
 create table if not exists pd_inv_valuations (
@@ -2203,10 +2339,14 @@ create table if not exists pd_inv_valuations (
   updated_at   timestamptz default now()
 );
 
+-- mgmt_fee_pct is the remembered default management fee, applied consistently to every family
+-- owner rather than varying per person.
 create table if not exists pd_inv_settings (
-  id          bigint primary key,
-  fx_usd_sar  numeric default 3.75,
-  updated_at  timestamptz default now()
+  id                bigint primary key,
+  fx_usd_sar        numeric default 3.75,
+  mgmt_fee_pct      numeric default 0,
+  recon_start_date  date,
+  updated_at        timestamptz default now()
 );
 
 -- ---------- UI preferences ----------
@@ -2222,6 +2362,8 @@ create index if not exists idx_inv_positions_platform on pd_inv_positions(platfo
 create index if not exists idx_inv_tx_position        on pd_inv_transactions(position_id);
 create index if not exists idx_inv_val_position       on pd_inv_valuations(position_id);
 create index if not exists idx_inv_val_date           on pd_inv_valuations(entry_date);
+create index if not exists idx_inv_cash_platform     on pd_inv_cash_movements(platform_id);
+create index if not exists idx_inv_cash_date         on pd_inv_cash_movements(entry_date);
 
 -- =====================================================================
 -- Structural singleton rows.
@@ -2233,6 +2375,36 @@ insert into pd_name_translations (id, names)         values (1, '{}'::jsonb) on 
 insert into pd_descr_translations (id, translations) values (1, '{}'::jsonb) on conflict (id) do nothing;
 insert into pd_inv_settings (id, fx_usd_sar)         values (1, 3.75)        on conflict (id) do nothing;
 insert into pd_ui_prefs (id, page_order)              values (1, null)        on conflict (id) do nothing;
+
+-- =====================================================================
+-- Ledger change marker
+-- Lets the app skip re-downloading the whole ledger when nothing has
+-- changed since its last load. Purely an optimisation: if this table or
+-- its trigger is absent the app falls back to a full fetch, so it is
+-- safe (just slower) without it.
+-- =====================================================================
+create table if not exists pd_sync_meta (
+  table_name   text primary key,
+  last_changed timestamptz default now()
+);
+
+insert into pd_sync_meta (table_name, last_changed)
+values ('pd_ledger', now())
+on conflict (table_name) do nothing;
+
+create or replace function pd_touch_sync_meta() returns trigger as $fn$
+begin
+  insert into pd_sync_meta (table_name, last_changed)
+  values (tg_argv[0], now())
+  on conflict (table_name) do update set last_changed = now();
+  return null;
+end;
+$fn$ language plpgsql;
+
+drop trigger if exists trg_pd_ledger_sync_meta on pd_ledger;
+create trigger trg_pd_ledger_sync_meta
+  after insert or update or delete on pd_ledger
+  for each statement execute function pd_touch_sync_meta('pd_ledger');
 
 -- =====================================================================
 -- Row Level Security.
@@ -2249,7 +2421,8 @@ begin
     'pd_jamiahs','pd_forecast_plans','pd_forecast_account_rules',
     'pd_custom_forecast_categories','pd_name_translations','pd_descr_translations',
     'pd_real_estate_buildings','pd_inv_owners','pd_inv_platforms','pd_inv_positions',
-    'pd_inv_transactions','pd_inv_valuations','pd_inv_settings','pd_ui_prefs'
+    'pd_inv_transactions','pd_inv_valuations','pd_inv_cash_movements','pd_inv_settings','pd_ui_prefs',
+    'pd_sync_meta'
   ]
   loop
     execute format('alter table %I enable row level security', t);
@@ -2263,28 +2436,78 @@ end $$;
 -- your backup from Settings -> Backup & Restore.
 -- =====================================================================
 `;
-function copyDbSchemaSql(){
+/* ---- Column top-up: what makes ONE script work on a database that already exists ----
+   Generated from the create-table blocks above, never written out by hand — see the note at
+   the top of this section for why that matters. */
+function buildSchemaColumnTopUp(core){
+  const out = [];
+  const tableRe = /create table if not exists (\w+) \(([\s\S]*?)\n\);/g;
+  let m;
+  while((m = tableRe.exec(core)) !== null){
+    const table = m[1];
+    const cols = [];
+    for(let line of m[2].split('\n')){
+      let t = line.trim();
+      if(!t) continue;
+      t = t.replace(/--.*$/, '').trim();   // strip trailing comments
+      t = t.replace(/,$/, '').trim();      // strip the trailing comma
+      if(!t) continue;
+      // Table-level constraints (e.g. a composite "primary key (a, b)") are not columns.
+      if(/^(primary key|unique|constraint|foreign key|check|references)\b/i.test(t)) continue;
+      const sp = t.indexOf(' ');
+      if(sp < 1) continue;
+      const name = t.slice(0, sp);
+      // A column-level PRIMARY KEY can't be re-declared this way, and on an existing table the
+      // key column is always already there, so the constraint is dropped from the alter form.
+      const def = t.slice(sp+1).replace(/\s+primary\s+key/i, '').trim();
+      if(!name || !def) continue;
+      cols.push('alter table '+table+' add column if not exists '+name+' '+def+';');
+    }
+    if(cols.length) out.push('-- '+table+'\n'+cols.join('\n'));
+  }
+  return out.join('\n\n');
+}
+const DB_SCHEMA_SQL = DB_SCHEMA_CORE + `
+-- =====================================================================
+-- Bring an EXISTING database up to date
+--
+-- Everything above uses "if not exists". Against a database that already
+-- has these tables, Postgres skips those statements ENTIRELY -- including
+-- any column added in a later version -- and reports success either way.
+--
+-- This section closes that gap: every column is asserted individually, so
+-- a table you already have gains whatever it is missing. Columns you
+-- already have are left exactly as they are. No data is read or changed.
+--
+-- On a brand-new database these are all no-ops. Safe to re-run any time.
+-- =====================================================================
+
+` + buildSchemaColumnTopUp(DB_SCHEMA_CORE) + '\n';
+
+function copySqlText(text, label){
   const doCopy = () => {
     const ta = document.createElement('textarea');
-    ta.value = DB_SCHEMA_SQL;
+    ta.value = text;
     ta.style.position='fixed'; ta.style.opacity='0';
     document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); toast('Full SQL copied ✓'); }
+    try{ document.execCommand('copy'); toast(label+' copied ✓'); }
     catch(e){ toast('Copy failed — select the text and copy manually', true); }
     document.body.removeChild(ta);
   };
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(DB_SCHEMA_SQL).then(()=>toast('Full SQL copied ✓')).catch(doCopy);
+    navigator.clipboard.writeText(text).then(()=>toast(label+' copied ✓')).catch(doCopy);
   } else doCopy();
 }
-function downloadDbSchemaSql(){
-  const blob = new Blob([DB_SCHEMA_SQL], {type:'text/plain;charset=utf-8;'});
+function copyDbSchemaSql(){ copySqlText(DB_SCHEMA_SQL, 'Full SQL'); }
+function downloadSqlText(text, filename){
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8;'});
   const dl = document.createElement('a');
   dl.href = URL.createObjectURL(blob);
-  dl.download = 'LedgerOS schema v'+DB_SCHEMA_VERSION+'.sql';
+  dl.download = filename;
   dl.click();
   toast('SQL file downloaded ✓');
 }
+function downloadDbSchemaSql(){ downloadSqlText(DB_SCHEMA_SQL, 'LedgerOS schema v'+DB_SCHEMA_VERSION+'.sql'); }
 
 /* ============================= COMMAND PALETTE (Ctrl/Cmd+K) ============================= */
 let cmdPaletteOpen = false;
@@ -3523,6 +3746,41 @@ function animateKpiCountUps(){
     requestAnimationFrame(frame);
   });
 }
+/* ---- Dashboard: "This Month Expense" against budget ----
+   Uses exactly the same budget definition as the P&L page's Total Expenses card
+   (pnlBudgetForAccountInRange, which prefers a provision plan over the plain budget plan and
+   covers every non-deleted expense account), so the two screens can never disagree.
+
+   The comparison is month-to-date spend against the whole month's budget.
+
+   Variances use pnlVarianceMagnitude, not raw subtraction — positive always means under budget
+   regardless of which sign convention the underlying accounts use. */
+function dashboardExpenseBudget(ym, actualMTD){
+  const [mFrom, mTo] = monthRange(ym);
+  const expAccs = D.accounts.filter(a=>firstDigit(a.id)===6 && (a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted');
+  let budget = 0;
+  expAccs.forEach(a=>{ budget += pnlBudgetForAccountInRange(a.id, mFrom, mTo); });
+  return {
+    budget,
+    hasBudget: Math.abs(budget) >= 0.005,
+    fullVariance: pnlVarianceMagnitude(budget, actualMTD)
+  };
+}
+// Full-month budget only. A prorated "on pace" figure was shown here originally, but it wasn't
+// a useful signal in practice — the plain over/under against the month's budget is what gets read.
+function dashboardExpenseBudgetLine(b){
+  if(!b.hasBudget) return '<span class="mut">No budget set for this month</span>';
+  const v = b.fullVariance;
+  const word = Math.abs(v)<0.005 ? 'On budget' : (v>0 ? 'Under budget by '+money(Math.abs(v)) : 'Over budget by '+money(Math.abs(v)));
+  return `<span class="${moneyClass(v)}">${word}</span>`;
+}
+// Jump from the dashboard straight to the P&L for the current month. go() runs the page render,
+// so the preset is set first and renderPnL is left to go() rather than being called twice.
+function goPnLThisMonth(){
+  pnlPreset = 'month';
+  [pnlFrom, pnlTo] = monthRange(todayStr().slice(0,7));
+  go('pnl');
+}
 function driftAlertsCard(){
   const flags = computeDriftFlags();
   if(!flags.length) return '';
@@ -3553,13 +3811,14 @@ function renderDashboard(){
   const incomeMTD = sumAcc(l=>firstDigit(l.acc)===3, ym+'-01', ym+'-31');
   const expenseMTD = sumAcc(l=>firstDigit(l.acc)===6, ym+'-01', ym+'-31');
   const netCashflow = Math.abs(incomeMTD) - Math.abs(expenseMTD);
+  const expBudget = dashboardExpenseBudget(ym, expenseMTD);
 
   const kpiAnim = dashboardNeedsCountUp ? ' fade-in' : '';
   document.getElementById('app').innerHTML = `
     <div class="cards">
       <div class="kpi${kpiAnim}"><div class="l">Bank Accounts Balance</div>${kpiValue(bankTotal, '', 'absMoney')}</div>
       <div class="kpi${kpiAnim}"><div class="l">This Month Income</div>${kpiValue(incomeMTD, '', 'absMoney')}</div>
-      <div class="kpi${kpiAnim}"><div class="l">This Month Expense</div>${kpiValue(expenseMTD, '', 'absMoney')}</div>
+      <div class="kpi${kpiAnim}"><div class="l">This Month Expense</div>${kpiValue(expenseMTD, '', 'absMoney')}<div class="mut click" style="font-size:11.5px;margin-top:4px;cursor:pointer" title="Open the P&amp;L for this month" onclick="goPnLThisMonth()">${dashboardExpenseBudgetLine(expBudget)}</div></div>
       <div class="kpi${kpiAnim}"><div class="l">This Month Net Cashflow</div>${kpiValue(netCashflow, moneyClass(netCashflow), 'money')}</div>
     </div>
     ${driftAlertsCard()}
@@ -3696,7 +3955,7 @@ function updateJVTotals(){
 function jvLineRow(l,i){
   return `<tr>
     <td class="autoc"><div style="display:flex;gap:4px;align-items:center">
-      <input id="jvAcc_${i}" style="flex:1" placeholder="Search account…" value="${l.acc? esc(accName(l.acc)) : (l._q||'')}"
+      <input id="jvAcc_${i}" style="flex:1" placeholder="Search account…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${l.acc? esc(accName(l.acc)) : (l._q||'')}"
         oninput="jvAccInput(${i},this.value)" onfocus="jvAccInput(${i},this.value)"
         onkeydown="jvAccKey(event,${i})" onblur="setTimeout(()=>closeAcDrop(${i}),150)">
       ${i>0? `<button type="button" class="x" title="Copy account from line above" onclick="copyAccAbove(${i})">⤴</button>` : ''}
@@ -3704,14 +3963,14 @@ function jvLineRow(l,i){
       <div class="acdrop" id="acdrop_${i}"></div>
     </div></td>
     <td class="autoc"><div style="display:flex;gap:4px;align-items:center">
-      <input id="jvDescr_${i}" style="flex:1" value="${esc(l.descr)}" oninput="jvDescrInput(${i},this.value)" onfocus="jvDescrInput(${i},this.value)"
+      <input id="jvDescr_${i}" style="flex:1" autocomplete="off" value="${esc(l.descr)}" oninput="jvDescrInput(${i},this.value)" onfocus="jvDescrInput(${i},this.value)"
         onkeydown="jvDescrKey(event,${i})" onblur="setTimeout(()=>closeDescrDrop(${i}),150)" placeholder="Description">
       ${i>0? `<button type="button" class="x" title="Copy description from line above" onclick="copyDescrAbove(${i})">⤴</button>` : ''}
       <button type="button" class="x" title="Clear" onclick="clearJVField(${i},'descr')">✕</button>
       <div class="acdrop" id="descrdrop_${i}"></div>
     </div></td>
     <td><div style="display:flex;gap:4px;align-items:center">
-      <input id="jvAmt_${i}" class="num" style="flex:1" type="text" inputmode="decimal" value="${l.amt===''?'':fmt2(l.amt)}"
+      <input id="jvAmt_${i}" class="num" style="flex:1" type="text" inputmode="decimal" autocomplete="off" value="${l.amt===''?'':fmt2(l.amt)}"
         oninput="jvDraft.lines[${i}].amt=this.value; updateJVTotals()"
         onfocus="this.value = (jvDraft.lines[${i}].amt===''?'':jvDraft.lines[${i}].amt)"
         onblur="jvAmtBlur(${i})"
@@ -3849,7 +4108,16 @@ function jvAmtKey(ev,i){
     advanceAfterAmount(i);
   }
 }
-function addJVLine(){ const l = freshLine(); if(reconcileAcc) l.acc = reconcileAcc; jvDraft.lines.push(l); renderNewJV(); }
+// New lines start BLANK, even while reconciling. Pre-filling them with the account being
+// reconciled meant every line added after the first repeated the account already sitting on
+// line 1 — which reads as the first line's account mysteriously copying itself down the JV.
+// Reconciling is normally about entering the OFFSETTING accounts, so the account under
+// reconciliation is exactly the one you don't want repeated. The ⤴ button on each row still
+// copies the account from the line above for the cases where you do want it.
+// Note this does NOT affect the flows that pre-fill line 1 (starting a reconciliation from an
+// account, or balancing an allocation) — those set the line directly rather than going through
+// here, so picking a target from a list and having its amount filled in still works.
+function addJVLine(){ jvDraft.lines.push(freshLine()); renderNewJV(); }
 function removeJVLine(i){ jvDraft.lines.splice(i,1); renderNewJV(); }
 function jvAccInput(i,val){
   jvDraft.lines[i]._q = val;
@@ -4349,7 +4617,7 @@ function renderLedgerResults(){
         <td class="mono">#${l.jv}</td><td class="mono">${esc(l.date)}</td>
         <td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(ledgerAccName(l))}</div></td>
         <td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td>
-        <td>${l.alloc? '<span class="badge">'+pad5(l.alloc)+'</span>':''}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No transactions match these filters</td></tr>'}</tbody>
+        <td>${allocBadgeCell(l.alloc)}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No transactions match these filters</td></tr>'}</tbody>
       <tfoot><tr><td colspan="4">Filtered total (${rows.length.toLocaleString()} lines)</td><td class="num mono ${moneyClass(total)}">${money(total)}</td><td></td></tr></tfoot>
       </table>
       <div class="pagebar noprint">
@@ -4359,14 +4627,30 @@ function renderLedgerResults(){
       </div>
     </div>`;
 }
+/* ---- Allocation badge: shared by the Ledger table and the JV modal ----
+   Renders the padded allocation number as a clickable badge, or an empty cell when the line
+   isn't allocated (deliberately blank rather than a dash — an unallocated line is the normal
+   case for most rows and a dash on every one of them is just noise).
+   Clicking jumps straight to the Allocation detail modal from wherever you are. */
+function allocBadgeCell(alloc){
+  if(!alloc) return '';
+  return `<span class="badge click" style="cursor:pointer" title="Open allocation #${pad5(alloc)}" onclick="openAllocGroupFrom(event, ${alloc})">${pad5(alloc)}</span>`;
+}
+// stopPropagation matters on the Ledger page, where the whole row already opens the JV — without
+// it, the click would fire both handlers and the JV modal would immediately replace the
+// allocation modal we just opened.
+function openAllocGroupFrom(ev, n){
+  if(ev && ev.stopPropagation) ev.stopPropagation();
+  viewAllocGroup(n);
+}
 function viewJV(jv){
   const lines = D.ledger.filter(l=>l.jv===jv).sort((a,b)=>a.id-b.id);
   const total = lines.reduce((s,l)=>s+(Number(l.amt)||0),0);
   showModal(`
     <h3>Journal Voucher #${jv}</h3>
-    <table><thead><tr><th>Account</th><th>Description</th><th class="num">Amount</th></tr></thead>
-    <tbody>${lines.map(l=>`<tr><td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(ledgerAccName(l))}</div></td><td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="2">Total</td><td class="num mono">${money(total)}</td></tr></tfoot></table>
+    <table><thead><tr><th>Account</th><th>Description</th><th class="num">Amount</th><th>Alloc</th></tr></thead>
+    <tbody>${lines.map(l=>`<tr><td>${l.acc}<div class="mut" style="font-size:11.5px">${esc(ledgerAccName(l))}</div></td><td>${esc(l.descr)}</td><td class="num mono ${moneyClass(l.amt)}">${money(l.amt)}</td><td>${allocBadgeCell(l.alloc)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="num mono">${money(total)}</td><td></td></tr></tfoot></table>
     <div class="row" style="margin-top:16px;justify-content:flex-end">
       <button class="btn ghost" onclick="startEditJV(${jv})">✎ Edit</button>
       <button class="btn ghost" onclick="exportJVCSV(${jv})">⬇ Download CSV</button>
@@ -4698,14 +4982,28 @@ let accQ = '', accShowDeleted = false;
 let accSelected = new Set();
 let accSelectMode = false;
 function browsableAccounts(){ return D.accounts.filter(a=>a.acc_type==='Individual Account'||a.acc_type==='Accrual Account'); }
+let acctPageTab = 'list';
+function setAcctPageTab(t){ acctPageTab = t; renderAccounts(); }
 function renderAccounts(){
+  if(acctPageTab==='grid'){ renderAccountsGrid(); return; }
   document.getElementById('app').innerHTML = `
-    <div class="panel noprint row" style="justify-content:space-between">
-      <div class="row" style="flex:1"><input id="accSearchInput" style="max-width:420px" placeholder="Search accounts by number, name, or category…" value="${esc(accQ)}" oninput="filterAccounts(this.value)">
+    <div class="row noprint" style="margin-bottom:14px">
+      <div class="toggle-tabs" style="display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <button class="tbtn" style="border:none;border-radius:0;${acctPageTab==='list'?'background:var(--accent);color:#ffffff':''}" onclick="setAcctPageTab('list')">☰ List</button>
+        <button class="tbtn" style="border:none;border-radius:0;${acctPageTab==='grid'?'background:var(--accent);color:#ffffff':''}" onclick="setAcctPageTab('grid')">▦ Grid</button>
+      </div>
+    </div>
+    <div class="panel noprint row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="row" style="flex:1">
+        <input id="accSearchInput" style="max-width:420px" placeholder="Search accounts by number, name, or category…" value="${esc(accQ)}" oninput="filterAccounts(this.value)">
         <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12.5px;color:var(--muted)"><input type="checkbox" class="chk" ${accShowDeleted?'checked':''} onchange="accShowDeleted=this.checked; renderAccountResults()"> Show deleted</label>
       </div>
-      <button class="btn ${accSelectMode?'pri':'ghost'}" onclick="toggleAccSelectMode()">${accSelectMode?'✕ Done Selecting':'☑ Select'}</button>
-      <button class="btn pri" onclick="openAccountModal(null)">+ Add Account</button>
+      <div class="row" style="gap:6px;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="exportAccountCurrentBalancesCSV()">⬇ Current Balances</button>
+        <button class="btn ghost sm" onclick="exportAccountMonthlyMovementCSV()">⬇ Monthly Movement</button>
+        <button class="btn ${accSelectMode?'pri':'ghost'} sm" onclick="toggleAccSelectMode()">${accSelectMode?'✕ Done Selecting':'☑ Select'}</button>
+        <button class="btn pri sm" onclick="openAccountModal(null)">+ Add Account</button>
+      </div>
     </div>
     <div id="accBatchBar"></div>
     <div id="accountResults"></div>
@@ -4809,6 +5107,71 @@ function renderAccBatchBar(){
     </div>
   </div>` : '';
 }
+/* ---- Accounts page: Grid view ----
+   Current balance plus a scrolling window of monthly movement, per account — the same figures
+   as the two CSV exports, but browsable on screen. Deliberately its own window state rather than
+   reusing the Forecast page's (forecastWindowStart/getGridEndMonth): Forecast's window also
+   drives future projections and a configurable end month, neither of which applies here — this
+   grid is historical-actuals-only, so tying it to Forecast's state would let an unrelated
+   Forecast setting silently move this page around. */
+let acctGridWindowStart = null; // set on first render to 11 months before the current month
+const ACCT_GRID_WINDOW_SIZE = 12;
+function acctGridMonths(){
+  if(!acctGridWindowStart) acctGridWindowStart = shiftMonthKey(todayStr().slice(0,7), -(ACCT_GRID_WINDOW_SIZE-1));
+  const months = [];
+  let mk = acctGridWindowStart;
+  for(let i=0;i<ACCT_GRID_WINDOW_SIZE;i++){ months.push(mk); mk = nextMonthKeyPlain(mk); }
+  return months;
+}
+function acctGridShift(delta){
+  acctGridWindowStart = delta>0? nextMonthKeyPlain(acctGridWindowStart) : prevMonthKey(acctGridWindowStart);
+  renderAccountsGrid();
+}
+function acctGridJumpToday(){
+  acctGridWindowStart = shiftMonthKey(todayStr().slice(0,7), -(ACCT_GRID_WINDOW_SIZE-1));
+  renderAccountsGrid();
+}
+function renderAccountsGrid(){
+  const months = acctGridMonths();
+  const currentMonth = todayStr().slice(0,7);
+  const accs = allExportableAccounts();
+  const tableMinWidth = 340 + months.length*100;
+  document.getElementById('app').innerHTML = `
+    <div class="row noprint" style="margin-bottom:14px">
+      <div class="toggle-tabs" style="display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <button class="tbtn" style="border:none;border-radius:0" onclick="setAcctPageTab('list')">☰ List</button>
+        <button class="tbtn" style="border:none;border-radius:0;background:var(--accent);color:#ffffff" onclick="setAcctPageTab('grid')">▦ Grid</button>
+      </div>
+    </div>
+    <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div class="row">
+        <button class="btn ghost sm" onclick="acctGridShift(-1)">‹ Prev</button>
+        <div class="mono" style="padding:0 10px">${esc(monthLabel(months[0]))} → ${esc(monthLabel(months[months.length-1]))}</div>
+        <button class="btn ghost sm" onclick="acctGridShift(1)">Next ›</button>
+        <button class="btn ghost sm" onclick="acctGridJumpToday()">Jump to current month</button>
+      </div>
+      <div class="row" style="gap:6px">
+        <button class="btn ghost sm" onclick="exportAccountCurrentBalancesCSV()">⬇ Current Balances</button>
+        <button class="btn ghost sm" onclick="exportAccountMonthlyMovementCSV()">⬇ Monthly Movement</button>
+      </div>
+    </div>
+    <div class="panel" style="overflow-x:auto">
+      <table style="min-width:${tableMinWidth}px;table-layout:fixed">
+        <colgroup><col style="width:100px"><col style="width:180px"><col style="width:130px">${months.map(()=>`<col style="width:100px">`).join('')}</colgroup>
+        <thead><tr><th>Acc#</th><th>Name</th><th class="num">Current Balance</th>${months.map(m=>`<th class="num" style="${m===currentMonth?'background:var(--chip)':''}">${esc(monthLabel(m))}</th>`).join('')}</tr></thead>
+        <tbody>${accs.map(a=>{
+          const bal = accountBalance(a.id);
+          return `<tr>
+            <td><span class="mono click" style="cursor:pointer;color:var(--accent)" onclick="jumpToLedgerForAccount(${a.id})" title="View this account's transactions in the Ledger">${a.id}</span></td>
+            <td>${esc(accShort(a.id))}</td>
+            <td class="num mono ${moneyClass(bal)}">${money(bal)}</td>
+            ${months.map(m=>{ const v = forecastActual(a.id, m); return `<td class="num mono ${v?moneyClass(v):'mut'}" style="${m===currentMonth?'background:var(--chip)':''}">${v? money(v) : '—'}</td>`; }).join('')}
+          </tr>`;
+        }).join('') || `<tr><td colspan="${3+months.length}" class="empty">No accounts found</td></tr>`}</tbody>
+      </table>
+    </div>`;
+}
+
 function renderAccountResults(){
   const accs = browsableAccounts().filter(a=>{
     if(!accShowDeleted && a.status==='Deleted') return false;
@@ -6403,13 +6766,38 @@ const INV_ASSET_CLASSES = ['Stocks','Crypto','Other'];
 // The USD->SAR rate is SYNCED (not per-device): it directly scales reported portfolio value,
 // so a device-local rate would make the same portfolio read differently on phone vs desktop.
 function getInvFxRate(){ const v = Number((D.invSettings||{}).fxUsdSar); return v>0? v : 3.75; }
+async function setInvReconStartDate(v){
+  const date = v || null;
+  const base = (D.invSettings||{}).updated_at||null;
+  D.invSettings = D.invSettings||{};
+  D.invSettings.reconStartDate = date;
+  D.invSettings.updated_at = nowISO();
+  await syncWrite('pd_inv_settings','upsert',{id:1, fx_usd_sar:getInvFxRate(), mgmt_fee_pct:getInvMgmtFeePct(), recon_start_date:date}, base);
+  persistLocal();
+}
+async function saveInvReconStartDate(v){
+  await setInvReconStartDate(v);
+  renderInvestmentsPage();
+  toast(v? 'Reconciliation now compares since '+v+' ✓' : 'Reconciliation back to full history ✓');
+}
+async function setInvMgmtFeePct(v){
+  const pct = Math.max(0, Math.min(100, Number(v)||0));
+  const base = (D.invSettings||{}).updated_at||null;
+  D.invSettings = D.invSettings||{};
+  D.invSettings.mgmtFeePct = pct;
+  D.invSettings.updated_at = nowISO();
+  await syncWrite('pd_inv_settings','upsert',{id:1, fx_usd_sar:getInvFxRate(), mgmt_fee_pct:pct, recon_start_date:(D.invSettings||{}).reconStartDate||null}, base);
+  persistLocal();
+}
 async function setInvFxRate(v){
   const rate = Number(v)>0? Number(v) : 3.75;
   D.invSettings = D.invSettings || {};
   const base = D.invSettings.updated_at||null;
   D.invSettings.fxUsdSar = rate;
   D.invSettings.updated_at = nowISO();
-  await syncWrite('pd_inv_settings','upsert',{id:1, fx_usd_sar:rate}, base);
+  // Both settings are written together — upserting only fx_usd_sar would blank the remembered
+  // management fee on every rate save.
+  await syncWrite('pd_inv_settings','upsert',{id:1, fx_usd_sar:rate, mgmt_fee_pct:getInvMgmtFeePct(), recon_start_date:(D.invSettings||{}).reconStartDate||null}, base);
   persistLocal();
 }
 function invPlatformById(id){ return (D.invPlatforms||[]).find(p=>p.id===id) || null; }
@@ -6424,47 +6812,176 @@ function invLatestValuation(posId){
 function invNextId(arr){ return 1 + (arr||[]).reduce((m,x)=>Math.max(m, Number(x.id)||0), 0); }
 function invFxFor(currency){ return currency==='USD'? getInvFxRate() : 1; }
 
+/* ===================== MANAGEMENT FEE & TRANSACTION ATTRIBUTION =====================
+   There is exactly ONE place that decides how a transaction's units and money are split across
+   owners. Cost basis, historical state, XIRR, realised gain and the cash balances all read from
+   it. A fee applied in some of those and not others would make the same transaction value
+   differently on different screens, which is the failure mode this design exists to prevent.
+
+   The fee is charged to FAMILY owners only and always lands on the single self owner:
+
+   - On a BUY it is taken in kind, as units. Buying 100 units split 50/50 at 5% gives the family
+     owner 47.5 and the self owner 52.5. The SAR split is deliberately NOT adjusted: the family
+     owner still paid for 50 units' worth, so their average cost rises and the self owner's falls.
+     That difference IS the fee. Moving the SAR too would just make it a smaller purchase.
+
+   - On a SELL it is taken out of the USD proceeds. Units leave each owner in full, and the fee
+     share of the family owner's proceeds is credited to the self owner instead. It reduces the
+     family owner's realised gain and is reported as FEE INCOME, not as an investment return —
+     it is earned by managing, not by investing, and folding it into the self owner's realised
+     gain would flatter the portfolio's performance.                                            */
+function invMgmtFeeRate(t){
+  const p = Number(t && t.feePct);
+  if(!(p>0)) return 0;
+  return Math.min(p, 100)/100;
+}
+function invSelfOwnerId(){
+  const s = (D.invOwners||[]).find(o=>o.isSelf);
+  return s? s.id : null;
+}
+function getInvMgmtFeePct(){ const v = Number((D.invSettings||{}).mgmtFeePct); return v>0? v : 0; }
+const INV_UNIT_R = 1e8; // 8dp — matches the SAR-split engine; 2dp would destroy a crypto split.
+function invRoundUnits(u){ return Math.round(u*INV_UNIT_R)/INV_UNIT_R; }
+
+// units    — who ends up holding the units (fee applied on buys)
+// moneySar — the cost/proceeds each owner is credited with for cost-basis and realised-gain
+//            purposes (fee deducted from family on sells; the self owner is NOT credited here,
+//            because the fee is income rather than an investment return)
+// cashSar  — the money that physically moves to/from each owner's cash (fee deducted from family
+//            AND added to self, because that is where the money actually goes)
+function invTxAttribution(t){
+  const rate = invMgmtFeeRate(t);
+  const selfId = invSelfOwnerId();
+  const totalUnits = Math.abs(Number(t.units)||0);
+  const totalSar = Math.abs(Number(t.totalSar)||0);
+  let alloc = (Array.isArray(t.owners) && t.owners.length)
+    ? t.owners.map(a=>({ownerId:a.ownerId, units:Math.abs(Number(a.units)||0)}))
+    : [];
+  // Older or partially-entered transactions with no attribution fall back to the self owner, so
+  // they still compute instead of silently vanishing from every total.
+  if(!alloc.length && selfId!==null) alloc = [{ownerId:selfId, units:totalUnits}];
+  const allocUnits = alloc.reduce((s,a)=>s+a.units, 0);
+  if(!(allocUnits>0)) return {units:{}, moneySar:{}, cashSar:{}, feeSar:0, feeUnits:0, selfId, valid:false};
+
+  const units={}, moneySar={}, cashSar={};
+  let feeSar=0, feeUnits=0;
+  for(const a of alloc){
+    const oUnits = a.units;
+    if(oUnits<=0) continue;
+    const oSar = totalSar*(oUnits/allocUnits);
+    const isFamily = selfId!==null && a.ownerId!==selfId;
+    units[a.ownerId]    = (units[a.ownerId]||0) + oUnits;
+    moneySar[a.ownerId] = (moneySar[a.ownerId]||0) + oSar;
+    cashSar[a.ownerId]  = (cashSar[a.ownerId]||0) + oSar;
+    if(rate>0 && isFamily){
+      if(t.kind==='sell'){
+        const f = oSar*rate;
+        feeSar += f;
+        moneySar[a.ownerId] -= f;
+        cashSar[a.ownerId]  -= f;
+      } else {
+        const fu = invRoundUnits(oUnits*rate);
+        feeUnits += fu;
+        units[a.ownerId] -= fu;
+      }
+    }
+  }
+  if(selfId!==null){
+    // The shaved units and the fee cash both land on the self owner, so the totals still add up
+    // to exactly what was transacted — no units or money are created or destroyed by the fee.
+    if(feeUnits>0) units[selfId]   = invRoundUnits((units[selfId]||0) + feeUnits);
+    if(feeSar>0)   cashSar[selfId] = (cashSar[selfId]||0) + feeSar;
+  }
+  for(const k in units) units[k] = invRoundUnits(units[k]);
+  return {units, moneySar, cashSar, feeSar, feeUnits, selfId, valid:true};
+}
+// The units as entered, before any fee adjustment. A sell removes what each owner actually
+// holds — the fee comes out of the proceeds, not out of the units leaving — so the unit movement
+// on a sell follows this rather than the fee-adjusted map.
+function invTxEnteredUnits(t){
+  const selfId = invSelfOwnerId();
+  const totalUnits = Math.abs(Number(t.units)||0);
+  let alloc = (Array.isArray(t.owners) && t.owners.length)
+    ? t.owners.map(a=>({ownerId:a.ownerId, units:Math.abs(Number(a.units)||0)}))
+    : [];
+  if(!alloc.length && selfId!==null) alloc = [{ownerId:selfId, units:totalUnits}];
+  const out = {};
+  for(const a of alloc){ if(a.units>0) out[a.ownerId] = invRoundUnits((out[a.ownerId]||0) + a.units); }
+  return out;
+}
+// Fee income earned by the self owner, by year. Sell-side only — the buy-side fee is taken in
+// units, so it shows up later as gain on those units rather than as income today.
+function invFeeIncomeByYear(){
+  const byYear = {};
+  for(const t of (D.invTransactions||[])){
+    if(t.kind!=='sell') continue;
+    const at = invTxAttribution(t);
+    if(!at.valid || !(at.feeSar>0)) continue;
+    const yr = String(t.date).slice(0,4);
+    byYear[yr] = (byYear[yr]||0) + at.feeSar;
+  }
+  return Object.entries(byYear).map(([year,fee])=>({year, fee})).sort((a,b)=>a.year<b.year?1:-1);
+}
+
 // Weighted-average-cost engine, run per position over its transactions in date order.
 // Returns per-owner units / cost / realised gain, plus position totals.
-function computePositionState(posId){
-  const txs = invTxForPosition(posId);
-  const byOwner = {}; // ownerId -> {units, costSar, realizedSar}
-  const ensure = oid => (byOwner[oid] = byOwner[oid] || {units:0, costSar:0, realizedSar:0});
+// asOfDate (optional): filters transactions to those on or before that date, letting the SAME
+// engine answer both "state right now" (call with no date) and "state as it stood on some past
+// date" (used by the reconciliation-since-a-start-date bridge below) — one weighted-average loop
+// rather than a second copy that could drift from this one.
+//
+// openingCostSar tracks how much of an owner's cost basis came from "Opening balance" buys —
+// entries with no bank or platform-cash funding, used to declare a holding you already had before
+// tracking started. It bleeds down at the SAME rate as total cost on a sell (proportionally, not
+// by lot), which matches weighted-average-cost's own philosophy of not tracking lot identity.
+// This is what lets the reconciliation bridge exclude opening balances from the "money that
+// should tie back to the bank" side — there is no ledger entry backing them, and never will be.
+function computePositionState(posId, asOfDate){
+  const txs = asOfDate? invTxForPosition(posId).filter(t=>t.date<=asOfDate) : invTxForPosition(posId);
+  const byOwner = {}; // ownerId -> {units, costSar, realizedSar, openingCostSar}
+  // Realised gain broken out per transaction per owner. The cash engine needs to know how much
+  // of a sell's proceeds was profit rather than returned capital, and re-deriving that with a
+  // second copy of this weighted-average loop would be a second source of truth waiting to drift.
+  const realizedByTx = {};
+  const ensure = oid => (byOwner[oid] = byOwner[oid] || {units:0, costSar:0, realizedSar:0, openingCostSar:0});
   for(const t of txs){
-    const units = Math.abs(Number(t.units)||0);
-    const totalSar = Math.abs(Number(t.totalSar)||0);
-    // Owner attribution; if a transaction has none recorded, fall back to the "self" owner so
-    // older/partial data still computes instead of silently vanishing from the totals.
-    let alloc = Array.isArray(t.owners) && t.owners.length? t.owners : null;
-    if(!alloc){
-      const self = (D.invOwners||[]).find(o=>o.isSelf);
-      alloc = self? [{ownerId:self.id, units}] : [];
-    }
-    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0), 0);
-    if(allocUnits<=0) continue;
-    for(const a of alloc){
-      const oUnits = Math.abs(Number(a.units)||0);
-      if(oUnits<=0) continue;
-      const share = oUnits/allocUnits;
-      const oSar = totalSar*share;
-      const st = ensure(a.ownerId);
+    // Units and money both come from the single attribution helper, so the management fee is
+    // applied here exactly as it is everywhere else.
+    const at = invTxAttribution(t);
+    if(!at.valid) continue;
+    // A sell removes the units each owner actually holds (the fee comes out of the proceeds, not
+    // the units), so the unit movement on a sell follows the entered split rather than the
+    // fee-adjusted one.
+    const unitMap = t.kind==='sell'? invTxEnteredUnits(t) : at.units;
+    for(const oid in unitMap){
+      const oUnits = unitMap[oid];
+      if(!(oUnits>0)) continue;
+      const oSar = at.moneySar[oid]||0;
+      const st = ensure(Number(oid));
       if(t.kind==='sell'){
         // Weighted average cost: the cost released is this owner's average cost times units sold.
         const avg = st.units>0? st.costSar/st.units : 0;
         const costOut = avg*oUnits;
-        st.realizedSar += (oSar - costOut);
+        const gain = oSar - costOut;
+        st.realizedSar += gain;
+        (realizedByTx[t.id] = realizedByTx[t.id] || {})[oid] = gain;
+        // Opening-balance cost bleeds down in the same proportion as total cost, since WAC
+        // doesn't distinguish which dollars are leaving on a partial sell.
+        const openingRatio = st.costSar>0? st.openingCostSar/st.costSar : 0;
+        st.openingCostSar -= costOut*openingRatio;
         st.units -= oUnits;
         st.costSar -= costOut;
-        if(st.units<1e-12){ st.units = 0; st.costSar = 0; }
+        if(st.units<1e-12){ st.units = 0; st.costSar = 0; st.openingCostSar = 0; }
       } else {
         st.units += oUnits;
         st.costSar += oSar;
+        if(t.cashSide==='opening') st.openingCostSar += oSar;
       }
     }
   }
-  let totalUnits=0, totalCostSar=0, totalRealizedSar=0;
-  for(const k in byOwner){ totalUnits+=byOwner[k].units; totalCostSar+=byOwner[k].costSar; totalRealizedSar+=byOwner[k].realizedSar; }
-  return {byOwner, totalUnits, totalCostSar, totalRealizedSar};
+  let totalUnits=0, totalCostSar=0, totalRealizedSar=0, totalOpeningCostSar=0;
+  for(const k in byOwner){ totalUnits+=byOwner[k].units; totalCostSar+=byOwner[k].costSar; totalRealizedSar+=byOwner[k].realizedSar; totalOpeningCostSar+=byOwner[k].openingCostSar; }
+  return {byOwner, totalUnits, totalCostSar, totalRealizedSar, totalOpeningCostSar, realizedByTx};
 }
 // Full valuation of a position: current market value in SAR and unrealised gain vs cost.
 function computePositionValuation(pos){
@@ -6568,21 +7085,221 @@ function invOwnerTotals(){
   }
   return out;
 }
+/* ============================= PLATFORM CASH =============================
+   Selling an asset and leaving the proceeds on the platform as USD means the money never came
+   back to the bank, so it has to be tracked somewhere or it simply disappears from the picture.
+
+   Everything runs as one chronological simulation across every platform at once, rather than
+   per-platform, because transfers move money (and the profit sitting inside it) between
+   platforms and the running balance at the moment of the transfer is what decides how much
+   profit travels with it.
+
+   Two numbers are carried per owner per platform:
+     usd        — the cash balance itself.
+     profitUsd  — how much of that balance is realised gain rather than returned capital. This is
+                  what makes the reconciliation bridge exact: the ledger's Out/In accounts only
+                  ever hold capital (profit is booked to the Profit account), so profit sitting
+                  in platform cash has to be excluded when comparing the two.
+   Buys funded from cash deliberately do NOT consume profitUsd — reinvested profit stays flagged
+   as profit, which is what keeps the bridge balanced when gains are rolled back into positions. */
+function invCashEvents(asOfDate){
+  const events = [];
+  const fx = getInvFxRate();
+  for(const pos of (D.invPositions||[])){
+    const txs = invTxForPosition(pos.id).filter(t=>t.cashSide==='cash');
+    if(!txs.length) continue;
+    const st = computePositionState(pos.id);
+    for(const t of txs){
+      const at = invTxAttribution(t);
+      if(!at.valid) continue;
+      const realised = (st.realizedByTx||{})[t.id] || {};
+      const deltas = {};
+      for(const oid in at.cashSar){
+        const sar = at.cashSar[oid]||0;
+        // A buy takes money off the platform; a sell puts it on.
+        deltas[oid] = (t.kind==='sell'? sar : -sar)/fx;
+      }
+      const profitDeltas = {};
+      if(t.kind==='sell'){ for(const oid in realised) profitDeltas[oid] = (realised[oid]||0)/fx; }
+      events.push({date:t.date, id:t.id, seq:0, platformId:pos.platformId, type:'tx', deltas, profitDeltas});
+    }
+  }
+  for(const m of (D.invCashMovements||[])){
+    events.push({date:m.date, id:m.id, seq:1, type:'move', move:m});
+  }
+  events.sort((a,b)=> a.date===b.date? (a.seq-b.seq || a.id-b.id) : (a.date<b.date? -1:1));
+  return asOfDate? events.filter(e=>e.date<=asOfDate) : events;
+}
+function invCashState(asOfDate){
+  const state = {}; // platformId -> ownerId -> {usd, profitUsd}
+  let feesUsd = 0;
+  const cell = (pid, oid) => {
+    const p = state[pid] = state[pid] || {};
+    return p[oid] = p[oid] || {usd:0, profitUsd:0};
+  };
+  const allocOf = m => {
+    const rows = (Array.isArray(m.owners)? m.owners : []).map(a=>({ownerId:a.ownerId, usd:Number(a.usd)||0})).filter(a=>a.usd!==0);
+    if(rows.length) return rows;
+    const selfId = invSelfOwnerId();
+    return selfId!==null? [{ownerId:selfId, usd:Math.abs(Number(m.usdAmount)||0)}] : [];
+  };
+  for(const ev of invCashEvents(asOfDate)){
+    if(ev.type==='tx'){
+      for(const oid in ev.deltas) cell(ev.platformId, oid).usd += ev.deltas[oid];
+      for(const oid in ev.profitDeltas) cell(ev.platformId, oid).profitUsd += ev.profitDeltas[oid];
+      continue;
+    }
+    const m = ev.move;
+    const rows = allocOf(m);
+    const totalAlloc = rows.reduce((s,a)=>s+Math.abs(a.usd),0);
+    if(m.kind==='deposit'){
+      for(const a of rows) cell(m.platformId, a.ownerId).usd += Math.abs(a.usd);
+    } else if(m.kind==='withdrawal'){
+      // The capital/profit split mirrors how the JV is booked (capital to the In account, profit
+      // to the Profit account), so the bridge stays exact whichever way the money is taken out.
+      const profitTotal = Math.abs(Number(m.profitUsd)||0);
+      for(const a of rows){
+        const c = cell(m.platformId, a.ownerId);
+        const amt = Math.abs(a.usd);
+        c.usd -= amt;
+        c.profitUsd -= totalAlloc>0? profitTotal*(amt/totalAlloc) : 0;
+      }
+    } else if(m.kind==='transfer'){
+      for(const a of rows){
+        const amt = Math.abs(a.usd);
+        const from = cell(m.platformId, a.ownerId);
+        // Profit travels with the money in the same proportion it sits in the balance being
+        // drawn from — otherwise moving cash between platforms would quietly reclassify profit
+        // as capital and break the reconciliation.
+        const ratio = from.usd>0? Math.min(1, amt/from.usd) : 0;
+        const profitMoved = from.profitUsd*ratio;
+        from.usd -= amt;
+        from.profitUsd -= profitMoved;
+        if(m.toPlatformId){
+          const to = cell(m.toPlatformId, a.ownerId);
+          to.usd += amt;
+          to.profitUsd += profitMoved;
+        }
+      }
+      const fee = Math.abs(Number(m.feeUsd)||0);
+      if(fee>0){
+        // Transfer fees are borne by you alone, not shared with the family owners.
+        const selfId = invSelfOwnerId();
+        if(selfId!==null) cell(m.platformId, selfId).usd -= fee;
+        feesUsd += fee;
+      }
+    }
+  }
+  return {state, feesUsd};
+}
+function invPlatformCash(platformId, asOfDate){
+  const {state} = invCashState(asOfDate);
+  const byOwner = state[platformId] || {};
+  let totalUsd=0, profitUsd=0;
+  for(const k in byOwner){ totalUsd += byOwner[k].usd; profitUsd += byOwner[k].profitUsd; }
+  return {byOwner, totalUsd, profitUsd};
+}
+// An owner's cash across every platform, in SAR.
+function invOwnerCashSar(ownerId, asOfDate){
+  const {state} = invCashState(asOfDate);
+  const fx = getInvFxRate();
+  let usd=0, profit=0;
+  for(const pid in state){
+    const c = state[pid][ownerId];
+    if(!c) continue;
+    usd += c.usd; profit += c.profitUsd;
+  }
+  return {cashSar: usd*fx, profitSar: profit*fx, cashUsd: usd, profitUsd: profit};
+}
+
 // Reconciliation: the tracker's remaining cost basis for an owner should equal what the ledger
 // says is still out (money invested minus capital returned), since profit is booked separately.
+// The bridge is:
+//     cost basis still held  +  cash on platforms  −  realised profit sitting in that cash
+//   = ledger Out − In
+// The last term is what makes cash fit the existing convention rather than breaking it: the
+// Out/In accounts only ever carry capital, because realised profit is booked to the Profit
+// account. Profit left sitting on a platform has therefore never touched Out/In and has to be
+// taken back out of the comparison, or every profitable sell-to-cash would raise a false alarm.
+// Sums an owner's tracker capital across every position/cash source, as of a given date (or
+// "now" when asOfDate is omitted). "Capital" excludes both retained profit AND opening-balance
+// cost — neither has a matching bank movement, ever, so both are subtracted the same way.
+function invOwnerCapitalAsOf(ownerId, asOfDate){
+  let costSar=0, openingCostSar=0;
+  for(const pos of (D.invPositions||[])){
+    const st = computePositionState(pos.id, asOfDate);
+    const o = st.byOwner[ownerId];
+    if(o){ costSar += o.costSar; openingCostSar += o.openingCostSar; }
+  }
+  const cash = invOwnerCashSar(ownerId, asOfDate);
+  return {
+    costSar, openingCostSar, cashSar: cash.cashSar, profitSar: cash.profitSar,
+    capital: costSar - openingCostSar + cash.cashSar - cash.profitSar
+  };
+}
+// The bridge is:
+//     cost basis still held  −  opening-balance cost  +  cash on platforms  −  realised profit
+//     sitting in that cash
+//   = ledger Out − In
+//
+// Opening-balance cost is excluded for the same reason retained profit is: it has no ledger
+// entry behind it and never will, because it exists precisely to declare a holding you already
+// had before you started tracking. Counting it would raise a permanent false alarm.
+//
+// When a reconciliation start date is set, the comparison switches to CHANGE SINCE THAT DATE on
+// both sides, rather than full history. This matters because you cannot simply drop old ledger
+// entries from the sum — a position bought before the start date and sold after it still needs
+// its cost counted. Comparing (capital now − capital as of the start date) against (ledger
+// activity strictly after the start date) cancels out whatever was wrong before that date on
+// both sides equally, so the check becomes "is everything booked correctly from here on,"
+// without requiring the historical entries to ever be fixed.
 function invOwnerReconciliation(){
+  const startDate = (D.invSettings||{}).reconStartDate || null;
   return (D.invOwners||[]).map(o=>{
-    let trackerCost = 0;
-    for(const pos of (D.invPositions||[])){
-      const s = ownerSliceOfPosition(pos, o.id);
-      if(s) trackerCost += s.costSar;
+    const now = invOwnerCapitalAsOf(o.id, null);
+    const outAll = o.outAcc? Math.abs(accountBalance(o.outAcc)) : 0;
+    const inAll  = o.inAcc?  Math.abs(accountBalance(o.inAcc))  : 0;
+    const ledgerNetAll = outAll - inAll;
+
+    let trackerCapital, ledgerNet, sinceDate = null;
+    if(startDate){
+      const before = invOwnerCapitalAsOf(o.id, shiftDate(startDate, -1));
+      const outSince = o.outAcc? Math.abs(sumAcc(l=>l.acc===o.outAcc, startDate, '9999-12-31')) : 0;
+      const inSince  = o.inAcc?  Math.abs(sumAcc(l=>l.acc===o.inAcc,  startDate, '9999-12-31')) : 0;
+      trackerCapital = now.capital - before.capital;
+      ledgerNet = outSince - inSince;
+      sinceDate = startDate;
+    } else {
+      trackerCapital = now.capital;
+      ledgerNet = ledgerNetAll;
     }
-    const outBal = o.outAcc? Math.abs(accountBalance(o.outAcc)) : 0;
-    const inBal = o.inAcc? Math.abs(accountBalance(o.inAcc)) : 0;
-    const ledgerNet = outBal - inBal;
-    const diff = trackerCost - ledgerNet;
-    return {owner:o, trackerCost, ledgerNet, diff, linked: !!(o.outAcc||o.inAcc), ok: Math.abs(diff)<1};
+    const diff = trackerCapital - ledgerNet;
+    return {owner:o, trackerCost: now.costSar, cashSar: now.cashSar, retainedProfitSar: now.profitSar,
+            openingCostSar: now.openingCostSar, trackerCapital, ledgerNet, diff, sinceDate,
+            linked: !!(o.outAcc||o.inAcc), ok: Math.abs(diff)<1};
   });
+}
+// Platform reconciliation: what the platform's own statement says, against what the tracker
+// computes — units per position and the USD cash balance. Unit tolerance is deliberately tiny
+// (1e-9) and units are shown at full precision, so a small crypto allocation can't be rounded
+// into a false match.
+function invPlatformReconciliation(platformId){
+  const cash = invPlatformCash(platformId);
+  const positions = invPositionsForPlatform(platformId).map(pos=>{
+    const st = computePositionState(pos.id);
+    const stmt = (pos.stmtUnits===null||pos.stmtUnits===undefined||pos.stmtUnits==='')? null : Number(pos.stmtUnits);
+    const variance = stmt===null? null : stmt - st.totalUnits;
+    return {pos, trackerUnits: st.totalUnits, stmtUnits: stmt,
+            variance, ok: stmt!==null && Math.abs(variance)<1e-9};
+  });
+  const p = invPlatformById(platformId);
+  const stmtCash = (p && p.stmtCashUsd!==null && p.stmtCashUsd!==undefined && p.stmtCashUsd!=='')? Number(p.stmtCashUsd) : null;
+  const cashVariance = stmtCash===null? null : stmtCash - cash.totalUsd;
+  const entered = positions.filter(r=>r.stmtUnits!==null).length + (stmtCash!==null?1:0);
+  const matched = positions.filter(r=>r.ok).length + (stmtCash!==null && Math.abs(cashVariance)<0.005 ?1:0);
+  return {platform:p, positions, trackerCashUsd: cash.totalUsd, stmtCashUsd: stmtCash,
+          cashVariance, cashOk: stmtCash!==null && Math.abs(cashVariance)<0.005,
+          entered, matched, allMatched: entered>0 && entered===matched};
 }
 
 /* ---- persistence ---- */
@@ -6593,22 +7310,27 @@ async function persistInvOwner(o){
 }
 async function persistInvPlatform(p){
   const base = p.updated_at||null; p.updated_at = nowISO();
-  await syncWrite('pd_inv_platforms','upsert',{id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc}, base);
+  await syncWrite('pd_inv_platforms','upsert',{id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null}, base);
   persistLocal();
 }
 async function persistInvPosition(p){
   const base = p.updated_at||null; p.updated_at = nowISO();
-  await syncWrite('pd_inv_positions','upsert',{id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status}, base);
+  await syncWrite('pd_inv_positions','upsert',{id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status, stmt_units:(p.stmtUnits===''||p.stmtUnits===undefined)?null:p.stmtUnits, stmt_date:p.stmtDate||null}, base);
   persistLocal();
 }
 async function persistInvTransaction(t){
   const base = t.updated_at||null; t.updated_at = nowISO();
-  await syncWrite('pd_inv_transactions','upsert',{id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||''}, base);
+  await syncWrite('pd_inv_transactions','upsert',{id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||'', cash_side:t.cashSide||'bank', usd_amount:Number(t.usdAmount)||0, fee_pct:Number(t.feePct)||0, link_id:t.linkId||null, fee_units:Number(t.feeUnits)||0}, base);
   persistLocal();
 }
 async function persistInvValuation(v){
   const base = v.updated_at||null; v.updated_at = nowISO();
   await syncWrite('pd_inv_valuations','upsert',{id:v.id, position_id:v.positionId, entry_date:v.date, price:v.price}, base);
+  persistLocal();
+}
+async function persistInvCashMovement(m){
+  const base = m.updated_at||null; m.updated_at = nowISO();
+  await syncWrite('pd_inv_cash_movements','upsert',{id:m.id, platform_id:m.platformId, entry_date:m.date, kind:m.kind, usd_amount:Number(m.usdAmount)||0, to_platform_id:m.toPlatformId||null, fee_usd:Number(m.feeUsd)||0, capital_usd:Number(m.capitalUsd)||0, profit_usd:Number(m.profitUsd)||0, owners:m.owners||[], note:m.note||''}, base);
   persistLocal();
 }
 
@@ -6621,17 +7343,15 @@ function invPositionStateAsOf(posId, asOfDate, selfOnly){
   let units=0, costSar=0;
   const byOwner = {};
   for(const t of txs){
-    const tUnits = Math.abs(Number(t.units)||0);
-    const tSar = Math.abs(Number(t.totalSar)||0);
-    let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
-    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
-    if(allocUnits<=0) continue;
-    for(const a of alloc){
-      if(selfOnly && !selfIds.has(a.ownerId)) continue;
-      const oUnits = Math.abs(Number(a.units)||0);
-      if(oUnits<=0) continue;
-      const oSar = tSar*(oUnits/allocUnits);
-      const st = byOwner[a.ownerId] = byOwner[a.ownerId] || {units:0, costSar:0};
+    const at = invTxAttribution(t);
+    if(!at.valid) continue;
+    const unitMap = t.kind==='sell'? invTxEnteredUnits(t) : at.units;
+    for(const oid in unitMap){
+      if(selfOnly && !selfIds.has(Number(oid))) continue;
+      const oUnits = unitMap[oid];
+      if(!(oUnits>0)) continue;
+      const oSar = at.moneySar[oid]||0;
+      const st = byOwner[oid] = byOwner[oid] || {units:0, costSar:0};
       if(t.kind==='sell'){
         const avg = st.units>0? st.costSar/st.units : 0;
         st.units -= oUnits; st.costSar -= avg*oUnits;
@@ -6683,14 +7403,13 @@ function invPortfolioXirr(selfOnly){
   const selfIds = new Set((D.invOwners||[]).filter(o=>o.isSelf).map(o=>o.id));
   const flows = [];
   for(const t of (D.invTransactions||[]).slice().sort((a,b)=>a.date<b.date?-1:1)){
-    const tUnits = Math.abs(Number(t.units)||0), tSar = Math.abs(Number(t.totalSar)||0);
-    let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
-    const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
-    if(allocUnits<=0) continue;
-    let share = 0;
-    for(const a of alloc){ if(!selfOnly || selfIds.has(a.ownerId)) share += Math.abs(Number(a.units)||0); }
-    if(share<=0) continue;
-    const amt = tSar*(share/allocUnits);
+    const at = invTxAttribution(t);
+    if(!at.valid) continue;
+    // Money in/out per the fee-adjusted attribution — the fee is not a cash flow of the
+    // investment itself, so the self owner's XIRR is not inflated by fees earned.
+    let amt = 0;
+    for(const oid in at.moneySar){ if(!selfOnly || selfIds.has(Number(oid))) amt += at.moneySar[oid]||0; }
+    if(!(Math.abs(amt)>0)) continue;
     flows.push({date:t.date, amount: t.kind==='sell'? amt : -amt});
   }
   if(!flows.length) return null;
@@ -6739,16 +7458,15 @@ function invRealisedByYear(selfOnly){
     const txs = invTxForPosition(pos.id);
     const st = {};
     for(const t of txs){
-      const tUnits = Math.abs(Number(t.units)||0), tSar = Math.abs(Number(t.totalSar)||0);
-      let alloc = Array.isArray(t.owners)&&t.owners.length? t.owners : [];
-      const allocUnits = alloc.reduce((s,a)=>s+Math.abs(Number(a.units)||0),0);
-      if(allocUnits<=0) continue;
-      for(const a of alloc){
-        if(selfOnly && !selfIds.has(a.ownerId)) continue;
-        const oUnits = Math.abs(Number(a.units)||0);
-        if(oUnits<=0) continue;
-        const oSar = tSar*(oUnits/allocUnits);
-        const s = st[a.ownerId] = st[a.ownerId] || {units:0, costSar:0};
+      const at = invTxAttribution(t);
+      if(!at.valid) continue;
+      const unitMap = t.kind==='sell'? invTxEnteredUnits(t) : at.units;
+      for(const oid in unitMap){
+        if(selfOnly && !selfIds.has(Number(oid))) continue;
+        const oUnits = unitMap[oid];
+        if(!(oUnits>0)) continue;
+        const oSar = at.moneySar[oid]||0;
+        const s = st[oid] = st[oid] || {units:0, costSar:0};
         if(t.kind==='sell'){
           const avg = s.units>0? s.costSar/s.units : 0;
           const gain = oSar - avg*oUnits;
@@ -6918,11 +7636,29 @@ function showInvCsvErrors(errors){
 function invKpiCard(label, value, cls){
   return `<div class="kpi"><div class="kpi-label">${esc(label)}</div><div class="kpi-value ${cls||''}">${value}</div></div>`;
 }
+// USD leads (bold, the primary figure), SAR follows underneath in a smaller, unstyled line — the
+// consistent order the person asked for everywhere a SAR figure has a USD counterpart.
+function invKpiCardDual(label, sarValue, cls){
+  const usdValue = sarValue / getInvFxRate();
+  return `<div class="kpi"><div class="kpi-label">${esc(label)}</div>
+    <div class="kpi-value ${cls||''}">$${fmt2(usdValue)}</div>
+    <div class="mut mono" style="font-size:11.5px;margin-top:2px">${money(sarValue)} SAR</div>
+  </div>`;
+}
 function invPctText(cost, market, hasVal){
   if(!hasVal || Math.abs(cost)<0.005) return '—';
   return ((market-cost)/Math.abs(cost)*100).toFixed(2)+'%';
 }
+let invTab = 'portfolio';
+function setInvTab(t){ invTab = t; renderInvestmentsPage(); }
 function renderInvestmentsPage(){
+  const tabs = `<div class="row noprint" style="margin-bottom:14px">
+      <div class="toggle-tabs" style="display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <button class="tbtn" style="border:none;border-radius:0;${invTab==='portfolio'?'background:var(--accent);color:#ffffff':''}" onclick="setInvTab('portfolio')">Portfolio</button>
+        <button class="tbtn" style="border:none;border-radius:0;${invTab==='recon'?'background:var(--accent);color:#ffffff':''}" onclick="setInvTab('recon')">Reconciliation</button>
+      </div>
+    </div>`;
+  if(invTab==='recon'){ renderInvReconPage(tabs); return; }
   const platforms = D.invPlatforms||[];
   const totals = invOwnerTotals();
   const self = totals.filter(t=>t.owner.isSelf);
@@ -6931,15 +7667,16 @@ function renderInvestmentsPage(){
   const famTotal = family.reduce((a,t)=>({cost:a.cost+t.costSar, market:a.market+t.marketSar}), {cost:0,market:0});
   const recon = invOwnerReconciliation().filter(r=>r.linked && !r.ok);
   const xirr = invPortfolioXirr(true);
-  const stale = invStalePositions(14);
   const history = invPortfolioHistory(true);
   const allocClass = invAllocationBy(p=>p.assetClass, true);
   const allocPlat = invAllocationBy(p=>{ const pl = invPlatformById(p.platformId); return pl? pl.name : '—'; }, true);
-  document.getElementById('app').innerHTML = `
+  document.getElementById('app').innerHTML = tabs + `
     <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <div class="mut" style="font-size:12.5px;max-width:540px">Cost basis is what actually left your bank (in SAR). Prices are logged in each asset's own currency and converted at your USD rate. Ownership shares are derived from units, so they update themselves whenever anyone buys more.</div>
       <div class="row" style="gap:6px;flex-wrap:wrap;align-items:flex-end">
         <div style="width:140px"><label class="fl">USD → SAR</label><input type="number" step="0.0001" value="${getInvFxRate()}" onchange="setInvFxRate(this.value).then(function(){ renderInvestmentsPage(); toast('Rate saved — synced to all devices ✓'); })"></div>
+        <div style="width:160px"><label class="fl">Management fee %</label><input type="number" step="0.01" min="0" max="100" value="${getInvMgmtFeePct()}" title="Remembered default, applied to family owners on new transactions" onchange="setInvMgmtFeePct(this.value).then(function(){ renderInvestmentsPage(); toast('Default fee saved ✓'); })"></div>
+        <div style="width:170px"><label class="fl">Reconciliation start date</label><input type="date" value="${(D.invSettings||{}).reconStartDate||''}" title="Compares change SINCE this date instead of full history — use this if older ledger entries are known to be booked incorrectly" onchange="saveInvReconStartDate(this.value)"></div>
         <button class="btn ghost sm" onclick="openInvOwners()">👥 Owners</button>
         <button class="btn ghost sm" onclick="openInvAddPlatform()">+ Platform</button>
         <button class="btn ghost sm" onclick="openInvCsvTools()">📁 CSV</button>
@@ -6947,27 +7684,25 @@ function renderInvestmentsPage(){
       </div>
     </div>
     ${recon.length? `<div class="panel" style="border-left:3px solid var(--red)">
-      <h3 style="margin-top:0">⚠ Reconciliation</h3>
-      <div class="mut" style="font-size:12px;margin-bottom:8px">The tracker's remaining cost basis doesn't match the ledger (invested minus capital returned). One side is likely missing a transaction.</div>
-      <div style="overflow-x:auto"><table style="min-width:480px"><thead><tr><th>Owner</th><th class="num">Tracker cost</th><th class="num">Ledger (Out − In)</th><th class="num">Difference</th></tr></thead>
-      <tbody>${recon.map(r=>`<tr><td>${esc(r.owner.name)}</td><td class="num mono">${money(r.trackerCost)}</td><td class="num mono">${money(r.ledgerNet)}</td><td class="num mono r">${money(r.diff)}</td></tr>`).join('')}</tbody></table></div>
+      <h3 style="margin-top:0">⚠ Reconciliation${(D.invSettings||{}).reconStartDate? ` — since ${esc((D.invSettings||{}).reconStartDate)}` : ''}</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:8px">${(D.invSettings||{}).reconStartDate
+        ? 'Comparing CHANGE since the start date on both sides, rather than full history — set this way because older ledger entries are known to be booked incorrectly. Whatever was wrong before that date cancels out of the comparison, so this checks only that everything from the start date onward is booked correctly.'
+        : 'The tracker\'s capital doesn\'t match the ledger (invested minus capital returned). One side is likely missing a transaction.'} Cash held on a platform counts as still invested; retained profit and any Opening balance cost (a holding declared with no funding source) are excluded, since neither has a matching bank movement.</div>
+      <div style="overflow-x:auto"><table style="min-width:760px"><thead><tr><th>Owner</th><th class="num">Cost basis</th><th class="num">− Opening balance</th><th class="num">+ Platform cash</th><th class="num">− Retained profit</th><th class="num">= Tracker capital${(D.invSettings||{}).reconStartDate?' (Δ)':''}</th><th class="num">Ledger${(D.invSettings||{}).reconStartDate?' (Δ)':''}</th><th class="num">Difference</th></tr></thead>
+      <tbody>${recon.map(r=>`<tr><td>${esc(r.owner.name)}</td><td class="num mono">${money(r.trackerCost)}</td><td class="num mono">${money(r.openingCostSar)}</td><td class="num mono">${money(r.cashSar)}</td><td class="num mono">${money(r.retainedProfitSar)}</td><td class="num mono">${money(r.trackerCapital)}</td><td class="num mono">${money(r.ledgerNet)}</td><td class="num mono r">${money(r.diff)}</td></tr>`).join('')}</tbody></table></div>
     </div>` : ''}
     <div class="cards">
-      ${invKpiCard('Your Cost Basis', money(selfTotal.cost))}
-      ${invKpiCard('Your Current Value', money(selfTotal.market))}
-      ${invKpiCard('Your Unrealised P/L', money(selfTotal.market-selfTotal.cost), moneyClass(selfTotal.market-selfTotal.cost))}
-      ${family.length? invKpiCard('Held for Family', money(famTotal.market)) : ''}
+      ${invKpiCardDual('Your Cost Basis', selfTotal.cost)}
+      ${invKpiCardDual('Your Current Value', selfTotal.market)}
+      ${invKpiCardDual('Your Unrealised P/L', selfTotal.market-selfTotal.cost, moneyClass(selfTotal.market-selfTotal.cost))}
+      ${family.length? invKpiCardDual('Held for Family', famTotal.market) : ''}
       ${xirr!==null? invKpiCard('Annualised Return', xirr.toFixed(2)+'%', moneyClass(xirr)) : ''}
     </div>
-    ${stale.length? `<div class="panel" style="border-left:3px solid var(--amber,#c88)">
-      <h3 style="margin-top:0">⏳ Prices need refreshing</h3>
-      <div class="mut" style="font-size:12px;margin-bottom:8px">A stale price quietly makes the whole portfolio value wrong, so these are flagged rather than left to be spotted by accident.</div>
-      <ul style="font-size:12.5px;line-height:1.8;padding-left:18px;margin:0">${stale.map(s=>`<li>${esc(s.pos.name)} — ${s.never? 'never priced' : s.days+' days old'}</li>`).join('')}</ul>
-    </div>`:''}
     ${platforms.length? platforms.map(p=>renderInvPlatformSection(p)).join('') : '<div class="panel empty">No platforms yet — click + Platform to add one.</div>'}
     ${renderInvAssetRollup()}
     ${renderInvOwnerBreakdown(totals)}
     ${renderInvRealisedByYear()}
+    ${renderInvFeeIncomeByYear()}
     ${history.length>1? `<div class="panel"><h3>📈 Your Value vs Cost</h3><div style="height:260px"><canvas id="invHistoryChart"></canvas></div></div>`:''}
     ${allocClass.length? `<div class="panel"><h3>🥧 Allocation</h3>
       <div class="row" style="gap:16px;flex-wrap:wrap">
@@ -6977,6 +7712,171 @@ function renderInvestmentsPage(){
   `;
   drawInvCharts(history, allocClass, allocPlat);
 }
+/* ---- Investments: Reconciliation sub-page ----
+   Enter what each platform's own statement says — units per position and the USD cash balance —
+   and see what doesn't agree with the tracker. Entries are stored per platform/position and
+   synced, so the check reads the same on every device.
+   Unit variance uses a 1e-9 tolerance and full precision on display: rounding units to 2dp would
+   let a small crypto allocation read as matched when it isn't. */
+// The most recent date anything was entered for this platform — either the cash figure or any
+// position's unit count — used for the "last reconciled" staleness indicator. A platform with
+// several positions reconciled last week and one touched yesterday should read as "yesterday",
+// not silently stay stuck on whichever field happens to be checked first.
+/* ---- Reconciliation: combined CSV export/import for batch updates ----
+   One file covers every platform in one pass — every position's statement units, plus each
+   platform's cash line — following the same convention as the price-log CSV: reference columns
+   plus a single writable "New statement value" column, so import behaviour stays predictable
+   across the app rather than each CSV tool inventing its own shape. A blank cell on import is
+   left untouched (not treated as "clear this entry"), same reasoning as the price CSV: the
+   export always contains current values, so a truly blank cell most likely means "I didn't
+   check this line today," not "erase what's there." */
+function invReconCSVRows(){
+  const rows = [];
+  (D.invPlatforms||[]).forEach(p=>{
+    const r = invPlatformReconciliation(p.id);
+    r.positions.forEach(x=>{
+      rows.push({platform:p.name, position:x.pos.name, ticker:x.pos.ticker||'', type:'Position',
+        tracker:invFmtUnits(x.trackerUnits), lastStatement:x.stmtUnits===null?'':invFmtUnits(x.stmtUnits),
+        lastChecked:x.pos.stmtDate||''});
+    });
+    rows.push({platform:p.name, position:'Cash (USD)', ticker:'', type:'Cash',
+      tracker:fmt2(r.trackerCashUsd), lastStatement:r.stmtCashUsd===null?'':fmt2(r.stmtCashUsd),
+      lastChecked:p.stmtDate||''});
+  });
+  return rows;
+}
+function downloadInvReconCSV(){
+  const rows = invReconCSVRows();
+  const header = ['Platform','Position','Ticker','Type','Tracker Amount','Last Statement Value','Last Checked','New Statement Value'];
+  const lines = [header.map(csvEscape).join(',')];
+  rows.forEach(r=> lines.push([r.platform, r.position, r.ticker, r.type, r.tracker, r.lastStatement, r.lastChecked, ''].map(csvEscape).join(',')));
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'LedgerOS reconciliation - '+todayStr()+'.csv'; dl.click();
+  toast('Exported '+rows.length+' line(s) to CSV — fill in "New Statement Value" and re-import');
+}
+async function handleInvReconImport(inputEl){
+  const file = inputEl.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const rows = csvToObjects(reader.result);
+    inputEl.value = '';
+    if(!rows.length){ toast('No rows found in that CSV', true); return; }
+    let saved = 0, blank = 0, unmatched = 0;
+    for(const r of rows){
+      const platformName = (r['platform']||'').trim();
+      const ticker = (r['ticker']||'').trim();
+      const posName = (r['position']||'').trim();
+      const type = (r['type']||'').trim().toLowerCase();
+      const raw = r['new statement value'];
+      const plat = (D.invPlatforms||[]).find(p=>p.name.trim().toLowerCase()===platformName.toLowerCase());
+      if(!plat){ unmatched++; continue; }
+      if(String(raw||'').trim()===''){ blank++; continue; } // blank = leave untouched, not a clear
+      if(type==='cash'){
+        await saveInvPlatformStmtCash(plat.id, raw);
+      } else {
+        const pos = invPositionsForPlatform(plat.id).find(p=>
+          (ticker && (p.ticker||'').trim().toLowerCase()===ticker.toLowerCase()) ||
+          (!ticker && p.name.trim().toLowerCase()===posName.toLowerCase()));
+        if(!pos){ unmatched++; continue; }
+        await saveInvPositionStmtUnits(pos.id, raw);
+      }
+      saved++;
+    }
+    renderInvestmentsPage();
+    toast(saved+' line(s) updated ✓'+(blank?' · '+blank+' left blank (untouched)':'')+(unmatched?' · '+unmatched+' row(s) didn\'t match':''));
+  };
+  reader.readAsText(file);
+}
+
+function invPlatformLastReconciledDate(platformId){
+  const p = invPlatformById(platformId);
+  let latest = (p && p.stmtDate) || null;
+  invPositionsForPlatform(platformId).forEach(pos=>{
+    if(pos.stmtDate && (!latest || pos.stmtDate>latest)) latest = pos.stmtDate;
+  });
+  return latest;
+}
+// Enter behaves like Tab across every reconciliation input on the page — down each platform's
+// Statement units column, into its Cash row, then straight into the next platform's first field
+// — so a full batch check-in can be done without reaching for the mouse or the Tab key.
+function invReconEnterNext(el, ev){
+  if(ev.key!=='Enter') return;
+  ev.preventDefault();
+  const inputs = Array.from(document.querySelectorAll('.recon-input'));
+  const idx = inputs.indexOf(el);
+  if(idx>=0 && idx<inputs.length-1) inputs[idx+1].focus();
+  else if(idx===inputs.length-1) el.blur();
+}
+function renderInvReconPage(tabs){
+  const platforms = D.invPlatforms||[];
+  // A shared column layout across every platform's table, so the Tracker/Statement/Variance
+  // columns line up whether a platform holds "BTC" or "Marathon Digital Holdings Inc" — without
+  // this, each table auto-sizes to its own longest position name and the columns drift out of
+  // alignment from one platform section to the next.
+  const reconColgroup = '<colgroup><col style="width:30%"><col style="width:15%"><col style="width:19%"><col style="width:16%"><col style="width:20%"></colgroup>';
+  const body = platforms.map(p=>{
+    const r = invPlatformReconciliation(p.id);
+    const rows = r.positions.map(x=>{
+      const badge = x.stmtUnits===null? '' : (x.ok? ' <span class="badge pos">✓</span>' : ' <span class="badge neg">off</span>');
+      const posDate = x.pos.stmtDate || null;
+      const posStale = posDate && daysBetweenDates(posDate, todayStr())>INV_PRICE_STALE_DAYS;
+      return `<tr>
+        <td style="word-break:break-word">${esc(x.pos.name)}${x.pos.ticker? ` <span class="mut">${esc(x.pos.ticker)}</span>`:''}</td>
+        <td class="num mono">${invFmtUnits(x.trackerUnits)}</td>
+        <td class="num"><input class="recon-input" type="number" step="any" style="width:100%;max-width:150px;text-align:right" value="${x.stmtUnits===null?'':esc(x.stmtUnits)}"
+          placeholder="per statement" onchange="saveInvPositionStmtUnits(${x.pos.id}, this.value)" onkeydown="invReconEnterNext(this, event)"></td>
+        <td class="num mono ${x.variance===null?'':(x.ok?'':'r')}">${x.variance===null? '—' : invFmtUnits(x.variance)}${badge}</td>
+        <td class="mut" style="font-size:11px;${posStale?'color:var(--red)':''}">${posDate? esc(posDate) : '—'}</td></tr>`;
+    }).join('');
+    const cashBadge = r.stmtCashUsd===null? '' : (r.cashOk? ' <span class="badge pos">✓</span>' : ' <span class="badge neg">off</span>');
+    const lastRecon = invPlatformLastReconciledDate(p.id);
+    const staleRecon = lastRecon && daysBetweenDates(lastRecon, todayStr())>INV_PRICE_STALE_DAYS;
+    const cashDate = p.stmtDate || null;
+    const cashStale = cashDate && daysBetweenDates(cashDate, todayStr())>INV_PRICE_STALE_DAYS;
+    return `<div class="panel">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h3 style="margin:0">🏦 ${esc(p.name)}</h3>
+        <div class="mut" style="font-size:11.5px">${r.entered? (r.allMatched? 'All entered lines reconciled ✓' : r.matched+' of '+r.entered+' entered lines match') : 'Nothing entered yet'}${lastRecon? ` · last reconciled <span style="${staleRecon?'color:var(--red)':''}">${esc(lastRecon)}</span>` : ''}</div>
+      </div>
+      <div style="overflow-x:auto"><table style="min-width:760px;table-layout:fixed">${reconColgroup}<thead><tr>
+        <th>Position</th><th class="num">Tracker units</th><th class="num">Statement units</th><th class="num">Variance</th><th>Last checked</th>
+      </tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" class="empty">No positions on this platform</td></tr>'}
+        <tr style="background:var(--chip)">
+          <td style="font-weight:700">💵 Cash (USD)</td>
+          <td class="num mono" style="font-weight:700">${fmt2(r.trackerCashUsd)}</td>
+          <td class="num"><input class="recon-input" type="number" step="0.01" style="width:100%;max-width:150px;text-align:right" value="${r.stmtCashUsd===null?'':esc(r.stmtCashUsd)}"
+            placeholder="per statement" onchange="saveInvPlatformStmtCash(${p.id}, this.value)" onkeydown="invReconEnterNext(this, event)"></td>
+          <td class="num mono ${r.cashVariance===null?'':(r.cashOk?'':'r')}" style="font-weight:700">${r.cashVariance===null? '—' : fmt2(r.cashVariance)}${cashBadge}</td>
+          <td class="mut" style="font-size:11px;${cashStale?'color:var(--red)':''}">${cashDate? esc(cashDate) : '—'}</td>
+        </tr>
+      </tbody></table></div>
+    </div>`;
+  }).join('');
+  document.getElementById('app').innerHTML = tabs + `
+    <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div class="mut" style="font-size:12.5px;max-width:520px">Enter what each platform's own statement shows — the unit count for every position and the USD cash balance — and anything that disagrees with the tracker is flagged. Entries are saved and synced as you type them, so you can come back to a half-finished check. Press Enter to jump straight to the next field.</div>
+      <div class="row" style="gap:6px">
+        <button class="btn ghost sm" onclick="downloadInvReconCSV()">⬇ Export CSV</button>
+        <label class="btn ghost sm" style="cursor:pointer">⬆ Import CSV<input type="file" accept=".csv" style="display:none" onchange="handleInvReconImport(this)"></label>
+      </div>
+    </div>
+    ${body || '<div class="panel empty">No platforms yet — add one from the Portfolio tab.</div>'}`;
+}
+async function saveInvPositionStmtUnits(posId, val){
+  const pos = invPositionById(posId); if(!pos) return;
+  pos.stmtUnits = String(val).trim()===''? null : Number(val);
+  pos.stmtDate = todayStr();
+  await persistInvPosition(pos);
+  renderInvestmentsPage();
+}
+async function saveInvPlatformStmtCash(platformId, val){
+  const p = invPlatformById(platformId); if(!p) return;
+  p.stmtCashUsd = String(val).trim()===''? null : Number(val);
+  p.stmtDate = todayStr();
+  await persistInvPlatform(p);
+  renderInvestmentsPage();
+}
 function renderInvRealisedByYear(){
   const rows = invRealisedByYear(true).filter(r=>Math.abs(r.gain)>0.005);
   if(!rows.length) return '';
@@ -6985,6 +7885,18 @@ function renderInvRealisedByYear(){
     <table><thead><tr><th>Year</th><th class="num">Realised</th></tr></thead>
     <tbody>${rows.map(r=>`<tr><td class="mono">${esc(r.year)}</td><td class="num mono ${moneyClass(r.gain)}">${money(r.gain)}</td></tr>`).join('')}</tbody>
     <tfoot><tr style="font-weight:700"><td>Total</td><td class="num mono ${moneyClass(rows.reduce((s,r)=>s+r.gain,0))}">${money(rows.reduce((s,r)=>s+r.gain,0))}</td></tr></tfoot></table></div>`;
+}
+// Fee income is shown in its own table rather than folded into realised gain, so the portfolio's
+// investment performance isn't flattered by money earned from managing other people's holdings.
+function renderInvFeeIncomeByYear(){
+  const rows = invFeeIncomeByYear().filter(r=>Math.abs(r.fee)>0.005);
+  if(!rows.length) return '';
+  const total = rows.reduce((s,r)=>s+r.fee,0);
+  return `<div class="panel"><h3>🧾 Management Fee Income by Year</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:8px">Fees charged to family owners on sells, credited to you. Kept separate from realised gain because it is earned by managing rather than by investing. Buy-side fees are taken in units instead, so they appear as gain on those units rather than here.</div>
+    <table><thead><tr><th>Year</th><th class="num">Fee income</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td class="mono">${esc(r.year)}</td><td class="num mono g">${money(r.fee)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr style="font-weight:700"><td>Total</td><td class="num mono g">${money(total)}</td></tr></tfoot></table></div>`;
 }
 let _invCharts = [];
 function drawInvCharts(history, allocClass, allocPlat){
@@ -7018,8 +7930,35 @@ function drawInvCharts(history, allocClass, allocPlat){
   mkDoughnut('invAllocClassChart', allocClass, 'By asset class');
   mkDoughnut('invAllocPlatChart', allocPlat, 'By platform');
 }
+// Collapsed by default and reset every reload — deliberately NOT persisted, so the person always
+// starts from a clean, scannable list rather than whatever state a previous session left behind.
+// It's remembered only for the lifetime of the current session (toggling stays sticky while
+// navigating the app), which is what an in-memory Set naturally gives for free.
+let invExpandedPlatforms = new Set();
+function toggleInvPlatformExpanded(id){
+  if(invExpandedPlatforms.has(id)) invExpandedPlatforms.delete(id); else invExpandedPlatforms.add(id);
+  renderInvestmentsPage();
+}
+// Market value held on one platform, split into "you" and "family" — shown on the collapsed
+// header so collapsing a platform never hides the numbers that matter day to day.
+function invPlatformOwnerTotals(platformId){
+  const selfId = invSelfOwnerId();
+  let selfMarket=0, famMarket=0;
+  invPositionsForPlatform(platformId).forEach(pos=>{
+    const v = computePositionValuation(pos);
+    for(const oid in v.byOwner){
+      const slice = ownerSliceOfPosition(pos, Number(oid));
+      if(!slice) continue;
+      if(selfId!==null && Number(oid)===selfId) selfMarket += slice.marketSar;
+      else famMarket += slice.marketSar;
+    }
+  });
+  return {selfMarket, famMarket};
+}
 function renderInvPlatformSection(p){
   const positions = invPositionsForPlatform(p.id);
+  const cash = invPlatformCash(p.id);
+  const expanded = invExpandedPlatforms.has(p.id);
   const rows = positions.map(pos=>{
     const v = computePositionValuation(pos);
     const ownerTxt = Object.keys(v.byOwner).filter(k=>v.byOwner[k].units>0).map(k=>{
@@ -7039,12 +7978,32 @@ function renderInvPlatformSection(p){
     </tr>`;
   }).join('');
   const tot = positions.reduce((a,pos)=>{ const v=computePositionValuation(pos); return {c:a.c+v.totalCostSar, m:a.m+v.marketSar, r:a.r+v.totalRealizedSar}; }, {c:0,m:0,r:0});
+  const owners = invPlatformOwnerTotals(p.id);
   return `<div class="panel">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <h3 style="margin:0">🏦 ${esc(p.name)}</h3>
+      <div class="row click" style="cursor:pointer;flex-wrap:wrap;gap:10px" onclick="toggleInvPlatformExpanded(${p.id})">
+        <h3 style="margin:0">🏦 ${esc(p.name)}</h3>
+        <span class="mut" style="font-size:12px">${expanded?'▾ Collapse':'▸ Expand'}</span>
+        ${!expanded? `<span class="mono" style="font-size:12.5px">
+            <span class="${cash.totalUsd<-0.005?'r':''}">$${fmt2(cash.totalUsd)} cash</span>
+            <span class="mut"> · Yours: </span>$${fmt2(owners.selfMarket/getInvFxRate())}
+            ${owners.famMarket>0.005? `<span class="mut"> · Family: </span>$${fmt2(owners.famMarket/getInvFxRate())}` : ''}
+          </span>` : ''}
+      </div>
       <div class="row noprint" style="gap:6px">
         <button class="btn ghost sm" onclick="openInvAddPosition(${p.id})">+ Position</button>
+        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'deposit')" title="Money wired from your bank onto this platform">↓ Deposit</button>
+        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'withdrawal')" title="Money taken off this platform back to your bank">↑ Withdraw</button>
+        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'transfer')" title="Move cash to another platform">⇄ Transfer</button>
+        <button class="btn ghost sm" onclick="openInvCashLog(${p.id})">Cash log</button>
         <button class="btn ghost sm" onclick="openInvEditPlatform(${p.id})">✎</button>
+      </div>
+    </div>
+    ${expanded? `<div class="row" style="justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:6px">
+      <div style="font-size:12.5px">💵 Cash balance
+        <b class="mono ${cash.totalUsd<-0.005?'r':''}" style="margin-left:6px">$${fmt2(cash.totalUsd)}</b>
+        <span class="mut">· ${money(cash.totalUsd*getInvFxRate())} SAR</span>
+        ${Math.abs(cash.profitUsd)>0.005? `<span class="mut" title="Realised gain still sitting on the platform. It has never passed through your bank, so it is excluded from the reconciliation against the Invested/Withdrawn accounts."> · of which $${fmt2(cash.profitUsd)} is realised profit</span>`:''}
       </div>
     </div>
     <div style="overflow-x:auto"><table style="min-width:860px"><thead><tr>
@@ -7052,7 +8011,7 @@ function renderInvPlatformSection(p){
     </tr></thead>
     <tbody>${rows || '<tr><td colspan="8" class="empty">No positions yet</td></tr>'}</tbody>
     ${positions.length? `<tfoot><tr style="font-weight:700"><td>Total</td><td></td><td class="num mono">${money(tot.c)}</td><td></td><td class="num mono">${money(tot.m)}</td><td class="num mono ${moneyClass(tot.m-tot.c)}">${money(tot.m-tot.c)}</td><td class="num mono">${invPctText(tot.c,tot.m,true)}</td><td class="num mono ${moneyClass(tot.r)}">${Math.abs(tot.r)>0.005?money(tot.r):'—'}</td></tr></tfoot>`:''}
-    </table></div>
+    </table></div>` : ''}
   </div>`;
 }
 function renderInvAssetRollup(){
@@ -7131,7 +8090,7 @@ async function deleteInvPlatform(id){
   await syncWrite('pd_inv_platforms','delete',{id}, p.updated_at||null);
   persistLocal(); closeModal(); renderInvestmentsPage(); toast('Platform deleted');
 }
-function openInvAddPosition(platformId){ openInvPositionModal({id:null, platformId, name:'', ticker:'', assetClass:'Stocks', currency:'SAR', status:'Active'}); }
+function openInvAddPosition(platformId){ openInvPositionModal({id:null, platformId, name:'', ticker:'', assetClass:'Crypto', currency:'USD', status:'Active'}); }
 function openInvPositionModal(pos){
   window._invPosDraft = {...pos};
   const d = window._invPosDraft;
@@ -7139,7 +8098,7 @@ function openInvPositionModal(pos){
     <h3 style="margin-top:0">${d.id?'Edit':'New'} Position</h3>
     <label class="fl">Name</label><input value="${esc(d.name)}" oninput="window._invPosDraft.name=this.value" style="margin-bottom:12px">
     <label class="fl">Ticker / symbol <span class="mut">(used to roll the same asset up across platforms)</span></label>
-    <input value="${esc(d.ticker||'')}" oninput="window._invPosDraft.ticker=this.value" style="margin-bottom:12px">
+    <input value="${esc(d.ticker||'')}" oninput="setInvPosTicker(this)" style="margin-bottom:12px; text-transform:uppercase">
     <div class="row" style="gap:10px">
       <div style="flex:1"><label class="fl">Asset class</label><select onchange="window._invPosDraft.assetClass=this.value">${INV_ASSET_CLASSES.map(c=>`<option ${d.assetClass===c?'selected':''}>${c}</option>`).join('')}</select></div>
       <div style="flex:1"><label class="fl">Currency</label><select onchange="window._invPosDraft.currency=this.value"><option ${d.currency==='SAR'?'selected':''}>SAR</option><option ${d.currency==='USD'?'selected':''}>USD</option></select></div>
@@ -7154,10 +8113,22 @@ function openInvPositionModal(pos){
 async function saveInvPosition(){
   const d = window._invPosDraft;
   if(!String(d.name||'').trim()){ toast('Name is required', true); return; }
+  d.ticker = String(d.ticker||'').trim().toUpperCase(); // safety net — the input already uppercases live, but this covers paste and any other write path
   if(!d.id){ d.id = invNextId(D.invPositions); D.invPositions.push(d); }
   else { Object.assign(invPositionById(d.id), d); }
   await persistInvPosition(invPositionById(d.id));
   closeModal(); renderInvestmentsPage(); toast('Position saved ✓');
+}
+// Uppercases as the person types, without the cursor jumping to the end on every keystroke —
+// only rewrites the field's value when it actually differs from the uppercased form.
+function setInvPosTicker(el){
+  const caret = el.selectionStart;
+  const upper = el.value.toUpperCase();
+  window._invPosDraft.ticker = upper;
+  if(el.value !== upper){
+    el.value = upper;
+    try{ el.setSelectionRange(caret, caret); }catch(e){}
+  }
 }
 async function deleteInvPosition(id){
   if(invTxForPosition(id).length){ toast('This position has transactions — delete those first', true); return; }
@@ -7240,18 +8211,21 @@ function openInvPosition(posId){
     <div class="mut" style="font-size:12px;margin:4px 0 12px">${esc(pos.assetClass)} · ${esc(pos.currency)} · ${esc((invPlatformById(pos.platformId)||{}).name||'')}</div>
     <div class="cards" style="margin-bottom:12px">
       ${invKpiCard('Units', v.totalUnits.toLocaleString(undefined,{maximumFractionDigits:8}))}
-      ${invKpiCard('Cost (SAR)', money(v.totalCostSar))}
-      ${invKpiCard('Value (SAR)', v.hasValuation? money(v.marketSar):'—')}
-      ${invKpiCard('Unrealised', v.hasValuation? money(v.unrealizedSar):'—', v.hasValuation?moneyClass(v.unrealizedSar):'')}
+      ${invKpiCardDual('Cost', v.totalCostSar)}
+      ${v.hasValuation? invKpiCardDual('Value', v.marketSar) : invKpiCard('Value', '—')}
+      ${v.hasValuation? invKpiCardDual('Unrealised', v.unrealizedSar, moneyClass(v.unrealizedSar)) : invKpiCard('Unrealised', '—')}
     </div>
     <div class="row" style="justify-content:space-between;align-items:center">
       <h3 style="margin:0;font-size:14px">Transactions</h3>
-      <button class="btn pri sm noprint" onclick="openInvTxModal(${posId}, null)">+ Transaction</button>
+      <div class="row noprint" style="gap:6px">
+        <button class="btn ghost sm" onclick="openInvPositionTransfer(${posId})" title="Move some or all units to another platform">⇄ Transfer</button>
+        <button class="btn pri sm" onclick="openInvTxModal(${posId}, null)">+ Transaction</button>
+      </div>
     </div>
     <div style="overflow-x:auto"><table style="min-width:600px"><thead><tr><th>Date</th><th>Type</th><th class="num">Units</th><th class="num">Total SAR</th><th class="num">Per unit</th><th>Owners</th><th class="noprint"></th></tr></thead>
     <tbody>${txs.map(t=>`<tr>
       <td class="mono">${esc(t.date)}</td>
-      <td>${t.kind==='sell'?'<span class="r">Sell</span>':'<span class="g">Buy</span>'}</td>
+      <td>${t.cashSide==='transfer'? `<span class="mut">${t.kind==='sell'?'⇄ Transfer out':'⇄ Transfer in'}</span>` : (t.kind==='sell'?'<span class="r">Sell</span>':'<span class="g">Buy</span>')}${t.cashSide==='opening'?' <span class="mut">(opening)</span>':''}</td>
       <td class="num mono">${Number(t.units).toLocaleString(undefined,{maximumFractionDigits:8})}</td>
       <td class="num mono">${money(t.totalSar)}</td>
       <td class="num mono">${t.units? money(t.totalSar/t.units):'—'}</td>
@@ -7269,12 +8243,19 @@ function openInvPosition(posId){
 function openInvTxModal(posId, txId){
   const existing = txId? (D.invTransactions||[]).find(t=>t.id===txId) : null;
   const owners = D.invOwners||[];
-  window._invTxDraft = existing? {...existing, owners:(existing.owners||[]).map(o=>({...o})), splitMode:'units', ownersSar:{}}
-    : {id:null, positionId:posId, date:todayStr(), kind:'buy', units:'', totalSar:'', owners: owners.filter(o=>o.isSelf).map(o=>({ownerId:o.id, units:''})), note:'', splitMode:'units', ownersSar:{}};
+  window._invTxDraft = existing? {...existing, owners:(existing.owners||[]).map(o=>({...o})), splitMode:'units', ownersSar:{}, cashSide:existing.cashSide||'bank', usdAmount:existing.usdAmount||'', feePct:(existing.feePct||existing.feePct===0)? existing.feePct : ''}
+    : {id:null, positionId:posId, date:todayStr(), kind:'buy', units:'', totalSar:'', owners: owners.filter(o=>o.isSelf).map(o=>({ownerId:o.id, units:''})), note:'', splitMode:'units', ownersSar:{}, cashSide:'bank', usdAmount:'', feePct:getInvMgmtFeePct()||''};
   // Reopening an existing transaction back-calculates the SAR split so either view is ready.
   if(existing){
     const tu = Number(existing.units)||0, ts = Number(existing.totalSar)||0;
     (existing.owners||[]).forEach(o=>{ window._invTxDraft.ownersSar[o.ownerId] = invSarForUnits(tu, ts, Number(o.units)||0); });
+    // Older records (or ones saved before this transaction's position traded in USD) may have no
+    // usdAmount stored even though the modal will now show the USD field — back-fill it from the
+    // stored SAR total so editing doesn't present a blank figure next to a populated one.
+    const pos = invPositionById(existing.positionId);
+    if(invTxShowsUsdEntry(window._invTxDraft, pos) && !(Number(window._invTxDraft.usdAmount)>0) && ts>0){
+      window._invTxDraft.usdAmount = Math.round(ts/getInvFxRate()*100)/100;
+    }
   }
   renderInvTxModal();
 }
@@ -7293,13 +8274,31 @@ function renderInvTxModal(){
     <h3 style="margin-top:0">${d.id?'Edit':'New'} Transaction — ${esc(pos?pos.name:'')}</h3>
     <div class="row" style="gap:10px">
       <div style="flex:1"><label class="fl">Date</label><input type="date" value="${esc(d.date)}" onchange="window._invTxDraft.date=this.value"></div>
-      <div style="flex:1"><label class="fl">Type</label><select onchange="window._invTxDraft.kind=this.value; renderInvTxModal()"><option value="buy" ${d.kind==='buy'?'selected':''}>Buy</option><option value="sell" ${d.kind==='sell'?'selected':''}>Sell</option></select></div>
+      <div style="flex:1"><label class="fl">Type</label><select onchange="setInvTxKind(this.value)"><option value="buy" ${d.kind==='buy'?'selected':''}>Buy</option><option value="sell" ${d.kind==='sell'?'selected':''}>Sell</option></select></div>
     </div>
     <div class="row" style="gap:10px;margin-top:10px">
       <div style="flex:1"><label class="fl">Units</label><input type="number" step="any" value="${esc(d.units)}" oninput="window._invTxDraft.units=this.value; invTxRefreshDerived()"></div>
-      <div style="flex:1"><label class="fl">Total SAR ${d.kind==='sell'?'received':'paid'}</label><input type="number" step="0.01" value="${esc(d.totalSar)}" oninput="window._invTxDraft.totalSar=this.value; invTxRefreshDerived()"></div>
+      ${invTxShowsUsdEntry(d, pos)
+        ? `<div style="flex:1"><label class="fl">USD ${d.kind==='sell'?'received':'paid'}</label><input type="text" inputmode="decimal" value="${esc(d.usdAmount)}" oninput="setInvTxUsd(this.value)" onblur="invTxUsdBlur(this)" placeholder="e.g. 105*10"></div>
+           <div style="flex:1"><label class="fl">Total SAR ${d.kind==='sell'?'received':'paid'}</label><input id="invTxSarDerived" type="number" step="0.01" value="${esc(d.totalSar)}" disabled title="Derived from USD at your configured rate"></div>`
+        : `<div style="flex:1"><label class="fl">Total SAR ${d.kind==='sell'?'received':'paid'}</label><input type="number" step="0.01" value="${esc(d.totalSar)}" oninput="window._invTxDraft.totalSar=this.value; invTxRefreshDerived()"></div>`}
     </div>
-    <div class="mut" id="invTxPPU" style="font-size:11.5px;margin-top:6px">${invTxPpuText(d)}</div>
+    <div class="row" style="gap:10px;margin-top:10px">
+      <div style="flex:1"><label class="fl">${d.kind==='sell'?'Proceeds go to':'Funded from'}</label>
+        <select onchange="setInvTxCashSide(this.value)">
+          <option value="bank" ${d.cashSide==='bank'?'selected':''}>Bank account</option>
+          <option value="cash" ${d.cashSide==='cash'?'selected':''}>${d.kind==='sell'?'Hold as platform cash (USD)':'Platform cash (USD)'}</option>
+          ${d.kind==='buy'? `<option value="opening" ${d.cashSide==='opening'?'selected':''}>Opening balance — already held, no funding source</option>` : ''}
+        </select></div>
+      <div style="flex:1"><label class="fl">Management fee % (family only)</label><input type="number" step="0.01" min="0" max="100" value="${esc(d.feePct)}" oninput="setInvTxFeePct(this.value)"></div>
+    </div>
+    ${d.cashSide==='cash'? `<div class="mut" style="font-size:11.5px;margin-top:6px">${d.kind==='sell'
+        ? 'The proceeds stay on the platform as USD instead of returning to your bank, so no bank entry is involved.'
+        : 'Paid out of the platform\'s existing USD cash, so no money leaves your bank for this purchase.'} Converted at ${getInvFxRate()} SAR/USD.</div>`:''}
+    ${d.cashSide==='opening'? `<div class="mut" style="font-size:11.5px;margin-top:6px">Declares a holding you already had before tracking started — no bank movement, no platform cash movement. Excluded from Reconciliation, since there is no ledger entry to match it against.</div>`:''}
+    ${d.cashSide==='bank' && pos && pos.currency==='USD'? `<div class="mut" style="font-size:11.5px;margin-top:6px">${esc(pos.name)} trades in USD, so the amount is entered in USD and converted to SAR at ${getInvFxRate()} for the actual bank movement.</div>`:''}
+    <div class="mut" id="invTxFeeNote" style="font-size:11.5px;margin-top:6px">${invTxFeeText(d)}</div>
+    <div class="mut" id="invTxPPU" style="font-size:11.5px;margin-top:6px">${invTxPpuText(d, pos)}</div>
     <div class="row" style="justify-content:space-between;align-items:baseline;margin:16px 0 6px">
       <h3 style="font-size:13.5px;margin:0">Whose share?</h3>
       <div class="row" style="gap:4px;align-items:center">
@@ -7333,6 +8332,63 @@ function renderInvTxModal(){
       <button class="btn pri" onclick="saveInvTx()">Save</button>
     </div>`, true);
 }
+// USD is the typed field whenever platform cash is the counterparty, because the platform's own
+// statement — the thing being reconciled against — is denominated in USD. SAR is derived, never
+// typed, so the two figures can't disagree.
+// Stores the raw typed text without re-rendering, so a formula like "105*10" doesn't get
+// clobbered mid-type by a full modal repaint (same pattern as the JV amount field). The formula
+// is evaluated and the field reformatted on blur, in invTxUsdBlur below.
+function setInvTxUsd(val){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.usdAmount = val;
+  const usd = Number(val);
+  if(usd>0){
+    d.totalSar = Math.round(usd*getInvFxRate()*100)/100;
+    const sarEl = document.getElementById('invTxSarDerived');
+    if(sarEl) sarEl.value = d.totalSar;
+  }
+  invTxRefreshDerived();
+}
+function invTxUsdBlur(el){
+  const d = window._invTxDraft;
+  if(!d) return;
+  const raw = String(d.usdAmount||'').trim();
+  const formulaResult = tryEvalFormula(raw);
+  const usd = formulaResult!==null? formulaResult : Number(raw);
+  d.usdAmount = (raw===''||isNaN(usd))? '' : usd;
+  d.totalSar = (usd>0)? Math.round(usd*getInvFxRate()*100)/100 : '';
+  renderInvTxModal();
+}
+// "Opening balance" only makes sense on a buy — declaring a holding requires no sale event.
+// Switching to Sell while it's selected falls back to Bank rather than leaving an invalid
+// combination sitting in the draft.
+function setInvTxKind(kind){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.kind = kind;
+  if(kind==='sell' && d.cashSide==='opening') d.cashSide = 'bank';
+  renderInvTxModal();
+}
+function setInvTxCashSide(side){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.cashSide = (side==='cash'||side==='opening')? side : 'bank';
+  if(d.cashSide==='cash'||d.cashSide==='opening'){
+    // Coming from the bank side there may already be a SAR figure — seed USD from it rather than
+    // blanking what was typed.
+    if(!(Number(d.usdAmount)>0) && Number(d.totalSar)>0) d.usdAmount = Math.round(Number(d.totalSar)/getInvFxRate()*100)/100;
+    if(Number(d.usdAmount)>0) d.totalSar = Math.round(Number(d.usdAmount)*getInvFxRate()*100)/100;
+  }
+  renderInvTxModal();
+}
+function setInvTxFeePct(val){
+  const d = window._invTxDraft;
+  if(!d) return;
+  d.feePct = val;
+  const el = document.getElementById('invTxFeeNote');
+  if(el) el.textContent = invTxFeeText(d);
+}
 function setInvTxSplitMode(mode){
   const d = window._invTxDraft;
   if(!d) return;
@@ -7358,10 +8414,41 @@ function setInvTxOwnerSar(ownerId, val){
 }
 // Text for the "price per unit" hint and the allocation summary, shared by the initial render
 // and the in-place refresh so the two can't drift apart.
-function invTxPpuText(d){
+// Whether this transaction is entered in USD rather than SAR. Two independent reasons can
+// trigger it: the funding source is USD-denominated by construction (platform cash always is,
+// since invPlatformCash tracks USD; an opening balance always requires it too), OR the position
+// itself simply trades in USD (a US stock, most crypto) — in which case entering the SAR
+// equivalent by hand is the inconvenient path even when the money is genuinely coming from the
+// bank. Either reason is sufficient on its own.
+function invTxShowsUsdEntry(d, pos){
+  return d.cashSide==='cash' || d.cashSide==='opening' || (pos && pos.currency==='USD');
+}
+function invTxPpuText(d, pos){
   const u = Number(d.units)||0, s = Number(d.totalSar)||0;
-  return (u>0 && s>0)? 'Price per unit: '+money(s/u)+' SAR (already net of fees)'
-                     : 'Enter the SAR total that actually moved — price per unit is derived from it.';
+  if(!(u>0 && s>0)) return 'Enter the total that actually moved — price per unit is derived from it.';
+  if(invTxShowsUsdEntry(d, pos) && Number(d.usdAmount)>0){
+    return 'Price per unit: '+fmt2(Number(d.usdAmount)/u)+' USD (already net of fees)';
+  }
+  return 'Price per unit: '+money(s/u)+' SAR (already net of fees)';
+}
+// Live preview of what the management fee actually does to this transaction, so the effect is
+// visible before saving rather than only showing up later in the ownership percentages.
+function invTxFeeText(d){
+  const rate = invMgmtFeeRate(d);
+  if(!(rate>0)) return 'No management fee on this transaction.';
+  const selfId = invSelfOwnerId();
+  if(selfId===null) return 'Set which owner is you (Investments → Owners) before charging a fee.';
+  const preview = invTxAttribution({
+    kind: d.kind, units: Number(d.units)||0, totalSar: Number(d.totalSar)||0,
+    owners: (d.owners||[]).map(o=>({ownerId:o.ownerId, units:Number(o.units)||0})), feePct: d.feePct
+  });
+  if(!preview.valid) return 'Fee of '+ (rate*100).toFixed(2) +'% will be charged to family owners once the split is entered.';
+  if(d.kind==='sell'){
+    if(!(preview.feeSar>0)) return 'No family owners on this sell, so no fee is charged.';
+    return 'Fee: '+money(preview.feeSar)+' SAR of the family owners\' proceeds goes to you. Recorded as fee income, not investment gain.';
+  }
+  if(!(preview.feeUnits>0)) return 'No family owners on this buy, so no fee is charged.';
+  return 'Fee: '+invFmtUnits(preview.feeUnits)+' units move from the family owners to you. Their SAR contribution is unchanged, so the fee is taken in units.';
 }
 function invTxAllocText(d){
   const unitsNum = Number(d.units)||0;
@@ -7381,9 +8468,10 @@ function invTxAllocText(d){
 function invTxRefreshDerived(){
   const d = window._invTxDraft;
   if(!d) return;
+  const pos = invPositionById(d.positionId);
   const unitsNum = Number(d.units)||0, totalSar = Number(d.totalSar)||0;
   const ppu = document.getElementById('invTxPPU');
-  if(ppu) ppu.textContent = invTxPpuText(d);
+  if(ppu) ppu.textContent = invTxPpuText(d, pos);
   const sarAlloc = Object.keys(d.ownersSar||{}).map(k=>({ownerId:Number(k), sar:Number(d.ownersSar[k])||0})).filter(a=>a.sar>0);
   const derived = d.splitMode==='sar'? invDeriveUnitsFromSar(unitsNum, sarAlloc, totalSar) : [];
   (D.invOwners||[]).forEach(o=>{
@@ -7398,6 +8486,8 @@ function invTxRefreshDerived(){
       el.textContent = (unitsNum>0 && totalSar>0)? money(invSarForUnits(unitsNum, totalSar, uVal)) : '—';
     }
   });
+  const feeEl = document.getElementById('invTxFeeNote');
+  if(feeEl) feeEl.textContent = invTxFeeText(d);
   const sum = document.getElementById('invTxAllocSummary');
   if(sum){
     sum.textContent = invTxAllocText(d);
@@ -7424,7 +8514,13 @@ function sellUnitsInExistingTx(txId, ownerId){
 async function saveInvTx(){
   const d = window._invTxDraft;
   const units = Number(d.units)||0, totalSar = Number(d.totalSar)||0;
+  const posForSave = invPositionById(d.positionId);
   if(units<=0){ toast('Units must be greater than zero', true); return; }
+  // Checked before the generic SAR total, because whenever the USD field is shown (cash/opening
+  // funding, or simply a USD-denominated position) the SAR field is derived and disabled — a
+  // person seeing "Total SAR must be greater than zero" would have nowhere obvious to act on it.
+  // The actionable field is USD.
+  if(invTxShowsUsdEntry(d, posForSave) && !(Number(d.usdAmount)>0)){ toast('Enter the USD amount', true); return; }
   if(totalSar<=0){ toast('Total SAR must be greater than zero', true); return; }
   // In SAR mode the person allocates money and the units are derived from it; the stored record
   // is always units-based, so the ownership maths downstream is identical either way.
@@ -7455,15 +8551,35 @@ async function saveInvTx(){
       }
     }
   }
+  const cashSide = (d.cashSide==='cash'||d.cashSide==='opening')? d.cashSide : 'bank';
+  // Persisted whenever the USD field was actually shown and used — not only for cash/opening
+  // funding — so editing a bank-funded USD-denominated position later shows the figure that was
+  // originally typed, rather than reverting to a blank field next to a populated SAR one.
+  const usdAmount = invTxShowsUsdEntry(d, posForSave)? (Number(d.usdAmount)||0) : 0;
+  const feePct = Math.max(0, Math.min(100, Number(d.feePct)||0));
+  if(cashSide==='opening' && d.kind!=='buy'){ toast('Opening balance only applies to a buy', true); return; }
+  if(feePct>0 && invSelfOwnerId()===null){ toast('Mark one owner as "This is me" before charging a management fee', true); return; }
+  // A buy funded from platform cash can legitimately overdraw if a movement hasn't been entered
+  // yet, so this warns rather than blocks — being unable to record what actually happened is
+  // worse than a temporarily negative balance.
+  if(cashSide==='cash' && d.kind==='buy'){
+    const pos = invPositionById(d.positionId);
+    const avail = pos? invPlatformCash(pos.platformId).totalUsd : 0;
+    const already = d.id? (Number((D.invTransactions||[]).find(t=>t.id===d.id)?.usdAmount)||0) : 0;
+    if(usdAmount - already > avail + 0.005) toast('Heads up: this takes the platform cash balance negative', true);
+  }
+  const fields = {date:d.date, kind:d.kind, units, totalSar, owners, note:d.note||'', cashSide, usdAmount, feePct};
   if(d.id){
     const ex = (D.invTransactions||[]).find(t=>t.id===d.id);
-    Object.assign(ex, {date:d.date, kind:d.kind, units, totalSar, owners, note:d.note||''});
+    Object.assign(ex, fields);
     await persistInvTransaction(ex);
   } else {
-    const rec = {id: invNextId(D.invTransactions), positionId:d.positionId, date:d.date, kind:d.kind, units, totalSar, owners, note:d.note||'', updated_at:null};
+    const rec = Object.assign({id: invNextId(D.invTransactions), positionId:d.positionId, updated_at:null}, fields);
     D.invTransactions.push(rec);
     await persistInvTransaction(rec);
   }
+  // Remember the fee rate so it doesn't need re-typing, and stays consistent across family members.
+  if(feePct!==getInvMgmtFeePct()) await setInvMgmtFeePct(feePct);
   openInvPosition(d.positionId); renderInvestmentsPage(); toast('Transaction saved ✓');
 }
 async function deleteInvTx(id){
@@ -7474,52 +8590,427 @@ async function deleteInvTx(id){
   persistLocal(); openInvPosition(posId); renderInvestmentsPage(); toast('Transaction deleted');
 }
 
-/* ---- Investments: bulk price logging ---- */
-function openInvLogPrices(){
-  const positions = invActivePositions();
-  window._invPriceDraft = {date: todayStr(), prices:{}};
-  positions.forEach(p=>{ const lv = invLatestValuation(p.id); window._invPriceDraft.prices[p.id] = lv? lv.price : ''; });
-  renderInvLogPrices();
+/* ---- Investments: platform cash movements (deposit / withdrawal / transfer) ---- */
+function invCashOwnerRows(d){
+  const owners = D.invOwners||[];
+  return owners.map(o=>{
+    const row = (d.owners||[]).find(x=>x.ownerId===o.id);
+    return `<tr><td>${esc(o.name)}${o.isSelf?' <span class="mut">(you)</span>':''}</td>
+      <td class="num"><input type="number" step="0.01" style="width:130px;text-align:right" value="${row&&row.usd!==''&&row.usd!==null&&row.usd!==undefined? esc(row.usd):''}" oninput="setInvCashOwnerUsd(${o.id}, this.value)"></td></tr>`;
+  }).join('') || '<tr><td colspan="2" class="empty">Add owners first (Investments → Owners)</td></tr>';
 }
-function renderInvLogPrices(){
-  const d = window._invPriceDraft;
-  const positions = invActivePositions();
+function setInvCashOwnerUsd(ownerId, val){
+  const d = window._invCashDraft;
+  if(!d) return;
+  d.owners = (d.owners||[]).filter(o=>o.ownerId!==ownerId);
+  if(String(val).trim()!=='') d.owners.push({ownerId, usd:Number(val)||0});
+  invCashRefreshDerived();
+}
+function invCashAllocTotal(d){ return (d.owners||[]).reduce((s,o)=>s+(Number(o.usd)||0),0); }
+function invCashAllocText(d){
+  const total = invCashAllocTotal(d), target = Number(d.usdAmount)||0;
+  const bad = target>0 && Math.abs(total-target)>0.005;
+  return 'Allocated: $'+fmt2(total)+' of $'+fmt2(target)+(bad?' — these must match before saving':'');
+}
+// Splits a withdrawal into the capital and profit portions the way the JV would be booked:
+// capital to the platform's In account, profit to its Profit account. Profit is drawn first,
+// because taking out money you have made before touching your original capital is the natural
+// reading — and it is what keeps the reconciliation bridge exact either way.
+function invWithdrawalSplit(d){
+  const amt = Math.abs(Number(d.usdAmount)||0);
+  const cash = invPlatformCash(d.platformId);
+  const availProfit = Math.max(0, cash.profitUsd);
+  if(d.profitOverride!==null && d.profitOverride!==undefined && d.profitOverride!==''){
+    const prof = Math.max(0, Math.min(amt, Number(d.profitOverride)||0));
+    return {profitUsd: prof, capitalUsd: amt-prof, availProfit, auto:false};
+  }
+  const prof = Math.min(amt, availProfit);
+  return {profitUsd: prof, capitalUsd: amt-prof, availProfit, auto:true};
+}
+function invCashRefreshDerived(){
+  const d = window._invCashDraft;
+  if(!d) return;
+  const sum = document.getElementById('invCashAllocSummary');
+  if(sum){
+    sum.textContent = invCashAllocText(d);
+    sum.style.color = /must match/.test(sum.textContent)? 'var(--red)' : '';
+  }
+  const split = document.getElementById('invCashSplitNote');
+  if(split && d.kind==='withdrawal'){
+    const sp = invWithdrawalSplit(d);
+    split.textContent = 'Booked as $'+fmt2(sp.capitalUsd)+' capital (In account) and $'+fmt2(sp.profitUsd)+' profit (Profit account). Realised profit available: $'+fmt2(sp.availProfit)+'.';
+  }
+}
+function openInvCashModal(platformId, kind, movementId){
+  const existing = movementId? (D.invCashMovements||[]).find(m=>m.id===movementId) : null;
+  const selfId = invSelfOwnerId();
+  window._invCashDraft = existing
+    ? {...existing, owners:(existing.owners||[]).map(o=>({...o})), profitOverride: existing.kind==='withdrawal'? existing.profitUsd : null}
+    : {id:null, platformId, date:todayStr(), kind, usdAmount:'', toPlatformId:null, feeUsd:'',
+       owners: selfId!==null? [{ownerId:selfId, usd:''}] : [], note:'', profitOverride:null};
+  renderInvCashModal();
+}
+function renderInvCashModal(){
+  const d = window._invCashDraft;
+  const plat = invPlatformById(d.platformId);
+  const others = (D.invPlatforms||[]).filter(p=>p.id!==d.platformId);
+  const cash = invPlatformCash(d.platformId);
+  const title = d.kind==='deposit'? 'Deposit to' : d.kind==='withdrawal'? 'Withdraw from' : 'Transfer from';
   showModal(`
-    <h3 style="margin-top:0">💹 Log Prices</h3>
-    <div class="mut" style="font-size:12px;margin-bottom:10px">Enter the price per unit in each asset's own currency. Values recalculate automatically — one date, one save.</div>
-    <label class="fl">As of date</label><input type="date" value="${esc(d.date)}" onchange="window._invPriceDraft.date=this.value" style="margin-bottom:12px">
-    <div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>Position</th><th>Platform</th><th class="num">Units</th><th class="num">Price</th></tr></thead>
-    <tbody>${positions.map(p=>{
-      const st = computePositionState(p.id);
-      const plat = invPlatformById(p.platformId);
-      return `<tr>
-        <td><b>${esc(p.name)}</b>${p.ticker?` <span class="mut">${esc(p.ticker)}</span>`:''}</td>
-        <td class="mut" style="font-size:12px">${esc(plat?plat.name:'')}</td>
-        <td class="num mono">${st.totalUnits.toLocaleString(undefined,{maximumFractionDigits:8})}</td>
-        <td class="num"><input type="number" step="any" style="width:130px;text-align:right" value="${esc(d.prices[p.id])}" oninput="window._invPriceDraft.prices[${p.id}]=this.value" placeholder="${esc(p.currency)}"></td>
-      </tr>`;
-    }).join('') || '<tr><td colspan="4" class="empty">No active positions</td></tr>'}</tbody></table></div>
+    <h3 style="margin-top:0">${title} ${esc(plat?plat.name:'')}</h3>
+    <div class="mut" style="font-size:11.5px;margin-bottom:10px">Current cash on this platform: <b class="mono">$${fmt2(cash.totalUsd)}</b> (${money(cash.totalUsd*getInvFxRate())} SAR at ${getInvFxRate()})</div>
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label class="fl">Date</label><input type="date" value="${esc(d.date)}" onchange="window._invCashDraft.date=this.value"></div>
+      <div style="flex:1"><label class="fl">USD amount</label><input type="number" step="0.01" value="${esc(d.usdAmount)}" oninput="window._invCashDraft.usdAmount=this.value; invCashRefreshDerived()"></div>
+    </div>
+    ${d.kind==='transfer'? `<div class="row" style="gap:10px;margin-top:10px">
+      <div style="flex:1"><label class="fl">To platform</label><select onchange="window._invCashDraft.toPlatformId=Number(this.value)||null">
+        <option value="">Choose…</option>
+        ${others.map(p=>`<option value="${p.id}" ${d.toPlatformId===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}
+      </select></div>
+      <div style="flex:1"><label class="fl">Transfer fee (USD)</label><input type="number" step="0.01" value="${esc(d.feeUsd)}" oninput="window._invCashDraft.feeUsd=this.value"></div>
+    </div>
+    <div class="mut" style="font-size:11.5px;margin-top:6px">The fee is charged to you alone, not shared with the family owners, and comes off the sending platform's balance.</div>`:''}
+    ${d.kind==='withdrawal'? `<div class="row" style="gap:10px;margin-top:10px">
+      <div style="flex:1"><label class="fl">Profit portion (USD) — leave blank for automatic</label><input type="number" step="0.01" value="${d.profitOverride===null||d.profitOverride===undefined?'':esc(d.profitOverride)}" oninput="window._invCashDraft.profitOverride=this.value===''?null:this.value; invCashRefreshDerived()"></div>
+    </div>
+    <div class="mut" id="invCashSplitNote" style="font-size:11.5px;margin-top:6px"></div>`:''}
+    <h3 style="font-size:13.5px;margin:16px 0 6px">Whose money?</h3>
+    <table><thead><tr><th>Owner</th><th class="num">USD</th></tr></thead><tbody>${invCashOwnerRows(d)}</tbody></table>
+    <div class="mut" id="invCashAllocSummary" style="font-size:11.5px;margin-top:6px">${invCashAllocText(d)}</div>
+    <label class="fl" style="margin-top:12px">Note</label><input value="${esc(d.note||'')}" oninput="window._invCashDraft.note=this.value">
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+      ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvCashMovement(${d.id})">Delete</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn pri" onclick="saveInvCashMovement()">Save</button>
+    </div>`, true);
+  invCashRefreshDerived();
+}
+async function saveInvCashMovement(){
+  const d = window._invCashDraft;
+  const amt = Number(d.usdAmount)||0;
+  if(!(amt>0)){ toast('Enter a USD amount greater than zero', true); return; }
+  if(d.kind==='transfer' && !d.toPlatformId){ toast('Choose which platform the money is going to', true); return; }
+  const owners = (d.owners||[]).map(o=>({ownerId:o.ownerId, usd:Number(o.usd)||0})).filter(o=>o.usd>0);
+  if(!owners.length){ toast('Assign the amount to at least one owner', true); return; }
+  const allocTotal = owners.reduce((s,o)=>s+o.usd,0);
+  if(Math.abs(allocTotal-amt)>0.005){ toast('Allocated USD must equal the movement total ($'+fmt2(amt)+')', true); return; }
+  const fee = d.kind==='transfer'? Math.abs(Number(d.feeUsd)||0) : 0;
+  if(fee>0 && invSelfOwnerId()===null){ toast('Mark one owner as "This is me" before charging a transfer fee', true); return; }
+  const sp = d.kind==='withdrawal'? invWithdrawalSplit(d) : {capitalUsd:0, profitUsd:0};
+  // Warn rather than block on an overdraw, for the same reason as a cash-funded buy: recording
+  // what actually happened matters more than keeping the running balance tidy.
+  if(d.kind!=='deposit'){
+    const avail = invPlatformCash(d.platformId).totalUsd;
+    const already = d.id? Math.abs(Number((D.invCashMovements||[]).find(m=>m.id===d.id)?.usdAmount)||0) : 0;
+    if(amt + fee - already > avail + 0.005) toast('Heads up: this takes the platform cash balance negative', true);
+  }
+  const fields = {platformId:d.platformId, date:d.date, kind:d.kind, usdAmount:amt,
+                  toPlatformId: d.kind==='transfer'? d.toPlatformId : null, feeUsd:fee,
+                  capitalUsd:sp.capitalUsd, profitUsd:sp.profitUsd, owners, note:d.note||''};
+  if(d.id){
+    const ex = (D.invCashMovements||[]).find(m=>m.id===d.id);
+    Object.assign(ex, fields);
+    await persistInvCashMovement(ex);
+  } else {
+    const rec = Object.assign({id: invNextId(D.invCashMovements), updated_at:null}, fields);
+    D.invCashMovements.push(rec);
+    await persistInvCashMovement(rec);
+  }
+  closeModal(); renderInvestmentsPage(); toast('Cash movement saved ✓');
+}
+async function deleteInvCashMovement(id){
+  const m = (D.invCashMovements||[]).find(x=>x.id===id); if(!m) return;
+  D.invCashMovements = D.invCashMovements.filter(x=>x.id!==id);
+  await syncWrite('pd_inv_cash_movements','delete',{id}, m.updated_at||null);
+  persistLocal(); closeModal(); renderInvestmentsPage(); toast('Cash movement deleted');
+}
+function openInvCashLog(platformId){
+  const plat = invPlatformById(platformId);
+  const moves = (D.invCashMovements||[]).filter(m=>m.platformId===platformId || m.toPlatformId===platformId)
+    .slice().sort((a,b)=> a.date===b.date? (b.id-a.id) : (a.date<b.date?1:-1));
+  showModal(`
+    <h3 style="margin-top:0">Cash movements — ${esc(plat?plat.name:'')}</h3>
+    <div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>Date</th><th>Type</th><th class="num">USD</th><th>Detail</th><th></th></tr></thead>
+    <tbody>${moves.map(m=>{
+      const incoming = m.toPlatformId===platformId && m.platformId!==platformId;
+      const other = m.kind==='transfer'? invPlatformById(incoming? m.platformId : m.toPlatformId) : null;
+      const label = m.kind==='transfer'? (incoming? 'Transfer in':'Transfer out') : (m.kind==='deposit'?'Deposit':'Withdrawal');
+      const detail = m.kind==='transfer'
+        ? (other? (incoming?'from ':'to ')+esc(other.name):'—') + (m.feeUsd>0&&!incoming? ' · fee $'+fmt2(m.feeUsd):'')
+        : m.kind==='withdrawal'? ('capital $'+fmt2(m.capitalUsd)+' · profit $'+fmt2(m.profitUsd)) : esc(m.note||'—');
+      return `<tr><td class="mono">${esc(m.date)}</td><td>${label}</td>
+        <td class="num mono ${(m.kind==='deposit'||incoming)?'g':'r'}">${(m.kind==='deposit'||incoming)?'':'-'}$${fmt2(m.usdAmount)}</td>
+        <td class="mut" style="font-size:11.5px">${detail}</td>
+        <td class="noprint">${incoming?'':`<button class="btn ghost sm" onclick="openInvCashModal(${m.platformId},'${m.kind}',${m.id})">✎</button>`}</td></tr>`;
+    }).join('') || '<tr><td colspan="5" class="empty">No cash movements yet</td></tr>'}</tbody></table></div>
+    <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
+}
+
+/* ============================= CROSS-PLATFORM POSITION TRANSFER =============================
+   Moves units of the SAME asset from one platform's position record to another — the crypto/
+   stock-relocation case, distinct from a buy or sell. Modelled as one linked pair of ordinary
+   transactions rather than a new engine, so every existing consumer (cost basis, XIRR, realised
+   gain, reconciliation) handles it automatically with no special-casing:
+
+     OUT leg (kind:'sell', cashSide:'transfer') on the source position — removes ALL sent units
+       (fee included) at their current weighted-average cost, "proceeds" = the value of the
+       units that actually arrive.
+     IN leg (kind:'buy', cashSide:'transfer') on the destination position — receives the arriving
+       units (sent minus fee) at exactly that same cost.
+
+   Since the OUT leg's WAC engine releases cost for every sent unit but "proceeds" only cover the
+   arriving units, the shortfall — the fee'd units' cost — surfaces as a small REALISED LOSS,
+   split pro-rata across the current owners exactly like any other sale. Nothing is smeared
+   invisibly into anyone's remaining cost basis, and nothing needs to reconcile against the bank,
+   because the two legs' cost/value balance to zero except for that honestly-booked loss.
+   linkId ties the pair together for display/editing; feeUnits is stored on the OUT leg for
+   reference (the loss itself is derived, not stored). */
+function invMatchPositionOnPlatform(sourcePos, platformId){
+  const key = (sourcePos.ticker||sourcePos.name||'').trim().toLowerCase();
+  if(!key) return null;
+  return (D.invPositions||[]).find(p=>p.platformId===platformId && (p.ticker||p.name||'').trim().toLowerCase()===key) || null;
+}
+// Splits `total` units across owners in the same proportions as `shares` (typically each
+// owner's current unit holding), with any rounding remainder placed on the largest holder so the
+// parts always sum EXACTLY to `total` — the same convention used for SAR-to-units splitting
+// elsewhere, applied here to a unit-to-unit split.
+function invSplitUnitsByShares(shares, total){
+  const totalShares = Object.values(shares).reduce((s,v)=>s+v,0);
+  if(!(totalShares>0) || !(total>0)) return {};
+  const out = {};
+  let allocated = 0, largestOid = null, largestShare = -1;
+  for(const oid in shares){
+    const share = shares[oid];
+    if(share>largestShare){ largestShare = share; largestOid = oid; }
+    const u = invRoundUnits(total*(share/totalShares));
+    out[oid] = u; allocated += u;
+  }
+  const remainder = invRoundUnits(total - allocated);
+  if(largestOid!==null && Math.abs(remainder)>0) out[largestOid] = invRoundUnits(out[largestOid]+remainder);
+  return out;
+}
+function openInvPositionTransfer(posId){
+  const pos = invPositionById(posId); if(!pos) return;
+  const others = (D.invPlatforms||[]).filter(p=>p.id!==pos.platformId);
+  window._invTransferDraft = {sourcePosId:posId, destPlatformId: others[0]? others[0].id : null,
+    date: todayStr(), unitsSent:'', feeUnits:'', note:''};
+  renderInvPositionTransferModal();
+}
+function renderInvPositionTransferModal(){
+  const d = window._invTransferDraft;
+  const pos = invPositionById(d.sourcePosId);
+  const st = computePositionState(pos.id);
+  const others = (D.invPlatforms||[]).filter(p=>p.id!==pos.platformId);
+  const match = d.destPlatformId? invMatchPositionOnPlatform(pos, d.destPlatformId) : null;
+  const sent = Number(d.unitsSent)||0, fee = Math.max(0, Number(d.feeUnits)||0);
+  const arriving = Math.max(0, sent-fee);
+  showModal(`
+    <h3 style="margin-top:0">⇄ Transfer ${esc(pos.name)}${pos.ticker?` (${esc(pos.ticker)})`:''}</h3>
+    <div class="mut" style="font-size:11.5px;margin-bottom:10px">Currently held: <b class="mono">${invFmtUnits(st.totalUnits)}</b> units on ${esc(invPlatformById(pos.platformId)?.name||'')}. Ownership is unaffected — this only changes where the units sit.</div>
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label class="fl">To platform</label><select onchange="window._invTransferDraft.destPlatformId=Number(this.value)||null; renderInvPositionTransferModal()">
+        ${others.map(p=>`<option value="${p.id}" ${d.destPlatformId===p.id?'selected':''}>${esc(p.name)}</option>`).join('') || '<option>No other platform yet</option>'}
+      </select></div>
+      <div style="flex:1"><label class="fl">Date</label><input type="date" value="${esc(d.date)}" onchange="window._invTransferDraft.date=this.value"></div>
+    </div>
+    <div class="mut" style="font-size:11.5px;margin:8px 0">${match? `Will add to the existing <b>${esc(match.name)}</b> position there.` : `No matching position on that platform yet — a new one will be created there automatically, matching this asset's name, ticker, class and currency.`}</div>
+    <div class="row" style="gap:10px;margin-top:6px">
+      <div style="flex:1"><label class="fl">Units to send</label><input type="number" step="any" value="${esc(d.unitsSent)}" oninput="window._invTransferDraft.unitsSent=this.value; invTransferRefreshDerived()" placeholder="up to ${invFmtUnits(st.totalUnits)}"></div>
+      <div style="flex:1"><label class="fl">Network / withdrawal fee (units)</label><input type="number" step="any" value="${esc(d.feeUnits)}" oninput="window._invTransferDraft.feeUnits=this.value; invTransferRefreshDerived()" placeholder="0"></div>
+    </div>
+    <div class="mut" id="invTransferSummary" style="font-size:11.5px;margin-top:8px">${invTransferSummaryText(d, st)}</div>
+    <label class="fl" style="margin-top:12px">Note</label><input value="${esc(d.note||'')}" oninput="window._invTransferDraft.note=this.value">
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
       <button class="btn ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn pri" onclick="saveInvPrices()">Save prices</button>
+      <button class="btn pri" onclick="saveInvPositionTransfer()">Transfer</button>
     </div>`, true);
 }
-async function saveInvPrices(){
-  const d = window._invPriceDraft;
-  if(!d.date){ toast('Pick a date', true); return; }
-  let saved = 0;
-  for(const posId of Object.keys(d.prices)){
-    const price = Number(d.prices[posId]);
-    if(!(price>0)) continue;
-    const pid = Number(posId);
-    // One valuation per position per date — re-saving the same day overwrites instead of stacking.
-    const existing = (D.invValuations||[]).find(v=>v.positionId===pid && v.date===d.date);
-    if(existing){ existing.price = price; await persistInvValuation(existing); }
-    else { const rec = {id: invNextId(D.invValuations), positionId:pid, date:d.date, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
-    saved++;
-  }
-  closeModal(); renderInvestmentsPage(); toast(saved+' price(s) saved ✓');
+function invTransferRefreshDerived(){
+  const d = window._invTransferDraft;
+  if(!d) return;
+  const el = document.getElementById('invTransferSummary');
+  if(el){ const st = computePositionState(d.sourcePosId); el.textContent = invTransferSummaryText(d, st); }
 }
+function invTransferSummaryText(d, st){
+  const sent = Number(d.unitsSent)||0, fee = Math.max(0, Number(d.feeUnits)||0);
+  if(!(sent>0)) return 'Enter how many units to send.';
+  if(fee>sent) return 'The fee cannot be larger than the units sent.';
+  if(sent>st.totalUnits+1e-9) return 'More units than this position currently holds ('+invFmtUnits(st.totalUnits)+').';
+  const arriving = sent-fee;
+  const avg = st.totalUnits>0? st.totalCostSar/st.totalUnits : 0;
+  const lossSar = avg*fee;
+  return invFmtUnits(arriving)+' units will arrive at the destination'+
+    (fee>0? ', with '+invFmtUnits(fee)+' lost to the fee — recorded as a realised loss of '+money(lossSar)+' SAR, split across the current owners.' : '.');
+}
+async function saveInvPositionTransfer(){
+  const d = window._invTransferDraft;
+  const sourcePos = invPositionById(d.sourcePosId);
+  if(!sourcePos){ toast('Position not found', true); return; }
+  if(!d.destPlatformId){ toast('Choose a destination platform', true); return; }
+  if(d.destPlatformId===sourcePos.platformId){ toast('Choose a different platform to transfer to', true); return; }
+  const sent = Number(d.unitsSent)||0, fee = Math.max(0, Number(d.feeUnits)||0);
+  if(!(sent>0)){ toast('Enter the units to send', true); return; }
+  if(fee>sent){ toast('The fee cannot exceed the units sent', true); return; }
+  const st = computePositionState(sourcePos.id, d.date);
+  if(sent>st.totalUnits+1e-9){ toast('Only '+invFmtUnits(st.totalUnits)+' units are held as of that date', true); return; }
+  const avg = st.totalUnits>0? st.totalCostSar/st.totalUnits : 0;
+  const arriving = sent-fee;
+  const arrivingValueSar = Math.round(avg*arriving*100)/100;
+
+  const shares = {}; for(const oid in st.byOwner) shares[oid] = st.byOwner[oid].units;
+  const sentByOwner = invSplitUnitsByShares(shares, sent);
+  const arrivingByOwner = invSplitUnitsByShares(shares, arriving);
+
+  let destPos = invMatchPositionOnPlatform(sourcePos, d.destPlatformId);
+  if(!destPos){
+    destPos = {id: invNextId(D.invPositions), platformId: d.destPlatformId, name: sourcePos.name,
+      ticker: sourcePos.ticker||'', assetClass: sourcePos.assetClass||'Other', currency: sourcePos.currency||'SAR',
+      status:'Active', stmtUnits:null, stmtDate:null, updated_at:null};
+    D.invPositions.push(destPos);
+    await persistInvPosition(destPos);
+  }
+
+  const outId = invNextId(D.invTransactions);
+  const outTx = {id: outId, positionId: sourcePos.id, date: d.date, kind:'sell', units: sent,
+    totalSar: arrivingValueSar, owners: Object.keys(sentByOwner).map(oid=>({ownerId:Number(oid), units:sentByOwner[oid]})),
+    note: (d.note?d.note+' — ':'')+'Transfer to '+(invPlatformById(d.destPlatformId)?.name||''),
+    cashSide:'transfer', usdAmount:0, feePct:0, linkId:null, feeUnits: fee, updated_at:null};
+  D.invTransactions.push(outTx);
+  await persistInvTransaction(outTx);
+
+  const inTx = {id: invNextId(D.invTransactions), positionId: destPos.id, date: d.date, kind:'buy', units: arriving,
+    totalSar: arrivingValueSar, owners: Object.keys(arrivingByOwner).map(oid=>({ownerId:Number(oid), units:arrivingByOwner[oid]})),
+    note: (d.note?d.note+' — ':'')+'Transfer from '+(invPlatformById(sourcePos.platformId)?.name||''),
+    cashSide:'transfer', usdAmount:0, feePct:0, linkId: outId, feeUnits:0, updated_at:null};
+  D.invTransactions.push(inTx);
+  await persistInvTransaction(inTx);
+
+  outTx.linkId = outId; // the pair shares the OUT leg's id
+  await persistInvTransaction(outTx);
+
+  closeModal(); openInvPosition(sourcePos.id); renderInvestmentsPage();
+  toast('Transferred '+invFmtUnits(arriving)+' units'+(fee>0?' ('+invFmtUnits(fee)+' fee)':'')+' ✓');
+}
+
+/* ---- Investments: CSV-based price logging ----
+   Manual per-position price entry didn't scale once there were more than a handful of
+   positions, so this generates a CSV instead: export the current state (including today's
+   prices, if any are already logged), edit only the price column in a spreadsheet, re-import.
+   Positions left blank on import keep their last known price — a blank is "I didn't check this
+   one today," not "clear the price." */
+function invPriceLogCSVRows(){
+  return invActivePositions().map(p=>{
+    const st = computePositionState(p.id);
+    const val = invLatestValuation(p.id);
+    return {pos:p, units:st.totalUnits, lastPrice: val?Number(val.price):null, lastDate: val?val.date:null};
+  });
+}
+function downloadInvPriceLogCSV(){
+  const rows = invPriceLogCSVRows();
+  const header = ['Position','Ticker','Platform','Units Held','Last Price','Last Price Date','Amount Total','New Price'];
+  const lines = [header.map(csvEscape).join(',')];
+  rows.forEach(r=>{
+    const plat = invPlatformById(r.pos.platformId);
+    const total = r.lastPrice!==null? r.units*r.lastPrice : '';
+    lines.push([r.pos.name, r.pos.ticker||'', plat?plat.name:'', r.units, r.lastPrice!==null?r.lastPrice:'', r.lastDate||'', total, ''].map(csvEscape).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'LedgerOS prices - '+todayStr()+'.csv'; dl.click();
+  toast('Exported '+rows.length+' position(s) to CSV — fill in "New Price" and re-import');
+}
+async function handleInvPriceLogImport(inputEl){
+  const file = inputEl.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const rows = csvToObjects(reader.result);
+    inputEl.value = '';
+    if(!rows.length){ toast('No rows found in that CSV', true); return; }
+    const date = window._invPriceImportDate || todayStr();
+    let saved = 0, blank = 0, unmatched = 0;
+    for(const r of rows){
+      const name = (r['position']||'').trim();
+      const ticker = (r['ticker']||'').trim();
+      const priceRaw = r['new price'];
+      const pos = (D.invPositions||[]).find(p=>
+        (ticker && (p.ticker||'').trim().toLowerCase()===ticker.toLowerCase()) ||
+        (!ticker && p.name.trim().toLowerCase()===name.toLowerCase()));
+      if(!pos){ unmatched++; continue; }
+      const price = Number(priceRaw);
+      if(!priceRaw || !(price>0)){ blank++; continue; } // blank = keep last known price, not a clear
+      const existing = (D.invValuations||[]).find(v=>v.positionId===pos.id && v.date===date);
+      if(existing){ existing.price = price; await persistInvValuation(existing); }
+      else { const rec = {id: invNextId(D.invValuations), positionId:pos.id, date, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
+      saved++;
+    }
+    renderInvestmentsPage();
+    toast(saved+' price(s) saved ✓'+(blank?' · '+blank+' left blank (kept last known price)':'')+(unmatched?' · '+unmatched+' row(s) didn\'t match a position':''));
+  };
+  reader.readAsText(file);
+}
+// Whole days between two 'YYYY-MM-DD' strings. Used purely for the "is this price stale"
+// check, so it deliberately ignores time-of-day — a price logged this morning and checked this
+// evening is 0 days old, not a fraction.
+function daysBetweenDates(fromDate, toDate){
+  const a = new Date(fromDate+'T00:00:00'), b = new Date(toDate+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+const INV_PRICE_STALE_DAYS = 7;
+function invPriceStaleness(posId){
+  const v = invLatestValuation(posId);
+  if(!v) return {hasPrice:false, days:null, stale:false};
+  const days = daysBetweenDates(v.date, todayStr());
+  return {hasPrice:true, date:v.date, price:v.price, days, stale: days>INV_PRICE_STALE_DAYS};
+}
+function invManualPriceRows(){
+  return invActivePositions().map(p=>({pos:p, st: invPriceStaleness(p.id)}))
+    .sort((a,b)=> (a.st.stale===b.st.stale)? 0 : (a.st.stale? -1 : 1)); // stale prices surface first
+}
+async function saveInvManualPrice(posId, val, dateInputId){
+  const price = Number(val);
+  if(!(price>0)) return; // typing/backspacing through a value shouldn't fire a save on every keystroke's blur
+  const dateEl = document.getElementById(dateInputId);
+  const date = (dateEl && dateEl.value) || todayStr();
+  const existing = (D.invValuations||[]).find(v=>v.positionId===posId && v.date===date);
+  if(existing){ existing.price = price; await persistInvValuation(existing); }
+  else { const rec = {id: invNextId(D.invValuations), positionId:posId, date, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
+  renderInvManualPriceTable();
+  toast('Price saved ✓');
+}
+function renderInvManualPriceTable(){
+  const el = document.getElementById('invManualPriceTable');
+  if(!el) return;
+  const rows = invManualPriceRows();
+  el.innerHTML = rows.map(({pos, st})=>{
+    const rowId = 'manPrice_'+pos.id, dateId = 'manPriceDate_'+pos.id;
+    return `<tr>
+      <td>${esc(pos.name)}${pos.ticker?` <span class="mut">${esc(pos.ticker)}</span>`:''}</td>
+      <td class="mut" style="font-size:11px;${st.stale?'color:var(--red)':''}">${st.hasPrice? (st.days===0?'today':st.days+'d ago') : 'never'}</td>
+      <td><input id="${dateId}" type="date" value="${todayStr()}" style="width:130px"></td>
+      <td class="num"><input id="${rowId}" type="number" step="any" style="width:110px;text-align:right" placeholder="${st.hasPrice?fmt2(st.price):'price'}" onblur="saveInvManualPrice(${pos.id}, this.value, '${dateId}')"></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" class="empty">No active positions</td></tr>';
+}
+function openInvLogPrices(){
+  window._invPriceImportDate = todayStr();
+  const rows = invPriceLogCSVRows();
+  showModal(`
+    <h3 style="margin-top:0">💹 Log Prices</h3>
+    <div class="mut" style="font-size:12px;margin-bottom:12px">Set a price directly below for a quick check-in, or use the CSV export/import for logging many at once. Rows highlighted in red haven't been updated in over ${INV_PRICE_STALE_DAYS} days.</div>
+    <div style="overflow-x:auto;max-height:280px;overflow-y:auto"><table style="min-width:460px"><thead><tr><th>Position</th><th>Last updated</th><th>Date</th><th class="num">New price</th></tr></thead>
+    <tbody id="invManualPriceTable"></tbody></table></div>
+    <h3 style="font-size:13.5px;margin:18px 0 6px">CSV — for logging many at once</h3>
+    <label class="fl">As of date (applied to every price in the import)</label>
+    <input type="date" value="${esc(window._invPriceImportDate)}" onchange="window._invPriceImportDate=this.value" style="margin-bottom:14px">
+    <div class="row" style="gap:8px;margin-bottom:14px">
+      <button class="btn pri sm" onclick="downloadInvPriceLogCSV()">⬇ Export CSV (${rows.length} position${rows.length===1?'':'s'})</button>
+      <label class="btn ghost sm" style="cursor:pointer">⬆ Import CSV<input type="file" accept=".csv" style="display:none" onchange="handleInvPriceLogImport(this)"></label>
+    </div>
+    <div class="mut" style="font-size:11.5px">Columns: Position, Ticker, Platform, Units Held, Last Price, Last Price Date, Amount Total, New Price. Only Position/Ticker (to match the row) and New Price are read on import — the rest is reference.</div>
+    <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
+  renderInvManualPriceTable();
+}
+
 
 /* ---- Investments: per-owner Arabic statement ---- */
 function openInvOwnerStatement(ownerId){
@@ -7816,6 +9307,11 @@ function renderBuildingSection(b, months, currentMonth){
   const revenueTotals = months.map(m=> apartmentAccs.reduce((s,a)=>s+accountMonthPlanOrActual(a,m,currentMonth),0));
   const expenseTotals = months.map(m=> expenseAccs.reduce((s,a)=>s+accountMonthPlanOrActual(a,m,currentMonth),0));
   const netTotals = months.map((m,i)=> revenueTotals[i] + expenseTotals[i]); // expenses are already stored/entered as negative (cash-outflow convention), so this is a straight sum, not a subtraction
+  // Shown on the collapsed header — same figure as the Net row for the CURRENT month, so
+  // collapsing a building never hides the one number that matters day to day. Falls back to 0 if
+  // the current month somehow isn't in the displayed range.
+  const currentMonthIdx = months.indexOf(currentMonth);
+  const currentNet = currentMonthIdx>=0? netTotals[currentMonthIdx] : 0;
   const tableMinWidth = RE_LABEL_COL_WIDTH+months.length*RE_MONTH_COL_WIDTH;
   const colgroup = `<colgroup><col style="width:${RE_LABEL_COL_WIDTH}px">${months.map(()=>`<col style="width:${RE_MONTH_COL_WIDTH}px">`).join('')}</colgroup>`;
   // Real Estate never shows editable input boxes — every account here is always sourced from
@@ -7836,6 +9332,7 @@ function renderBuildingSection(b, months, currentMonth){
       <div class="row click" style="cursor:pointer" onclick="toggleBuildingExpanded(${b.id})">
         <h3 style="margin:0">🏢 ${esc(b.name)}</h3>
         <span class="mut" style="font-size:12px">${expanded?'▾ Collapse':'▸ Expand'}</span>
+        ${!expanded? `<span class="mono ${moneyClass(-currentNet)}" style="margin-left:10px;font-size:13px" title="Net for ${esc(monthLabel(currentMonth))}">${money0(-currentNet)}</span>` : ''}
       </div>
       <div class="row noprint">
         <button class="btn ghost sm" onclick="renameBuilding(${b.id})">✎ Rename</button>
@@ -8745,6 +10242,42 @@ function categoryMonthFlow(catKey, monthKey, currentMonth){
   });
   return sum * categorySignMultiplier(catKey);
 }
+function exportAccountCurrentBalancesCSV(){
+  const accs = allExportableAccounts();
+  const header = ['Account #','Name','Category','Balance'];
+  const lines = [header.map(csvEscape).join(',')];
+  accs.forEach(a=>{
+    lines.push([a.id, accShort(a.id), a.category||'', accountBalance(a.id)].map(csvEscape).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'Account Balances - '+todayStr()+'.csv'; dl.click();
+  toast('Exported '+accs.length.toLocaleString()+' account balances to CSV');
+  logActivity('action', 'Exported Account Balances CSV ('+accs.length+' accounts)');
+}
+// Every account, one column per month, showing that MONTH'S net movement (not a running
+// balance) — from the earliest transaction in the whole ledger through the current month.
+// Deliberately actuals-only: unlike the Forecast Grid export, this never projects into future
+// months, since the point here is a historical record, not a plan.
+function exportAccountMonthlyMovementCSV(){
+  const accs = allExportableAccounts();
+  const currentMonth = todayStr().slice(0,7);
+  const startMonth = earliestLedgerMonth();
+  const months = [];
+  let mk = startMonth, guard = 0;
+  while(mk <= currentMonth && guard<2000){ months.push(mk); mk = nextMonthKeyPlain(mk); guard++; }
+  const header = ['Account #','Name','Category','Status', ...months];
+  const lines = [header.map(csvEscape).join(',')];
+  accs.forEach(a=>{
+    const row = [a.id, accShort(a.id), a.category||'', a.status||'Active'];
+    months.forEach(m=> row.push(forecastActual(a.id, m)));
+    lines.push(row.map(csvEscape).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'Account Monthly Movement - '+todayStr()+'.csv'; dl.click();
+  toast('Exported '+accs.length.toLocaleString()+' accounts × '+months.length+' months to CSV');
+  logActivity('action', 'Exported Account Monthly Movement CSV ('+accs.length+' accounts, '+startMonth+' to '+currentMonth+')');
+}
+
 function earliestLedgerMonth(){
   if(!D.ledger.length) return todayStr().slice(0,7);
   return D.ledger.reduce((min,l)=> l.date<min?l.date:min, todayStr()).slice(0,7);
@@ -9238,7 +10771,10 @@ async function renumberAllocation(oldNum){
   for(const t of touched){ await syncWrite('pd_ledger', 'upsert', {id:t.row.id, jv:t.row.jv, entry_date:t.row.date, acc:t.row.acc, descr:t.row.descr, amt:t.row.amt, alloc:t.row.alloc, allocatable:t.row.allocatable, acc_name_snapshot:t.row.accNameSnapshot||null}, t.base); }
   toast('Renumbered to #'+pad5(newNum)+' ✓');
   viewAllocGroup(newNum);
-  renderAlloc();
+  // The allocation modal is now reachable from the Ledger page and the JV modal too, so only
+  // repaint the Allocations page when that's actually the page underneath — otherwise this
+  // would render allocation content into #app while the nav still says Ledger.
+  if(screen==='alloc') renderAlloc();
 }
 async function unassignLine(id,n){
   if(blockIfSyncing()) return;
@@ -9251,7 +10787,10 @@ async function unassignLine(id,n){
   }
   const remaining = D.ledger.filter(l=>l.alloc===n).length;
   if(remaining) viewAllocGroup(n); else closeModal();
-  renderAlloc();
+  // Same guard as renumberAllocation — repaint whichever page is actually underneath, since the
+  // allocation modal can now be opened from the Ledger page as well.
+  if(screen==='alloc') renderAlloc();
+  else if(screen==='ledger') renderLedgerResults();
   toast('Removed from allocation');
 }
 
@@ -9461,13 +11000,15 @@ function renderSettings(){
     dbschema: {label:'🗄 Database Schema', html: `
       <div class="panel">
         <h3>🗄 Full Database Schema</h3>
-        <div class="mut" style="font-size:12px;margin-bottom:12px">Everything needed to stand up a brand-new LedgerOS database from scratch — all ${DB_SCHEMA_SQL.split('create table if not exists').length-1} tables, indexes, RLS policies, and the structural rows the app needs to function. Run it once against a new Supabase project, then restore your data from Backup &amp; Restore. It contains no personal data. Safe to re-run.</div>
+        <div class="mut" style="font-size:12px;margin-bottom:12px">One script, both jobs. Against a <b>new</b> Supabase project it builds the database from nothing — all ${DB_SCHEMA_CORE.split('create table if not exists').length-1} tables, indexes, RLS policies and the structural rows the app needs — after which you restore your data from Backup &amp; Restore. Against a database you <b>already have</b>, it adds whatever tables and columns have been introduced since, and leaves everything else untouched. It contains no personal data, never deletes or alters anything, and is safe to re-run.</div>
+        <div class="mut" style="font-size:11.5px;margin-bottom:12px;padding:8px 10px;background:var(--chip);border-radius:6px">💡 Run this after any update whose change log mentions a database change. Nothing bad happens if you run it when you didn't need to.</div>
         <div class="row" style="gap:8px;margin-bottom:12px">
           <button class="btn pri sm" onclick="copyDbSchemaSql()">📋 Copy SQL</button>
           <button class="btn ghost sm" onclick="downloadDbSchemaSql()">⬇ Download .sql</button>
         </div>
         <pre style="background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:460px;font-size:11.5px;line-height:1.5;white-space:pre;margin:0">${esc(DB_SCHEMA_SQL)}</pre>
-      </div>`},
+      </div>
+`},
     driftdetection: {label:'📉 Drift Detection', html: `
       <div class="panel">
         <h3>📉 Drift Detection</h3>
@@ -9692,6 +11233,7 @@ async function restoreFromBackup(parsed){
   await SB.from('pd_real_estate_buildings').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_forecast_account_rules').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_custom_forecast_categories').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_cash_movements').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_inv_valuations').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_inv_transactions').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_inv_positions').delete().neq('id',-1); bump('Clearing old data');
@@ -9721,11 +11263,12 @@ async function restoreFromBackup(parsed){
   bump('Restoring Smart Rules');
   if(D.customForecastCategories.length) await insertWithRetry('pd_custom_forecast_categories', D.customForecastCategories.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior})));
   if((D.invOwners||[]).length) await insertWithRetry('pd_inv_owners', D.invOwners.map(o=>({id:o.id, name:o.name, name_ar:o.nameAr||'', is_self:!!o.isSelf, out_acc:o.outAcc, in_acc:o.inAcc, profit_acc:o.profitAcc})));
-  if((D.invPlatforms||[]).length) await insertWithRetry('pd_inv_platforms', D.invPlatforms.map(p=>({id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc})));
-  if((D.invPositions||[]).length) await insertWithRetry('pd_inv_positions', D.invPositions.map(p=>({id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status})));
-  if((D.invTransactions||[]).length) await insertWithRetry('pd_inv_transactions', D.invTransactions.map(t=>({id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||''})));
+  if((D.invPlatforms||[]).length) await insertWithRetry('pd_inv_platforms', D.invPlatforms.map(p=>({id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null})));
+  if((D.invPositions||[]).length) await insertWithRetry('pd_inv_positions', D.invPositions.map(p=>({id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status, stmt_units:(p.stmtUnits===''||p.stmtUnits===undefined)?null:p.stmtUnits, stmt_date:p.stmtDate||null})));
+  if((D.invTransactions||[]).length) await insertWithRetry('pd_inv_transactions', D.invTransactions.map(t=>({id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||'', cash_side:t.cashSide||'bank', usd_amount:Number(t.usdAmount)||0, fee_pct:Number(t.feePct)||0, link_id:t.linkId||null, fee_units:Number(t.feeUnits)||0})));
   if((D.invValuations||[]).length) await insertWithRetry('pd_inv_valuations', D.invValuations.map(v=>({id:v.id, position_id:v.positionId, entry_date:v.date, price:v.price})));
-  if(D.invSettings && D.invSettings.fxUsdSar) await insertWithRetry('pd_inv_settings', [{id:1, fx_usd_sar:D.invSettings.fxUsdSar}]);
+  if((D.invCashMovements||[]).length) await insertWithRetry('pd_inv_cash_movements', D.invCashMovements.map(m=>({id:m.id, platform_id:m.platformId, entry_date:m.date, kind:m.kind, usd_amount:Number(m.usdAmount)||0, to_platform_id:m.toPlatformId||null, fee_usd:Number(m.feeUsd)||0, capital_usd:Number(m.capitalUsd)||0, profit_usd:Number(m.profitUsd)||0, owners:m.owners||[], note:m.note||''})));
+  if(D.invSettings && D.invSettings.fxUsdSar) await insertWithRetry('pd_inv_settings', [{id:1, fx_usd_sar:D.invSettings.fxUsdSar, mgmt_fee_pct:getInvMgmtFeePct(), recon_start_date:(D.invSettings||{}).reconStartDate||null}]);
   if(D.uiPrefs && D.uiPrefs.pageOrder) await insertWithRetry('pd_ui_prefs', [{id:1, page_order:D.uiPrefs.pageOrder}]);
   bump('Restoring Investments');
   bump('Restoring Custom Categories');
@@ -10331,6 +11874,7 @@ async function clearEverything(){
     await SB.from('pd_real_estate_buildings').delete().neq('id',-1);
     await SB.from('pd_forecast_account_rules').delete().neq('id',-1);
     await SB.from('pd_custom_forecast_categories').delete().neq('id',-1);
+    await SB.from('pd_inv_cash_movements').delete().neq('id',-1);
     await SB.from('pd_inv_valuations').delete().neq('id',-1);
     await SB.from('pd_inv_transactions').delete().neq('id',-1);
     await SB.from('pd_inv_positions').delete().neq('id',-1);

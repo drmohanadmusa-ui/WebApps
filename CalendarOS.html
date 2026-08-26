@@ -776,9 +776,29 @@ select.filter-select, input.filter-date{
 .lists-toc-item.active{background:var(--brass); color:#fff; font-weight:600;}
 .lists-toc-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .lists-toc-count{font-family:var(--font-mono); font-size:10.5px; opacity:.7; flex-shrink:0;}
+/* Folder headers use a SOLID accent fill with white text rather than a tint.
+   A tint over --paper-raised measured only 1.1-1.2x contrast against the card
+   in every theme (i.e. invisible), and the Midnight theme is dark but is set
+   via [data-theme], NOT body.dark-mode — so a dark-mode override never reached
+   it and its text landed at 2.8x, below the 4.5x floor. A solid --brass-deep
+   fill measures 5.0-8.1x against the card and 5.0-8.1x for white text across
+   all seven themes, with no dark-mode special case needed. */
 .lists-toc-folder-header{
-  padding:12px 16px 6px; font-size:10.5px; font-weight:600; text-transform:uppercase;
-  letter-spacing:0.04em; color:var(--slate-light);
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:11px 14px; font-family:var(--font-display); font-size:12.5px; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.08em;
+  background:var(--brass-deep); color:#fff;
+}
+.lists-toc-folder-header .folder-glyph{
+  font-size:11px; opacity:.75; flex-shrink:0;
+}
+.lists-toc-folder-header .folder-name{
+  flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.lists-toc-folder-header .folder-count{
+  font-family:var(--font-mono); font-size:10px; font-weight:600; letter-spacing:0;
+  flex-shrink:0; padding:2px 7px; border-radius:999px;
+  background:rgba(255,255,255,0.22); color:#fff;
 }
 
 .notebook-page{
@@ -977,6 +997,78 @@ table.log-table tr.log-row-active td{background:var(--teal-soft);}
 .sync-status.on{background:var(--teal-soft); color:var(--teal);}
 .sync-dot{width:7px; height:7px; border-radius:50%; background:var(--slate-light);}
 .sync-status.on .sync-dot{background:var(--teal);}
+.tag.tag-loc-moved{
+  background:color-mix(in srgb, var(--brass) 20%, transparent);
+  color:var(--brass-deep); font-weight:600;
+  border:1px dashed color-mix(in srgb, var(--brass) 55%, transparent);
+}
+body.dark-mode .tag.tag-loc-moved{color:var(--brass);}
+.resource-row{
+  display:flex; align-items:flex-start; gap:12px; padding:12px 16px;
+  border-bottom:1px solid var(--paper-dim);
+}
+.resource-row:last-child{border-bottom:none;}
+.resource-main{flex:1; min-width:0;}
+.resource-title{font-size:13.5px; font-weight:600; color:var(--ink);}
+.resource-body{font-size:12px; color:var(--slate-light); margin-top:3px; white-space:pre-wrap;}
+.resource-tags{display:flex; gap:4px; flex-wrap:wrap; margin-top:6px;}
+.resource-tag{
+  font-size:10px; background:var(--paper-dim); color:var(--ink-soft);
+  border-radius:4px; padding:1px 6px;
+}
+.resource-actions{display:flex; align-items:center; gap:4px; flex-shrink:0;}
+.ex-hist-row{
+  display:flex; align-items:baseline; gap:10px; padding:9px 14px 3px;
+}
+.ex-hist-date{font-size:12px; color:var(--slate-light); flex-shrink:0; min-width:112px;}
+.ex-hist-last{
+  font-family:var(--font-mono); font-size:9px; text-transform:uppercase;
+  background:var(--brass); color:#fff; border-radius:3px; padding:1px 4px; margin-left:4px;
+}
+.ex-hist-metrics{flex:1; font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--ink);}
+.ex-hist-diff{color:var(--brass); font-size:10px; letter-spacing:1px; flex-shrink:0;}
+.ex-hist-note{padding:0 14px 9px 138px; font-size:11.5px; color:var(--slate-light);}
+.chip-count{
+  font-family:var(--font-mono); font-size:9.5px; opacity:.75; margin-left:3px;
+}
+.chip-select button.chip-untagged{
+  border-style:dashed; border-color:var(--flag); color:var(--flag);
+}
+.chip-select button.chip-untagged.active{
+  background:var(--flag); border-style:solid; color:#fff;
+}
+.video-pick-row{
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  border-bottom:1px solid var(--paper-dim); text-decoration:none; color:var(--ink);
+}
+.video-pick-row:last-child{border-bottom:none;}
+.video-pick-row:hover{background:var(--paper-dim);}
+.video-pick-idx{
+  flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--brass);
+  color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;
+}
+.video-pick-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;}
+.video-pick-host{font-size:13px; font-weight:600;}
+.video-pick-url{
+  font-family:var(--font-mono); font-size:10.5px; color:var(--slate-light);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.video-pick-go{flex-shrink:0; color:var(--brass); font-size:13px;}
+.hyd-amount-entry{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:10px 12px; border:1px solid var(--brass); border-radius:8px;
+  background:color-mix(in srgb, var(--brass) 8%, var(--paper-raised));
+}
+.hyd-amount-label{font-weight:600; font-size:13px; color:var(--ink);}
+.hyd-amount-entry input{
+  width:110px; padding:6px 9px; border:1px solid var(--line); border-radius:6px;
+  font-size:14px; background:var(--paper); color:var(--ink);
+}
+.hyd-container-btn.active{
+  border-color:var(--brass); background:color-mix(in srgb, var(--brass) 16%, var(--paper-raised));
+  font-weight:600;
+}
+.sql-actions{display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;}
 .sql-block{
   background:var(--ink); color:#D8E4E0; font-family:var(--font-mono); font-size:11.5px;
   padding:14px; border-radius:8px; white-space:pre-wrap; line-height:1.6; overflow-x:auto;
@@ -1358,6 +1450,145 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
 <script id="seed-data" type="application/json">{"oneTime": [{"id": "ot1", "name": "Look into CME-4 courses", "location": "1.Office", "silo": "Career Development", "due": "2026-09-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot2", "name": "Look into Ali Yield max portfolio and the expected returns", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot3", "name": "Next bull cycle, risk on before halving, and all in on July post having year", "location": "1.Office", "silo": "Financial", "due": "2026-12-31", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot4", "name": "Adjust the trading file so the maximum loss is equivalent to the last trade games + + + Adjust the trading file to show the timeframe of the analysis", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot5", "name": "Start negotiations with Suits Cafe", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot6", "name": "Send follow up Whatsapp Message to Al Balad Al Amin", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot7", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot8", "name": "Book Villa inspection date", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-27", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot9", "name": "Throw out the watermelon", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-19", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot10", "name": "Update Lamees Account details and transfer her amount for this month", "location": "1.Office", "silo": "Financial", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot11", "name": "Convert the Todo file into webapp", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot12", "name": "Do the ironing", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot13", "name": "Follow up with RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot14", "name": "Finalize Meal Plan for the week (Egg Muffins + Ceaser Salad + Creamy pasta with grilled chicken)", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot15", "name": "Change my phone screen protector", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot16", "name": "Buy yougurt + Lemon", "location": "2.Errand", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot17", "name": "Send Rua Details to ABM", "location": "5.Last", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot18", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot19", "name": "Meal Prep (Ceaser Salad)", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot20", "name": "Deep Clean the Kitchen after Salad", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot21", "name": "Get in touch with Amazon about the refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot22", "name": "Restart the dishwasher", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot23", "name": "Create a short and impactful one to two lines fro intrdocutions", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot24", "name": "Book a date for car update & sim installation", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot25", "name": "Join LinkedIn premium and set monitering for \"Investor Relationgs Manager\"", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-10-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot26", "name": "Maybe a web app for work tasks follow ups?", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot27", "name": "Follow up with Umama from RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot28", "name": "Take two biscusts for Hebah and for Faisal", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot29", "name": "Re-contact Amazon for refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-24", "done": false, "priority": "Medium", "notes": ""}], "recurring": [{"id": "rt1", "name": "Lamees birthday preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt2", "name": "Lamees Birthday", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "25-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt3", "name": "Anniversary Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-10", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt4", "name": "Anniversary Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "11-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt5", "name": "Valentine Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt6", "name": "Valentine Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "14-02", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt7", "name": "Marriage Day Anniversary preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "20-03", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt8", "name": "Marriage Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "24-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt9", "name": "Make sure wellness benefits balance is used", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt10", "name": "Update the Personal Dashboard file with new features", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt11", "name": "Send statements to all accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt12", "name": "Post my accrual, budget and holding accounts clearance JVs", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt13", "name": "Review my P&L", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt14", "name": "Close my accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt15", "name": "Transfer the villa rent H2", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt16", "name": "Transfer the villa rent H1", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-06", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt17", "name": "Check if dates are correct (Esp. Monthly)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt18", "name": "Call Lamees' Parents", "location": "2.Errand", "silo": "Personal Tasks", "type": "Weekly", "detail": "Friday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt19", "name": "Pay Zain Data sim fees (SR 287.50) - 0535941766", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt20", "name": "Pay utilities bills for Villa", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "24", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt21", "name": "Shave down", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt22", "name": "Trim nails", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt23", "name": "Post the family crypto adjustment JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt24", "name": "Reconcile and log all crypto purchases", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt25", "name": "Make sure my ledger is updated", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt26", "name": "Work on / Review my stressors", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt27", "name": "Send Lamees a Song", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "13", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt28", "name": "Arrange work PC folders (Downloads + Desktop)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt29", "name": "Call for elevator maintenance", "location": "1.Office", "silo": "Financial", "type": "Every X Days", "detail": "55", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt30", "name": "Weekly buying of crypto", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt31", "name": "Read a part of the Mastering the Mental Game of Trading", "location": "3.Home", "silo": "Self Development", "type": "Every X Days", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt32", "name": "What will be Lamees' Gift for this month", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt33", "name": "Clean the dishwasher", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "120", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt34", "name": "Clean the washing machine & dryer", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "90", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt35", "name": "Prepare next day \"Casual\" clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt36", "name": "Send to Hussam his spending report", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "15", "start": "2026-01-01", "end": "2026-05-17", "priority": "Medium", "notes": ""}, {"id": "rt37", "name": "Lamees' Parents Birthday (Hala 09-05, Fareed 29-05)", "location": "1.Office", "silo": "Personal Tasks", "type": "Yearly", "detail": "01-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt38", "name": "Make sure all trades are logged", "location": "1.Office", "silo": "Financial", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt39", "name": "Pay Off Rajhi Visa & SNB Master Card", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "27", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt40", "name": "Post Budget JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt41", "name": "Reconcile Malaa rental income portfolio", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt42", "name": "Invest in Drahim - Abdulrahim Portfolio (for lower fees)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt43", "name": "Keep track of the 14th of every month (Crypto Volatility)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "12", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt44", "name": "Renew Mushtaq Authorization", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "170", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt45", "name": "Download simah report", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt46", "name": "Send other departments portal emails", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt47", "name": "Take last month's SNB cashback and invest it", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt48", "name": "Go through the Udemy (Break into CRE) Course or the Udacity Nano Degree", "location": "1.Office", "silo": "Self Development", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt49", "name": "Buy a new zain Data Sim (Look into buying the 171 SAR sim)", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "85", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt50", "name": "Respond to \"Partner with RUA\" queries", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt51", "name": "Do my laundry", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt52", "name": "Press my clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt53", "name": "Deep Clean the Kitchen", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt54", "name": "Water the plants if needed (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt55", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt56", "name": "Water the plants if needed (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt57", "name": "Plan my meals for the week + Order Groceries", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt58", "name": "Send current month PHD progress report", "location": "1.Office", "silo": "Self Development", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt59", "name": "Use the nose spray (Work)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt60", "name": "Use the nose spray (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt61", "name": "Take the money from Hussam account", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "26", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt62", "name": "Take the multivitamins + Zinc", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt63", "name": "Watch some videos from tools of the trade curriculum", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt64", "name": "Take the Vitamin D tablet (after food)", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": "2026-05-18", "priority": "Medium", "notes": ""}, {"id": "rt65", "name": "Drink Electrolytes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt66", "name": "Catchup on my inbox (Work)", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt67", "name": "Add new courses to LinkedIn", "location": "1.Office", "silo": "Career Development", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt68", "name": "Check if I have extra cash to deposit into Malaa", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt69", "name": "Check the JED>MED list", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt70", "name": "Check the Goals sheet and compare against the plan", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt71", "name": "Invest last month's rental income", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt72", "name": "Check the Buy wish list", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt73", "name": "Go over some of the document in the \"To Read\" List", "location": "1.Office", "silo": "Work", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt74", "name": "Take my GLP-1 injection", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt75", "name": "Refrsh the Car ad (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt76", "name": "Conslidate my Learning Respources (Icloud notes, and linkedin)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-11", "priority": "Medium", "notes": ""}, {"id": "rt77", "name": "Review LinkedIn and look for new jobs", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt78", "name": "Monjaro Follow up", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt79", "name": "Apply for a job", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt80", "name": "Categorize Linkedin Posts (Saved)", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2026-05-04", "end": "2026-06-01", "priority": "Medium", "notes": ""}, {"id": "rt81", "name": "Work on my ledger app on https://lovable.dev/ & https://www.figma.com/ - OLD", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-07-19", "priority": "Medium", "notes": ""}, {"id": "rt82", "name": "Revisit Lamees Birthday Preparations", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "3", "start": "2026-05-05", "end": "2026-05-31", "priority": "Medium", "notes": ""}, {"id": "rt83", "name": "Send to Anan the water Bill", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-05-05", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt84", "name": "Refrsh the Car ad (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt85", "name": "Catchup on my inbox (Personal)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt86", "name": "Log Current Weight", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt87", "name": "Log Meal - Breakfast", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt88", "name": "Log Meal - Lunch", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt89", "name": "Log Meal - Snack", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt90", "name": "Log Meal - Dinner", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt91", "name": "List the car in other selling sites", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-08", "end": "2026-05-10", "priority": "Medium", "notes": ""}, {"id": "rt92", "name": "3d Print Graduation hats", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-10", "end": "2026-05-14", "priority": "Medium", "notes": ""}, {"id": "rt93", "name": "Do LinkedIn Quizzes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt94", "name": "Close previous day in Lose It!", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-21", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt95", "name": "Clear the \"Done\" one time tasks", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt96", "name": "Update the LedgerOS app with Claude", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt97", "name": "Train it home", "location": "3.Home", "silo": "Personal Tasks", "type": "Days of Week", "detail": "Mon,Wed,Fri", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt98", "name": "Apply ear medcine", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-20", "end": "2026-07-24", "priority": "Medium", "notes": ""}, {"id": "rt99", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}]}</script>
 <script id="seed-lists" type="application/json">[{"title": "Things to Pack (MED > JED)", "items": [], "id": "list1"}, {"title": "Things to buy from JARIR", "items": [], "id": "list2"}, {"title": "Things to buy from Super Market", "items": [], "id": "list3"}, {"title": "Things to buy from Jawharat", "items": [], "id": "list4"}, {"title": "Things to Buy (Wish List)", "items": [{"text": "Replica brand shoes", "category": "Clothes", "done": false, "id": "list5_item1"}], "id": "list5"}, {"title": "Things to Pack (JED > MED)", "items": [], "id": "list6"}, {"title": "Things to buy from Saudia Amazon", "items": [], "id": "list7"}, {"title": "Things to buy from Mini Market", "items": [], "id": "list8"}, {"title": "To buy from Vegetable Store", "items": [], "id": "list9"}, {"title": "Career Discussion Points with Kashif", "items": [{"text": "Need to start leading some initiatives", "done": false, "id": "list10_item1"}, {"text": "Any feedback on the way I handled the developer selection project?", "done": false, "id": "list10_item2"}, {"text": "Any feedback on the way I handled the developer database project?", "done": false, "id": "list10_item3"}, {"text": "Manager = Senior Manager? If yes, what do I need to improve?", "done": false, "id": "list10_item4"}, {"text": "For next level (Director), what do I need to work on?", "done": false, "id": "list10_item5"}], "id": "list10"}, {"title": "To Do Before Travel", "items": [{"text": "Go home", "done": false, "id": "list11_item1"}, {"text": "Move laptop things to hotel bag", "done": false, "id": "list11_item2"}, {"text": "Make coffee", "done": false, "id": "list11_item3"}, {"text": "Empty the dishwasher", "done": false, "id": "list11_item4"}, {"text": "Start dishwasher cleaner", "done": false, "id": "list11_item5"}, {"text": "Take medicine", "done": false, "id": "list11_item6"}, {"text": "Take the electrolytes pills", "done": false, "id": "list11_item7"}, {"text": "Take the bags to my car", "done": false, "id": "list11_item8"}, {"text": "Hit the road", "done": false, "id": "list11_item9"}], "id": "list11"}, {"title": "Gift Ideas For Lamees", "items": [{"text": "I DO clock with the exact time", "done": false, "id": "list12_item1"}, {"text": "Disney projector", "done": false, "id": "list12_item2"}], "id": "list12"}, {"title": "Things to Buy (Realistic)", "items": [{"text": "Good size taqias", "category": "Clothes", "done": false, "id": "list13_item1"}, {"text": "Good size eqals", "category": "Clothes", "done": false, "id": "list13_item2"}, {"text": "Cartier copy pens (the green one)", "category": "Accessories", "done": false, "id": "list13_item3"}, {"text": "Sirwal sunnah", "category": "Clothes", "done": false, "id": "list13_item4"}], "id": "list13"}, {"title": "Home Cleaning Steps (Before a Visit)", "items": [{"text": "Iron all clothes", "done": false, "id": "list14_item1"}, {"text": "Finish laundry", "done": false, "id": "list14_item2"}, {"text": "Deep clean the bathrooms", "done": false, "id": "list14_item3"}, {"text": "Deep clean the kitchen", "done": false, "id": "list14_item4"}, {"text": "Wipe all surfaces", "done": false, "id": "list14_item5"}, {"text": "Clean the couches", "done": false, "id": "list14_item6"}, {"text": "Vacuum the floors", "done": false, "id": "list14_item7"}, {"text": "Wipe the floors", "done": false, "id": "list14_item8"}], "id": "list14"}, {"title": "Car Selling Websites", "items": [], "id": "list15"}, {"title": "Things to Pack (For Canada Trip)", "items": [], "id": "list16"}, {"title": "Zain SIM Tracker", "items": [{"text": "Jeddah Home", "done": false, "id": "list17_item1"}, {"text": "Madinah Home", "done": false, "id": "list17_item2"}, {"text": "Muhammad Madani", "done": false, "id": "list17_item3"}, {"text": "Lamees Car", "done": false, "id": "list17_item4"}, {"text": "BYD Car", "done": false, "id": "list17_item5"}], "id": "list17"}]</script>
 
+<script type="text/markdown" id="recipeImportTemplate">
+# CalendarOS — Recipe Import Template
+
+Hand this whole file to an AI along with a recipe (text, photo, link, or screenshot).
+It will give you back JSON you can paste into **CalendarOS → Recipes → ⇩ Import**.
+
+**One recipe at a time.** The importer rejects arrays of multiple recipes on purpose.
+
+---
+
+## Prompt to give the AI
+
+> Extract the recipe below into JSON using exactly the schema in the attached
+> CalendarOS Recipe Import Template. Output **only** the JSON object — no
+> commentary, no markdown code fences, no explanation. Convert every ingredient
+> quantity to **grams**. Where a quantity is given by volume or by count
+> (cups, tablespoons, "1 medium onion"), use standard conversion values and
+> your best estimate of typical weight. If you truly cannot estimate an
+> ingredient's weight, use `0` rather than omitting the ingredient.
+>
+> [paste the recipe here]
+
+---
+
+## Schema
+
+```json
+{
+  "name": "Creamy Pasta with Grilled Chicken",
+  "mealType": "lunch",
+  "baseServings": 2,
+  "imageUrl": "",
+  "ingredients": [
+    { "name": "Chicken breast", "grams": 300 },
+    { "name": "Penne pasta (dry)", "grams": 160 },
+    { "name": "Cooking cream", "grams": 120 },
+    { "name": "Parmesan, grated", "grams": 30 },
+    { "name": "Olive oil", "grams": 14 },
+    { "name": "Garlic cloves", "grams": 9 },
+    { "name": "Salt", "grams": 4 },
+    { "name": "Black pepper", "grams": 1 }
+  ],
+  "steps": "1. Season the chicken and grill 6-7 min per side, then rest and slice.\n2. Boil the pasta in salted water until al dente; reserve a little pasta water.\n3. Soften the garlic in olive oil, add cream, simmer 2 min.\n4. Stir in parmesan, then the drained pasta, loosening with pasta water.\n5. Top with the sliced chicken.",
+  "macros": {
+    "calories": 640,
+    "protein": 48,
+    "carbs": 62,
+    "fat": 20,
+    "fiber": 3
+  }
+}
+```
+
+---
+
+## Field reference
+
+| Field | Required | Type | Notes |
+|---|---|---|---|
+| `name` | **Yes** | string | The only truly required field. Import is rejected without it. |
+| `mealType` | No | string | Must be one of `breakfast`, `lunch`, `dinner`, `snack`, `dessert`. Anything else (e.g. `brunch`) is silently dropped to blank. |
+| `baseServings` | No | number | How many servings the listed quantities make. Must be greater than 0; anything else falls back to `1`. The app scales from this. |
+| `imageUrl` | No | string | A direct image URL, or `""`. |
+| `ingredients` | No | array | Each entry `{ "name": string, "grams": number }`. See below. |
+| `steps` | No | string *or* array | A single string with `\n` between steps, **or** an array of strings which the importer joins with newlines. Both work. |
+| `macros` | No | object | Keys `calories`, `protein`, `carbs`, `fat`, `fiber`. Per **serving**. Use `null` for anything unknown. |
+
+### Ingredients
+
+- `name` is **required per ingredient** — an entry without one is skipped, and the preview screen tells you how many were skipped.
+- `grams` must be a positive number. Anything missing, zero, negative, or non-numeric becomes `0`, which displays as `—`. The ingredient is still imported.
+- Grams only — there is no free-text quantity field. Ask the AI to convert.
+
+### Macros
+
+- Per serving, not per batch.
+- Any key you omit, or set to `null` / `""`, is stored as unknown and simply not displayed.
+
+---
+
+## Useful conversions for the AI
+
+| Measure | Approx. grams |
+|---|---|
+| 1 tsp oil | 4.5 |
+| 1 tbsp oil | 14 |
+| 1 tbsp butter | 14 |
+| 1 cup flour | 120 |
+| 1 cup rice (uncooked) | 185 |
+| 1 cup milk | 240 |
+| 1 cup water | 240 |
+| 1 large egg (no shell) | 50 |
+| 1 medium onion | 110 |
+| 1 garlic clove | 3 |
+| 1 medium tomato | 120 |
+| 1 medium potato | 170 |
+| 1 tsp salt | 6 |
+
+---
+
+## What happens on import
+
+1. **Paste or load the file** — Recipes → ⇩ Import. You can paste the JSON directly or load a `.json` file.
+2. **Preview** — you see the parsed name, meal type, servings, ingredient list, macros, and a count of any ingredients that were skipped. **Nothing has been saved at this point.**
+3. **Name conflict** — if a recipe with that name already exists, you're told so explicitly. Nothing is ever overwritten; you can edit the name right there in the preview before confirming, or import anyway and keep both.
+4. **Confirm** — only then is the recipe added and synced.
+
+Cancelling at any point writes nothing.
+
+---
+
+## Common failures
+
+| Message | Cause |
+|---|---|
+| *Could not parse that JSON* | Usually leftover ```` ```json ```` fences, a trailing comma, a smart quote, or a trailing `//` comment. Ask the AI for raw JSON only. |
+| *That looks like several recipes in one file* | The output is a JSON array. Import one recipe at a time. |
+| *The recipe needs a "name"* | `name` missing or blank. |
+
+### A note on comments and code fences
+
+The importer strips **whole-line `//` comments** (a line whose first non-space
+character is `//`) before parsing. Nothing else is stripped, so all of these
+will fail:
+
+| Form | Accepted? |
+|---|---|
+| `// note` on its own line | **Yes** |
+| `"name": "A" // note` — trailing comment | No |
+| `{ // note` — brace and comment on one line | No |
+| `/* note */` — block comment | No |
+| ` ```json ` … ` ``` ` — markdown code fences | No |
+
+This is why the prompt above tells the AI to output raw JSON with no
+commentary and no code fences. If you get a parse error, the fences are the
+first thing to check — they're by far the most common cause.
+
+</script>
+
 <script>
 /* =========================================================
    CalendarOS — Daily Ops
@@ -1400,7 +1631,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.21.0';
+const APP_VERSION = '4.28.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1408,6 +1639,55 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.28.0', changes: [
+    '\u{1F534} SQL migration required \u2014 Settings \u2192 Cloud Sync \u2192 Copy SQL. Adds video_urls to training_exercises, and a new training_resources table (also added to the row-level-security loop). Additive and idempotent, safe to re-run.',
+    'Fixed: after resolving an online/local difference at startup, the day-completion review was skipped entirely and only reappeared on the NEXT launch. init() deliberately stood aside for the divergence prompt, but nothing ever resumed the review once the prompt was answered \u2014 the deferral was implemented, the resumption was not. It now resumes as soon as you apply your choices. The original ordering is unchanged and intentional: the day review marks outstanding items as missed and pushes that upstream, so it must never run against data you have not yet confirmed. Startup-only, as before.',
+    'Training: exercises can now hold several form-guide videos. Enter one URL per line when adding or editing; with more than one, the \u25b6 button opens a list to pick from. The old single video_url column is still written as the first URL, so an older cached build keeps working, and imports accept either the old videoUrl or a new videoUrls array.',
+    'Training: new Resources sub-page \u2014 a free-form reference library for anything not tied to a single exercise (programme links, mobility routines, coaching cues). Title plus optional link, notes and tags. Tags reuse the existing exercise tags rather than inventing a second vocabulary.',
+    'Training: session randomizer. Pick a region (exercise tag) and how many exercises, and it stages them into the day. Two selection modes chosen at the point of use: "Least recent" favours exercises you have not trained in a while, "Pure random" ignores history. Both draw without replacement, skip anything already on the day, and add rows as UNSAVED pending adds you still review and save \u2014 nothing is written to your log behind your back. Your last choices are remembered.',
+    'Training: Exercise Library filter chips now show counts and include an "Untagged" chip, so exercises missing tags are easy to find \u2014 they are also the ones the randomizer cannot pick. Resources has the same filter.',
+    'Training: each logged exercise now has a \u21ba History button showing the last 5 sessions (date, sets \u00d7 reps @ weight, difficulty and notes), so you can set today\'s numbers from what you actually did. Walking exercises show distance, time, pace, heart rate, incline and calories instead. Read-only \u2014 it never writes anything, and it excludes the day you are currently logging.',
+    'Internal: training_resources is pulled separately from the other training tables on purpose. A select against a missing table throws, so folding a brand-new table into the main training pull would make any project that has not run the migration fail its entire training pull \u2014 the same blast-radius failure that was fixed earlier. Isolated, a missing table can only affect resources, and a failed resources pull preserves whatever is already local rather than replacing it with an empty list.',
+  ]},
+  { v:'4.27.0', changes: [
+    'No SQL migration needed for this release \u2014 all three changes are front-end only. hydration_logs already carried a per-row ml column, so variable amounts needed no schema change.',
+    'Hydration: amounts are now entered per log instead of being fixed per container. Tapping a container opens an inline ml box \u2014 type the amount and press Enter. So one Water Bottle can be 330ml now and 660ml later, and today\'s log sums them per container type (Water Bottle \u00d72 \u2014 990ml). The per-container grouping and summing already worked; what changed is that amounts can now differ.',
+    'Hydration containers are now just a name and an icon \u2014 the fixed Size (ml) field is gone from the add/edit dialog and from the container list. Existing containers keep their old stored size value untouched rather than having it stripped out, since deleting it would be a needless destructive write to synced settings; it is simply no longer used. Past hydration entries keep the exact amounts they were logged with.',
+    'Fixed: Lists folder headers blended into the card background in every theme. Two separate causes \u2014 the tint was far too weak (measured just 1.1\u20131.2\u00d7 contrast against the card, effectively invisible), and the Midnight theme is dark but is applied via [data-theme] rather than body.dark-mode, so the dark-mode override never reached it and its label text sat at 2.8\u00d7, below the 4.5\u00d7 accessibility floor. Headers now use a solid accent fill with white text, measuring 5.0\u20138.1\u00d7 against the card across all seven themes with no dark-mode special case.',
+    'Recipes: the AI import instructions are now embedded in the app itself \u2014 the import dialog has "Download instructions (.md)" and "Copy instructions" buttons, so you can get them from whichever machine you are on and hand them straight to an AI. The embedded copy is now the single source of truth; there is no longer a separate template file to drift out of sync.',
+  ]},
+  { v:'4.26.0', changes: [
+    '\u{1F534} SQL migration required — Settings \u2192 Cloud Sync \u2192 Copy SQL, run in the Supabase SQL editor. Adds two columns on app_settings: location_day_rules (the new weekend location rules below) and weekend_days. Additive/idempotent, safe to run anytime.',
+    'New: Weekend Location Rules (Settings \u2192 Appearance). On your weekend days, tasks in one location can be shown under another \u2014 e.g. everything normally at 1.Office appears under 3.Home on Fri/Sat. Configurable as a mapping list, so you can add more than one pair. Applies to recurring AND one-time tasks, across the Dashboard grouping, location tags, task colours, the Week and Calendar views, the location filter, search, and Progress location stats.',
+    'Important design point on the above: this is a DISPLAY rule only. A task\'s stored location is never rewritten \u2014 the remap is resolved at read time, every time. Deleting a rule instantly restores the previous behaviour exactly, no data is migrated or lost, and CSV export still contains the real stored location. Remapped tasks are tagged with a \u21b7 and a tooltip naming their normal location, so the change is never silent.',
+    'Chained rules (A\u2192B when B\u2192C already exists) are rejected at the point of adding, since resolution is deliberately a single hop \u2014 a chain would silently not do what it appears to.',
+    'weekend_days now syncs across devices. It was previously local-only, which would have made the same weekend rules resolve differently on different machines now that they depend on it.',
+    'Lists page: folder labels are much more prominent \u2014 a tinted header band across the top of each folder card, larger and bolder display type, and a count badge showing how many lists are in that folder. Same treatment for every folder, as requested.',
+    'Settings \u2192 Cloud Sync: the long SQL block is now collapsed behind a "Show SQL" toggle, with "Copy SQL" moved to the top \u2014 no more scrolling past the whole script. Copy works while the block is still collapsed.',
+    'Recipes: new "\u21e9 Import" button accepting pasted or file-loaded JSON, one recipe at a time, with a preview step before anything is saved. If a recipe with that name already exists you are told, and can rename it in the preview before importing \u2014 nothing is ever overwritten silently. A separate CalendarOS-Recipe-Import-Template.md file documents the format for handing to an AI.',
+  ]},
+  { v:'4.25.1', changes: [
+    'Fixed a real, reported bug: the local vs online conflict prompt was flagging nearly every recurring task as "different" even when the completion counts matched exactly (e.g. "Local: 28 completion records / Online: 28 completion records" shown as a conflict). Root cause: the comparison used raw JSON.stringify() on the whole completion record, which is sensitive to both key order and to loggedAt timestamp FORMAT — Supabase returns timestamps in a different string representation than what gets written locally for the exact same instant, so identical data was being flagged as different purely due to formatting, not content. Comparison now checks only status per date (the part that is actually substantive to reconcile) with dates sorted for order-independence. Verified by reproducing the exact reported scenario, and confirmed genuine differences (a real status mismatch, a real list folder mismatch) are still caught correctly.',
+  ]},
+  { v:'4.25.0', changes: [
+    'Local vs online conflict prompt reworked: resolution is now per-category by default (Tasks, Lists), each with "Keep all local" / "Keep all online" buttons, plus a per-item expand toggle to review and override individual tasks or lists one at a time. Each item shows a real local-vs-online comparison summary. Closing without choosing still keeps online for everything, unchanged.',
+    'Found and fixed a real bug while testing the above: applying local choices always attempted to push to Supabase even when sync was not configured, which would throw instead of just applying locally. Fixed to match the pattern used everywhere else in the app.',
+    'Progress page: three more insights added, as brainstormed. Streaks — longest active completion streak, with others listed below it. Location/Silo performance — best and worst by location and by category, with a minimum sample size so one lucky completion cannot look like "100%". 30-Day Trend — whether your overall commitment rate is improving, declining, or steady compared to the previous 30 days. A task\'s individual detail page also now shows its current streak and, where there is a clear lean, what time of day it is usually completed.',
+  ]},
+  { v:'4.24.0', changes: [
+    'Items 2 and 3 from this batch (more drink icons, local vs online conflict prompt) were already shipped in 4.22.0/4.23.0 — confirmed still in place, nothing further needed there.',
+    '🔴 SQL migration required — Settings → Cloud Sync → Copy SQL, run in the Supabase SQL editor. Adds tag_ids on training_exercises and exercise_tags on app_settings. Additive/idempotent, safe to run anytime.',
+    'Exercise Library: exercises can now be tagged (e.g. body parts — Legs, Push, Pull, Core, etc.). Tags are fully custom — create, rename, and delete them from a ⚙ Manage Tags button. Tags show as pills on each exercise and there is a filter row to browse by tag.',
+    'Progress page: new "Frequently Missed" section flags tasks with a real pattern of being missed (at least 30% miss rate, with at least 3 resolved occurrences so a single early miss does not get flagged). Where there is a clear weekday lean, it also surfaces which day the task is usually missed on (e.g. "usually on Mondays").',
+  ]},
+  { v:'4.23.0', changes: [
+    'New: when this device and the online copy disagree at startup, you now get an explicit choice instead of the app quietly picking a winner. The prompt lists exactly what differs — completions that exist here but not online, lists whose folder assignment does not match, differing task/list/item counts — with the highest-stakes differences flagged in red. Silent resolution is precisely how completed tasks reverted to pending and list folders were lost previously, so this closes that gap directly.',
+    'Design of the prompt: it stays silent when the two copies agree (the normal case), it is a single whole-app choice but itemised so the decision is informed, and closing or dismissing it keeps the ONLINE copy — the safer default, stated on the prompt itself so dismissing is never an accidental destructive act. Choosing "Keep this device" restores this device\'s pre-sync state and pushes it up as authoritative.',
+    'The prompt is deliberately ordered BEFORE the New Day review, because New Day marks unresolved tasks as missed and writes that to Supabase — it must never run against data you have not confirmed is the right copy.',
+  ]},
+  { v:'4.22.0', changes: [
+    'Hydration containers now have 24 icons to choose from instead of 8 — covering coffees and hot drinks (coffee, tea, teapot, bubble tea), water and bottles, juice and soft drinks, citrus and fruit, ice and chilled, plus sport/energy options. The picker lays them out as a compact scrollable grid.',
+  ]},
   { v:'4.21.0', changes: [
     'FOUND THE REAL CAUSE of the recurring "storage is full" errors. The usage panel reported only 53.5 KB while saves were failing against a ~5 MB limit — which made no sense until the key detail: browsers cap local storage PER DOMAIN, shared by every app on it, not per app. CalendarOS and LedgerOS are both served from the same GitHub Pages domain, so they draw on the same pool. The previous panel only counted keys with the CalendarOS prefix, so it showed ~1% while the rest of the pool was being consumed by the other app — hiding the actual cause completely.',
     'The Local Storage Usage panel now scans everything on the domain, splits the total into "CalendarOS" vs "Other apps on this domain", tags foreign entries as OTHER-APP, and shows a warning when another app is the main consumer, explaining that clearing CalendarOS caches will not help in that case.',
@@ -1760,6 +2040,12 @@ const HIDEABLE_PAGES = [
 ];
 const DEFAULT_SETTINGS_EXTRAS = {
   weekendDays: ['Fri','Sat'],
+  // Weekend location remapping. On days listed in weekendDays, a task whose
+  // location is `from` is TREATED AS being at `to` — for display, grouping,
+  // filtering, colouring and Progress stats. The task's stored `location` is
+  // NEVER rewritten; this is a pure read-time resolution (see taskLocationFor).
+  // Shape: [{ id, from, to }]. Empty = feature off, behaviour identical to before.
+  locationDayRules: [],
   completedColor: '#3C7A73',
   accentColor: '#B9862F',
   recurTypeColors: {
@@ -1808,6 +2094,9 @@ const DEFAULT_SETTINGS_EXTRAS = {
   // live in state.hydrationLogs / a dedicated table — this array is just
   // the managed definitions, like locations/silos.
   hydrationContainers: [], // [{id, name, ml, icon}]
+  // Exercise body-part/category tags — real data (not a device preference),
+  // same treatment as listFolders. Each exercise stores tagIds: [] referencing these.
+  exerciseTags: [], // [{id, name}]
   hydrationGoalMl: 2500,
   hydrationDefaultsSeeded: false, // local-only flag, same pattern as healthCoreMetricsSeeded
   // Named filter presets for Week/Calendar — also real data (not a display
@@ -1887,7 +2176,7 @@ const state = {
   // Training: exercises are a reusable library; sessions reference exercises via blocks;
   // calendar maps a specific date -> sessionId (this is what gets re-mapped monthly);
   // logs are session-level (completed/difficulty/notes) keyed by date.
-  training: { exercises: [], sessions: [], calendar: [], logs: [] },
+  training: { exercises: [], sessions: [], calendar: [], logs: [], resources: [] }, // resources: free-form reference library [{id,title,url,body,tagIds}]
   trainingSelectedDate: null, // date being viewed/logged on the Training page; defaults to today on first render
   recipes: { items: [] }, // recipe library — see recipe/ingredient row conversion functions
   recipesSelectedId: null, // which recipe is open in detail view, if any
@@ -2092,6 +2381,15 @@ const pendingCompletionDeletes = [];
 const pendingTrainingDeletes = []; // [{table, match: {col:val,...}}]
 const pendingRecipeDeletes = []; // [{table, match: {col:val,...}}]
 const pendingHydrationDeletes = []; // [{table, match: {col:val,...}}]
+let pendingDivergence = null; // set by a pull when local and remote disagree; consumed by maybeShowDivergenceModal()
+/* Set by init() when the New Day review had to stand aside for a divergence
+   prompt, and consumed by applyDivergenceChoices() once that prompt is
+   resolved. Without this the review was simply DROPPED for that launch: init
+   returned early intending to defer it, but nothing ever resumed it, so it
+   only reappeared on the next launch (lastActiveDate still being stale).
+   Deliberately startup-only — a mid-session sync that happens to surface a
+   divergence should not pop a "Good morning" review. */
+let newDayDeferredByDivergence = false;
 // Same pattern for health metric definitions — deleting one locally without
 // also telling Supabase means the next pull brings it right back (this was
 // a real, reported bug: "delete a metric, refresh, it's back").
@@ -2309,9 +2607,9 @@ async function loadAll(){
     // even when sync is on — same treatment as tasks/lists.
     if(trainingRes){
       const t = JSON.parse(trainingRes.value);
-      state.training = { exercises: t.exercises||[], sessions: t.sessions||[], calendar: t.calendar||[], logs: t.logs||[] };
+      state.training = { exercises: t.exercises||[], sessions: t.sessions||[], calendar: t.calendar||[], logs: t.logs||[], resources: t.resources||[] };
     } else {
-      state.training = { exercises: [], sessions: [], calendar: [], logs: [] };
+      state.training = { exercises: [], sessions: [], calendar: [], logs: [], resources: [] };
     }
 
     // Recipes — same treatment as Training (small/bounded, kept locally
@@ -2574,10 +2872,19 @@ function rowToRating(row){
 }
 function trainingExerciseToRow(ex){
   const s = state.settings.sync;
-  return { pin:s.pin, id:ex.id, name:ex.name, video_url:ex.videoUrl||null, notes:ex.notes||'', category:ex.category||'strength', updated_at:new Date().toISOString() };
+  // video_url is still written as the FIRST url so an older cached build (or
+  // any consumer expecting the single-video shape) keeps working unchanged.
+  // video_urls is the full list and is the source of truth going forward.
+  const urls = exVideoUrls(ex);
+  return { pin:s.pin, id:ex.id, name:ex.name, video_url:urls[0]||null, video_urls:urls, notes:ex.notes||'', category:ex.category||'strength', tag_ids: ex.tagIds||[], updated_at:new Date().toISOString() };
 }
 function rowToTrainingExercise(r){
-  return { id:r.id, name:r.name, videoUrl:r.video_url||'', notes:r.notes||'', category:r.category||'strength' };
+  // Prefer video_urls when present; fall back to the legacy single video_url
+  // so rows written before the migration still surface their video.
+  const list = Array.isArray(r.video_urls) && r.video_urls.length
+    ? r.video_urls.filter(u=>typeof u==='string' && u.trim()).map(u=>u.trim())
+    : (r.video_url ? [r.video_url] : []);
+  return { id:r.id, name:r.name, videoUrl:list[0]||'', videoUrls:list, notes:r.notes||'', category:r.category||'strength', tagIds: r.tag_ids||[] };
 }
 function trainingSessionToRow(sess){
   const s = state.settings.sync;
@@ -2629,6 +2936,30 @@ function hydrationLogToRow(l){
 function rowToHydrationLog(r){
   return { id:r.id, date:r.log_date, containerId:r.container_id, ml:r.ml||0, loggedAt:r.logged_at };
 }
+/* Single accessor for an exercise's videos. Exercises may carry the legacy
+   single `videoUrl`, the newer `videoUrls` array, or both — every consumer
+   goes through here so none of them has to know which. */
+function exVideoUrls(ex){
+  if(!ex) return [];
+  const out = [];
+  const push = (u)=>{
+    if(typeof u !== 'string') return;
+    const t = u.trim();
+    if(t && !out.includes(t)) out.push(t);
+  };
+  if(Array.isArray(ex.videoUrls)) ex.videoUrls.forEach(push);
+  push(ex.videoUrl);
+  return out;
+}
+
+function trainingResourceToRow(r){
+  const s = state.settings.sync;
+  return { pin:s.pin, id:r.id, title:r.title, url:r.url||null, body:r.body||'', tag_ids:r.tagIds||[], updated_at:new Date().toISOString() };
+}
+function rowToTrainingResource(r){
+  return { id:r.id, title:r.title||'', url:r.url||'', body:r.body||'', tagIds: Array.isArray(r.tag_ids)?r.tag_ids:[] };
+}
+
 function trainingLogToRow(l){
   const s = state.settings.sync;
   // exerciseId is never actually null in practice — sessions with no
@@ -2720,7 +3051,7 @@ async function pushFullStateToSupabase(onProgress){
     ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
     ()=> flushPendingMetricDefDeletes(),
     ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
-    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
   ];
   // Training runs AFTER the core steps and is deliberately fault-isolated
   // from them: if the training-tables SQL migration hasn't been run yet in
@@ -2857,6 +3188,16 @@ async function pullFromSupabase(onProgress){
 
   const hasAnyRemoteData = oneTimeRows.length || recurringRows.length || listRows.length;
 
+  // Snapshot what THIS DEVICE currently holds, before any of it is replaced
+  // by the pull. Without this there is nothing left to compare against or
+  // to restore from if the person decides the local copy was the right one.
+  const localSnapshot = hasAnyRemoteData ? {
+    oneTime: JSON.parse(JSON.stringify(state.tasks.oneTime||[])),
+    recurring: JSON.parse(JSON.stringify(state.tasks.recurring||[])),
+    completions: JSON.parse(JSON.stringify(state.tasks.completions||{})),
+    lists: JSON.parse(JSON.stringify(state.lists||[])),
+  } : null;
+
   if(hasAnyRemoteData){
     state.tasks.oneTime = oneTimeRows.map(rowToOneTime);
     state.tasks.recurring = recurringRows.map(rowToRecurring);
@@ -2894,11 +3235,38 @@ async function pullFromSupabase(onProgress){
     });
     state.lists = listRows.map(l=>({ id:l.id, title:l.title, folder:l.folder||null, items: itemsByList[l.id] || [] }));
 
+    // Now that the remote copy has been applied, compare it against what this
+    // device held a moment ago. Anything meaningful that differs is surfaced
+    // as an explicit choice rather than silently resolved — silent resolution
+    // is exactly what previously reverted completed tasks and wiped list
+    // folder assignments without anyone noticing.
+    if(localSnapshot){
+      pendingDivergence = detectDivergence(localSnapshot, {
+        oneTime: state.tasks.oneTime,
+        recurring: state.tasks.recurring,
+        completions: state.tasks.completions,
+        lists: state.lists,
+      }, localSnapshot);
+    }
+
     state.health = healthRows.map(rowToHealth);
     state.dailyRatings = ratingRows.map(rowToRating);
     state.healthMetricDefs = metricDefRows.map(rowToMetricDef);
     pendingMetricDefDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
     ensureCoreMetricDefs();
+
+    // training_resources is pulled SEPARATELY and is NOT in trainingTables, on
+    // purpose. supaSelectAll THROWS on a missing table, so including a
+    // newly-added table in that loop would mean any project that hasn't run
+    // the v4.28.0 migration yet fails its ENTIRE training pull — precisely the
+    // blast-radius failure described above. Isolated here, a missing
+    // training_resources table can only ever affect resources.
+    let resourcesPulled = null;
+    try{
+      resourcesPulled = await supaSelectAll('training_resources');
+    } catch(e){
+      diagLogEvent('supabase', 'training_resources pull skipped (table missing or unreachable)', { error: e.message||String(e) });
+    }
 
     if(trainingPulled){
       state.training = {
@@ -2906,8 +3274,16 @@ async function pullFromSupabase(onProgress){
         sessions: trainingPulled.training_sessions.map(rowToTrainingSession),
         calendar: trainingPulled.training_calendar.map(rowToTrainingCalendar),
         logs: trainingPulled.training_logs.map(rowToTrainingLog),
+        // If the resources pull failed, PRESERVE what's already local rather
+        // than assigning [] — otherwise a missing table would silently delete
+        // the person's whole reference library on the next open.
+        resources: resourcesPulled ? resourcesPulled.map(rowToTrainingResource) : ((state.training && state.training.resources) || []),
       };
       pendingTrainingDeletes.length = 0; // remote is now authoritative, drop any stale pending deletes
+    } else if(resourcesPulled){
+      // Training pull failed but resources came back — apply just that slice,
+      // leaving every other part of state.training untouched.
+      state.training = Object.assign({}, state.training, { resources: resourcesPulled.map(rowToTrainingResource) });
     }
     // else: training fetch failed — leave state.training exactly as it was
     // (whatever loadAll() already put there), rather than wiping it or
@@ -2938,7 +3314,14 @@ async function pullFromSupabase(onProgress){
       if(settingsRows[0].week_view_presets) state.settings.weekViewPresets = settingsRows[0].week_view_presets;
       if(settingsRows[0].calendar_view_presets) state.settings.calendarViewPresets = settingsRows[0].calendar_view_presets;
       if(settingsRows[0].hydration_containers) state.settings.hydrationContainers = settingsRows[0].hydration_containers;
+      if(settingsRows[0].exercise_tags) state.settings.exerciseTags = settingsRows[0].exercise_tags;
       if(settingsRows[0].hydration_goal_ml!=null) state.settings.hydrationGoalMl = settingsRows[0].hydration_goal_ml;
+      // Array.isArray rather than truthiness: an intentionally EMPTY array
+      // (all weekend days cleared, or all location rules deleted) must still
+      // apply, while a missing column — i.e. the migration hasn't been run
+      // yet — is undefined and correctly leaves the local value untouched.
+      if(Array.isArray(settingsRows[0].weekend_days)) state.settings.weekendDays = settingsRows[0].weekend_days;
+      if(Array.isArray(settingsRows[0].location_day_rules)) state.settings.locationDayRules = settingsRows[0].location_day_rules;
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
       // instead of each device only ever trusting its own local record.
@@ -3476,7 +3859,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
     ]);
   }
 }
@@ -3489,6 +3872,7 @@ async function saveTraining(){
       ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
       ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
       ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+      ()=> { const rows = (state.training.resources||[]).map(trainingResourceToRow); return rows.length ? supaUpsert('training_resources', rows, 'pin,id') : null; },
     ]);
   }
 }
@@ -3567,6 +3951,45 @@ function siloColor(silo){
 }
 
 const LOCATION_FALLBACK_PALETTE = ['#5C7999','#B9862F','#4C7A3D','#A0527A','#7C5CBF','#C1443D','#3A3F47','#3C7A73'];
+/* ---------- Weekend location remapping ----------
+   A task's stored `location` is its DEFAULT — where it normally happens.
+   On weekend days (state.settings.weekendDays) an optional set of mapping
+   rules can remap one location to another, e.g. "1.Office" -> "3.Home".
+
+   CRITICAL DESIGN NOTE: this is resolution at READ time only. The stored
+   task.location is never rewritten, and the sync mappers (oneTimeToRow /
+   recurringToRow) deliberately keep pushing the RAW value. That means:
+     - turning the feature off restores the previous behaviour exactly,
+     - no historical data is mutated,
+     - nothing can be lost if a rule is edited or deleted.
+   Everything user-visible (grouping, tags, colours, filters, Progress stats)
+   goes through taskLocationFor(). Raw exports (CSV) keep the stored value.
+
+   `dateStr` may be null/undefined — callers without a date context get the
+   task's default location, which is always the safe answer.
+*/
+function isWeekendDate(dateStr){
+  if(!dateStr) return false;
+  const d = parseDate(dateStr);
+  if(!d || isNaN(d.getTime())) return false;
+  const wd = state.settings.weekendDays || [];
+  return wd.includes(DOW_ABBR[d.getDay()]);
+}
+function taskLocationFor(task, dateStr){
+  const base = (task && task.location) || '';
+  if(!dateStr) return base;
+  const rules = state.settings.locationDayRules || [];
+  if(!rules.length) return base;
+  if(!isWeekendDate(dateStr)) return base;
+  const rule = rules.find(r=> r && r.from === base && r.to);
+  return rule ? rule.to : base;
+}
+/* True when this task is showing somewhere other than its stored location on
+   the given date — used to mark the tag so the remap is visible, not silent. */
+function isLocationRemapped(task, dateStr){
+  return taskLocationFor(task, dateStr) !== ((task && task.location) || '');
+}
+
 function locationColor(loc){
   if(!state.settings.locationColors) state.settings.locationColors = {};
   if(state.settings.locationColors[loc]) return state.settings.locationColors[loc];
@@ -3687,25 +4110,25 @@ function buildActivityLog(daysBack){
     const comp = state.tasks.completions[t.id] || {};
     Object.keys(comp).forEach(dateStr=>{
       if(cutoff && dateStr < cutoff) return;
-      entries.push({ date: dateStr, taskId: t.id, taskName: t.name, kind:'recurring', status: comp[dateStr].status, location:t.location, silo:t.silo });
+      entries.push({ date: dateStr, taskId: t.id, taskName: t.name, kind:'recurring', status: comp[dateStr].status, location:taskLocationFor(t, dateStr), silo:t.silo });
     });
     (t.rescheduleExceptions||[]).forEach(ex=>{
       if(cutoff && ex.from < cutoff) return;
-      entries.push({ date: ex.from, taskId: t.id, taskName: t.name, kind:'recurring', status:'moved', movedTo: ex.to, location:t.location, silo:t.silo });
+      entries.push({ date: ex.from, taskId: t.id, taskName: t.name, kind:'recurring', status:'moved', movedTo: ex.to, location:taskLocationFor(t, ex.from), silo:t.silo });
     });
   });
 
   state.tasks.oneTime.forEach(t=>{
     if(t.done && t.doneDate){
-      if(!cutoff || t.doneDate >= cutoff) entries.push({ date:t.doneDate, taskId:t.id, taskName:t.name, kind:'oneTime', status:'done', location:t.location, silo:t.silo });
+      if(!cutoff || t.doneDate >= cutoff) entries.push({ date:t.doneDate, taskId:t.id, taskName:t.name, kind:'oneTime', status:'done', location:taskLocationFor(t, t.doneDate), silo:t.silo });
     } else if(!t.done && t.due && t.due < today){
-      if(!cutoff || t.due >= cutoff) entries.push({ date:t.due, taskId:t.id, taskName:t.name, kind:'oneTime', status:'missed', location:t.location, silo:t.silo });
+      if(!cutoff || t.due >= cutoff) entries.push({ date:t.due, taskId:t.id, taskName:t.name, kind:'oneTime', status:'missed', location:taskLocationFor(t, t.due), silo:t.silo });
     }
     const hist = t.dueHistory||[];
     hist.forEach((oldDue,i)=>{
       if(cutoff && oldDue < cutoff) return;
       const to = i+1<hist.length ? hist[i+1] : t.due;
-      entries.push({ date: oldDue, taskId:t.id, taskName:t.name, kind:'oneTime', status:'moved', movedTo: to, location:t.location, silo:t.silo });
+      entries.push({ date: oldDue, taskId:t.id, taskName:t.name, kind:'oneTime', status:'moved', movedTo: to, location:taskLocationFor(t, oldDue), silo:t.silo });
     });
   });
 
@@ -3728,6 +4151,193 @@ function progressStatusLabel(status){
 }
 function progressStatusBadge(status){
   return `<span style="display:inline-flex; align-items:center; gap:4px; background:${progressStatusColor(status)}; color:#fff; font-size:10.5px; font-weight:700; padding:3px 9px 3px 7px; border-radius:999px; text-transform:uppercase; letter-spacing:0.03em; white-space:nowrap; flex-shrink:0;">${progressStatusIcon(status)} ${progressStatusLabel(status)}</span>`;
+}
+
+// Flags tasks with a real pattern of being missed — not just "was missed
+// once". Requires a minimum sample size so a brand-new task with 1 miss out
+// of 1 occurrence doesn't get flagged as "100% missed".
+const FREQUENTLY_MISSED_MIN_SAMPLE = 3;
+const FREQUENTLY_MISSED_RATE_THRESHOLD = 0.3;
+function getFrequentlyMissedTasks(){
+  const stats = {};
+  const ensure = (taskId, name, kind) => {
+    if(!stats[taskId]) stats[taskId] = { taskId, name, kind, done:0, missed:0, dowMissCounts:[0,0,0,0,0,0,0] };
+    return stats[taskId];
+  };
+  state.tasks.recurring.forEach(t=>{
+    const comp = state.tasks.completions[t.id] || {};
+    Object.entries(comp).forEach(([dateStr, o])=>{
+      const s = ensure(t.id, t.name, 'recurring');
+      if(o.status==='done') s.done++;
+      else if(o.status==='missed'){ s.missed++; s.dowMissCounts[parseDate(dateStr).getDay()]++; }
+    });
+  });
+  state.tasks.oneTime.forEach(t=>{
+    if(t.done && t.doneDate){ ensure(t.id, t.name, 'oneTime').done++; }
+    else if(!t.done && t.due && t.due < todayStr()){
+      const s = ensure(t.id, t.name, 'oneTime');
+      s.missed++;
+      s.dowMissCounts[parseDate(t.due).getDay()]++;
+    }
+  });
+  return Object.values(stats)
+    .map(s=>{
+      const resolved = s.done + s.missed;
+      const missRate = resolved ? s.missed/resolved : 0;
+      const maxDowCount = Math.max(...s.dowMissCounts);
+      // Only surface a "usually missed on X" insight when there's an actual
+      // lean toward one day — not when misses are evenly spread across the week.
+      const worstDow = (s.missed>=2 && maxDowCount >= 2 && maxDowCount > s.missed/7)
+        ? DOW_FULL[s.dowMissCounts.indexOf(maxDowCount)] : null;
+      return Object.assign(s, { resolved, missRate, worstDow });
+    })
+    .filter(s=> s.resolved >= FREQUENTLY_MISSED_MIN_SAMPLE && s.missRate >= FREQUENTLY_MISSED_RATE_THRESHOLD)
+    .sort((a,b)=> b.missRate - a.missRate || b.missed - a.missed);
+}
+function renderFrequentlyMissedSection(){
+  const flagged = getFrequentlyMissedTasks();
+  if(!flagged.length) return '';
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Frequently Missed</h2><span class="section-count">${flagged.length} task${flagged.length===1?'':'s'}</span></div>
+      <div class="page-sub" style="margin-bottom:8px;">Tasks missed at least ${Math.round(FREQUENTLY_MISSED_RATE_THRESHOLD*100)}% of the time, with at least ${FREQUENTLY_MISSED_MIN_SAMPLE} resolved occurrences.</div>
+      <div class="card" style="padding:4px 16px;">
+        ${flagged.map(s=>`
+          <div class="metric-manage-row" style="cursor:pointer; background:var(--flag-soft); border-radius:8px; margin:4px 0; padding:8px 10px;" onclick="openProgressTaskDetail('${s.taskId}')">
+            <span class="metric-manage-name">
+              <b>${escapeHtml(s.name)}</b>
+              <span class="page-sub" style="margin-left:6px;">${s.missed}/${s.resolved} missed (${Math.round(s.missRate*100)}%)${s.worstDow?` · usually on ${s.worstDow}s`:''}</span>
+            </span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Insights: streaks, location/silo performance, trend ---------- */
+// Current streak = consecutive 'done' entries counting back from the most
+// recent LOGGED date for that task (not necessarily today), stopping at the
+// first 'missed'. Recurring tasks only — a one-time task has no repeat
+// cadence for "streak" to mean anything.
+function computeTaskStreak(taskId){
+  const comp = state.tasks.completions[taskId] || {};
+  const dates = Object.keys(comp).sort((a,b)=> a<b ? 1 : -1); // most recent first
+  let streak = 0;
+  for(const d of dates){
+    if(comp[d].status === 'done') streak++;
+    else break;
+  }
+  return streak;
+}
+function getTopStreaks(limit){
+  return state.tasks.recurring
+    .map(t=> ({ taskId:t.id, name:t.name, streak: computeTaskStreak(t.id) }))
+    .filter(s=> s.streak >= 3) // below this a "streak" isn't really a meaningful insight yet
+    .sort((a,b)=> b.streak-a.streak)
+    .slice(0, limit||3);
+}
+
+// Best/worst by location or silo — a minimum sample size so a group with
+// one lucky completion doesn't read as "100% best".
+const GROUP_STATS_MIN_SAMPLE = 3;
+function computeGroupStats(groupKeyFn){
+  const stats = {};
+  buildActivityLog(null).forEach(e=>{
+    if(e.status==='moved') return;
+    const key = groupKeyFn(e) || 'Unassigned';
+    if(!stats[key]) stats[key] = { key, done:0, missed:0 };
+    if(e.status==='done') stats[key].done++; else stats[key].missed++;
+  });
+  return Object.values(stats)
+    .map(s=> Object.assign(s, { total: s.done+s.missed, rate: (s.done+s.missed) ? s.done/(s.done+s.missed) : null }))
+    .filter(s=> s.total >= GROUP_STATS_MIN_SAMPLE)
+    .sort((a,b)=> b.rate-a.rate);
+}
+
+// Overall trend: last 30 days' completion rate vs the 30 days before that.
+function computeOverallTrend(){
+  const today = todayStr();
+  const midpoint = addDays(today, -30);
+  const recent = buildActivityLog(30).filter(e=>e.status!=='moved');
+  const prior = buildActivityLog(60).filter(e=> e.status!=='moved' && e.date < midpoint);
+  const rate = (arr)=>{ const done=arr.filter(e=>e.status==='done').length; return arr.length ? done/arr.length : null; };
+  const recentRate = rate(recent), priorRate = rate(prior);
+  if(recentRate===null || priorRate===null) return null;
+  return { recentRate, priorRate, deltaPct: Math.round((recentRate-priorRate)*100) };
+}
+
+function renderInsightsSection(){
+  const streaks = getTopStreaks(3);
+  const byLocation = computeGroupStats(e=>e.location);
+  const bySilo = computeGroupStats(e=>e.silo);
+  const trend = computeOverallTrend();
+
+  const hasAny = streaks.length || byLocation.length || bySilo.length || trend;
+  if(!hasAny) return '';
+
+  const pill = (label, value, color) => `
+    <div class="card" style="padding:12px 14px; flex:1; min-width:180px;">
+      <div class="page-sub" style="margin-bottom:4px;">${escapeHtml(label)}</div>
+      <div style="font-family:var(--font-display); font-size:15px; color:${color||'var(--ink)'};">${value}</div>
+    </div>
+  `;
+
+  const trendHtml = trend ? (()=>{
+    const dir = trend.deltaPct > 3 ? 'improving' : trend.deltaPct < -3 ? 'declining' : 'steady';
+    const color = dir==='improving' ? 'var(--teal)' : dir==='declining' ? 'var(--flag)' : 'var(--ink)';
+    const arrow = dir==='improving' ? '↑' : dir==='declining' ? '↓' : '→';
+    return pill('30-Day Trend', `${arrow} ${Math.round(trend.recentRate*100)}% <span class="page-sub" style="font-size:12px;">(was ${Math.round(trend.priorRate*100)}%, ${dir})</span>`, color);
+  })() : '';
+
+  const bestStreakHtml = streaks.length ? pill('Longest Active Streak', `${escapeHtml(streaks[0].name)} <span class="page-sub" style="font-size:12px;">— ${streaks[0].streak} in a row</span>`, 'var(--teal)') : '';
+
+  const bestLoc = byLocation[0], worstLoc = byLocation[byLocation.length-1];
+  const locHtml = byLocation.length ? pill('Location', `Best: ${escapeHtml(bestLoc.key)} (${Math.round(bestLoc.rate*100)}%)${byLocation.length>1?`<br><span class="page-sub" style="font-size:12px;">Worst: ${escapeHtml(worstLoc.key)} (${Math.round(worstLoc.rate*100)}%)</span>`:''}`) : '';
+
+  const bestSilo = bySilo[0], worstSilo = bySilo[bySilo.length-1];
+  const siloHtml = bySilo.length ? pill('Type', `Best: ${escapeHtml(bestSilo.key)} (${Math.round(bestSilo.rate*100)}%)${bySilo.length>1?`<br><span class="page-sub" style="font-size:12px;">Worst: ${escapeHtml(worstSilo.key)} (${Math.round(worstSilo.rate*100)}%)</span>`:''}`) : '';
+
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Insights</h2></div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        ${trendHtml}${bestStreakHtml}${locHtml}${siloHtml}
+      </div>
+      ${streaks.length > 1 ? `
+        <div class="card" style="padding:10px 14px; margin-top:10px;">
+          <div class="page-sub" style="margin-bottom:6px;">Other active streaks</div>
+          ${streaks.slice(1).map(s=>`
+            <div class="metric-manage-row" style="cursor:pointer;" onclick="openProgressTaskDetail('${s.taskId}')">
+              <span class="metric-manage-name">${escapeHtml(s.name)}</span>
+              <span class="page-sub">${s.streak} in a row</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Time-of-day pattern for a single task — inherently per-task, so this
+// lives on the task detail page rather than the overview.
+function computeTimeOfDayPattern(taskId){
+  const comp = state.tasks.completions[taskId] || {};
+  const buckets = { Morning:0, Afternoon:0, Evening:0, Night:0 };
+  let count = 0;
+  Object.values(comp).forEach(o=>{
+    if(o.status!=='done' || !o.loggedAt) return;
+    const h = new Date(o.loggedAt).getHours();
+    count++;
+    if(h>=5 && h<12) buckets.Morning++;
+    else if(h>=12 && h<17) buckets.Afternoon++;
+    else if(h>=17 && h<21) buckets.Evening++;
+    else buckets.Night++;
+  });
+  if(count < 3) return null;
+  const [bestBucket, bestCount] = Object.entries(buckets).sort((a,b)=>b[1]-a[1])[0];
+  if(bestCount < count*0.5) return null; // no clear lean toward one time of day
+  return { bucket: bestBucket, pct: Math.round((bestCount/count)*100) };
 }
 function setProgressRange(d){ state.progressRangeDays = d; renderMain(); }
 function setProgressKindFilter(k){ state.progressKindFilter = k; renderMain(); }
@@ -3764,6 +4374,9 @@ function renderProgressView(){
       <div class="stat-card flag"><div class="stat-num">${missedCount}</div><div class="stat-label">Missed</div></div>
       <div class="stat-card brass"><div class="stat-num">${movedCount}</div><div class="stat-label">Moved</div></div>
     </div>
+
+    ${renderFrequentlyMissedSection()}
+    ${renderInsightsSection()}
 
     <div class="filter-bar">
       <div class="chip-select">
@@ -3868,6 +4481,8 @@ function renderProgressTaskDetail(taskId){
   const movedCount = allEntries.filter(e=>e.status==='moved').length;
   const resolvedTotal = doneCount+missedCount;
   const pct = resolvedTotal ? Math.round((doneCount/resolvedTotal)*100) : null;
+  const currentStreak = kind==='recurring' ? computeTaskStreak(taskId) : 0;
+  const timeOfDay = kind==='recurring' ? computeTimeOfDayPattern(taskId) : null;
 
   return `
     <div class="topbar">
@@ -3882,6 +4497,12 @@ function renderProgressTaskDetail(taskId){
         <div class="stat-card flag"><div class="stat-num">${missedCount}</div><div class="stat-label">Missed</div></div>
         <div class="stat-card brass"><div class="stat-num">${movedCount}</div><div class="stat-label">Moved</div></div>
       </div>
+      ${(currentStreak>=3 || timeOfDay) ? `
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+          ${currentStreak>=3 ? `<div class="card" style="padding:10px 14px; flex:1; min-width:160px;"><div class="page-sub">Current Streak</div><div style="font-family:var(--font-display); font-size:15px; color:var(--teal);">${currentStreak} in a row</div></div>` : ''}
+          ${timeOfDay ? `<div class="card" style="padding:10px 14px; flex:1; min-width:160px;"><div class="page-sub">Usually Completed</div><div style="font-family:var(--font-display); font-size:15px;">${timeOfDay.bucket} <span class="page-sub" style="font-size:12px;">(${timeOfDay.pct}% of the time)</span></div></div>` : ''}
+        </div>
+      ` : ''}
       ${renderProgressMiniCalendar(allEntries)}
       <h3 style="margin:16px 0 8px;">Full History</h3>
       <div class="card" style="padding:4px 16px;">
@@ -3899,11 +4520,16 @@ function renderProgressTaskDetail(taskId){
   `;
 }
 
-function matchesFilters(item){
-  if(state.locationFilter !== 'All' && item.location !== state.locationFilter) return false;
+function matchesFilters(item, dateStr){
+  // Location filter matches the RESOLVED location for the date in view, so a
+  // weekend-remapped task is found under the location it's actually shown in.
+  if(state.locationFilter !== 'All' && taskLocationFor(item, dateStr) !== state.locationFilter) return false;
   if(state.searchQuery){
     const q = state.searchQuery.toLowerCase();
-    const hay = `${item.name} ${item.location} ${item.silo} ${item.notes||''}`.toLowerCase();
+    // Search covers both the stored and resolved location so neither term misses.
+    const resolvedLoc = taskLocationFor(item, dateStr);
+    const locHay = resolvedLoc === item.location ? item.location : `${item.location} ${resolvedLoc}`;
+    const hay = `${item.name} ${locHay} ${item.silo} ${item.notes||''}`.toLowerCase();
     if(!hay.includes(q)) return false;
   }
   return true;
@@ -3974,7 +4600,7 @@ function getDashboardTasks(){
     const key = r.kind+'_'+r.task.id+'_'+(r.overdue?'OD':(r.completedToday?'DONE':'W'));
     if(seen.has(key)) return;
     seen.add(key);
-    if(matchesFilters(r.task)) deduped.push(r);
+    if(matchesFilters(r.task, r.dueOn)) deduped.push(r);
   });
 
   // sort: overdue first, then normal tasks by due date/priority, completed-today last
@@ -4407,7 +5033,7 @@ function renderGroupedTickets(rows, allRows, opts){
   }
   const groups = {};
   rows.forEach(r=>{
-    const loc = r.task.location || 'Unassigned';
+    const loc = taskLocationFor(r.task, r.dueOn) || 'Unassigned';
     if(!groups[loc]) groups[loc] = [];
     groups[loc].push(r);
   });
@@ -4417,7 +5043,7 @@ function renderGroupedTickets(rows, allRows, opts){
   // location itself still shows, just with an empty body.
   const allGroups = {};
   allRows.forEach(r=>{
-    const loc = r.task.location || 'Unassigned';
+    const loc = taskLocationFor(r.task, r.dueOn) || 'Unassigned';
     if(!allGroups[loc]) allGroups[loc] = [];
     allGroups[loc].push(r);
   });
@@ -4518,7 +5144,9 @@ function renderTicket(row, opts){
 
   const priTag = `<span class="tag pri-${t.priority}">${t.priority}</span>`;
   const siloTag = `<span class="tag" style="background:${siloColor(t.silo)}22; color:${siloColor(t.silo)};">${escapeHtml(t.silo)}</span>`;
-  const locTag = opts.hideLocation ? '' : `<span class="tag">${escapeHtml(t.location)}</span>`;
+  const resolvedLoc = taskLocationFor(t, dateForCompletion);
+  const locRemapped = resolvedLoc !== t.location;
+  const locTag = opts.hideLocation ? '' : `<span class="tag${locRemapped?' tag-loc-moved':''}"${locRemapped?` title="Normally ${escapeHtml(t.location)} — moved here by a weekend location rule"`:''}>${escapeHtml(resolvedLoc)}${locRemapped?' ↷':''}</span>`;
   const statsTag = onTimeStats ? `<span class="tag stat-pill" title="${onTimeStats.total} logged occurrence${onTimeStats.total===1?'':'s'}">${onTimeStats.onTimePercent}% on-time${onTimeStats.avgDelayDays>0?` · +${onTimeStats.avgDelayDays}d avg`:''}</span>` : '';
 
   const dueLabel = isRecurring
@@ -4549,7 +5177,7 @@ function renderTicket(row, opts){
   const selectBox = state.batchSelectMode
     ? `<button class="li-check select-check ${state.selectedTaskIds.has(t.id)?'checked':''}" onclick="toggleTaskSelected('${t.id}')">${state.selectedTaskIds.has(t.id)?'✓':''}</button>`
     : '';
-  const colorfulStyle = ` style="--task-color:${locationColor(t.location)};"`;
+  const colorfulStyle = ` style="--task-color:${locationColor(resolvedLoc)};"`;
   const tickBtn = opts.hideCheckbox
     ? ''
     : `<button class="tick-btn ${tickClass} tick-colorful"${colorfulStyle} onclick="toggleComplete('${row.kind}','${t.id}','${dateForCompletion}')">${tickGlyph}</button>`;
@@ -4749,7 +5377,7 @@ async function deleteTask(kind, taskId){
    RENDER: OVERDUE VIEW
    ========================================================= */
 function renderOverdueView(){
-  const rows = getOverdueOneTime().filter(matchesFilters).map(t=>({kind:'oneTime', task:t, dueOn:t.due, overdue:true}));
+  const rows = getOverdueOneTime().filter(t=>matchesFilters(t, t.due)).map(t=>({kind:'oneTime', task:t, dueOn:t.due, overdue:true}));
   return `
     <div class="topbar">
       <div>
@@ -5078,7 +5706,7 @@ function getTasksForDateSplit(dateStr){
 // but the matching logic itself is identical). "Daily" means a recurring
 // task whose recurrence type is exactly 'Daily' — one-time tasks are never
 // considered daily, so hideDaily never touches them.
-function taskMatchesPageFilter(task, kind, filter){
+function taskMatchesPageFilter(task, kind, filter, dateStr){
   if(!filter) return true;
   if(filter.hideDaily && kind==='recurring' && task.type==='Daily') return false;
   // Frequency is multi-select (array) — empty array means no filter applied.
@@ -5087,7 +5715,7 @@ function taskMatchesPageFilter(task, kind, filter){
   // treatment as hideDaily.
   if(filter.frequency && filter.frequency.length && kind==='recurring' && !filter.frequency.includes(task.type)) return false;
   if(filter.silo && filter.silo!=='All' && task.silo!==filter.silo) return false;
-  if(filter.location && filter.location!=='All' && task.location!==filter.location) return false;
+  if(filter.location && filter.location!=='All' && taskLocationFor(task, dateStr)!==filter.location) return false;
   if(filter.priority && filter.priority!=='All' && task.priority!==filter.priority) return false;
   return true;
 }
@@ -5237,17 +5865,17 @@ async function deleteCalendarViewPreset(id){
   renderMain();
 }
 
-function calDotColor(task, kind){
+function calDotColor(task, kind, dateStr){
   const mode = state.calColorMode || 'location';
-  if(mode === 'location') return locationColor(task.location);
+  if(mode === 'location') return locationColor(taskLocationFor(task, dateStr));
   if(mode === 'silo') return siloColor(task.silo);
   // 'recurType': only meaningful for recurring tasks; one-time tasks get a
   // fixed neutral marker matching the deep-red One-Time pill used elsewhere
   return kind === 'recurring' ? recurTypeColor(task.type) : 'var(--flag)';
 }
-function calDotLabel(task, kind){
+function calDotLabel(task, kind, dateStr){
   const mode = state.calColorMode || 'location';
-  const attr = mode === 'location' ? task.location : mode === 'silo' ? task.silo : (kind==='recurring' ? task.type : 'One-Time');
+  const attr = mode === 'location' ? taskLocationFor(task, dateStr) : mode === 'silo' ? task.silo : (kind==='recurring' ? task.type : 'One-Time');
   return `${task.name} — ${attr}`;
 }
 function setCalColorMode(mode){
@@ -5310,7 +5938,7 @@ function renderWeekView(){
         const items = [
           ...recurring.map(t=>({ t, kind:'recurring', done: isCompletedOn(t.id, d) })),
           ...oneTime.map(t=>({ t, kind:'oneTime', done: !!t.done })),
-        ].filter(({t,kind})=> taskMatchesPageFilter(t, kind, filter));
+        ].filter(({t,kind})=> taskMatchesPageFilter(t, kind, filter, d));
         return `
           <div class="week-day-col ${isToday?'today':''} ${isWeekend?'weekend':''}">
             <div class="week-day-head" onclick="jumpToDate('${d}')" title="Open in Dashboard">
@@ -5319,7 +5947,7 @@ function renderWeekView(){
             </div>
             <div class="week-day-tasks">
               ${items.length ? items.map(({t,kind,done})=>`
-                <div class="week-task-chip ${done?'done':''}" style="border-left-color:${calDotColor(t,kind)};" onclick="jumpToDate('${d}')" title="${escapeHtml(calDotLabel(t,kind))}">${escapeHtml(t.name)}</div>
+                <div class="week-task-chip ${done?'done':''}" style="border-left-color:${calDotColor(t,kind,d)};" onclick="jumpToDate('${d}')" title="${escapeHtml(calDotLabel(t,kind,d))}">${escapeHtml(t.name)}</div>
               `).join('') : `<div class="page-sub" style="padding:4px 0; font-size:11px;">—</div>`}
             </div>
           </div>
@@ -5350,12 +5978,12 @@ function renderCalendarView(){
   const MAX_CHIPS_PER_CELL = 4;
   const filter = state.calendarFilter;
 
-  const taskChipsHtml = (tasks, kind)=>{
+  const taskChipsHtml = (tasks, kind, dateStr)=>{
     if(!tasks.length) return '';
     const shown = tasks.slice(0, MAX_CHIPS_PER_CELL);
     const extra = tasks.length - shown.length;
     return `<div class="cal-cell-chip-list">
-      ${shown.map(t=>`<div class="cal-task-chip" style="border-left-color:${calDotColor(t,kind)};" title="${escapeHtml(calDotLabel(t,kind))}" onclick="event.stopPropagation(); openTaskModal('${kind}','${t.id}');">${escapeHtml(t.name)}</div>`).join('')}
+      ${shown.map(t=>`<div class="cal-task-chip" style="border-left-color:${calDotColor(t,kind,dateStr)};" title="${escapeHtml(calDotLabel(t,kind,dateStr))}" onclick="event.stopPropagation(); openTaskModal('${kind}','${t.id}');">${escapeHtml(t.name)}</div>`).join('')}
       ${extra>0 ? `<div class="cal-task-chip-extra">+${extra} more</div>` : ''}
     </div>`;
   };
@@ -5365,8 +5993,8 @@ function renderCalendarView(){
   for(let day=1; day<=daysInMonth; day++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const { recurring: recurringRaw, oneTime: oneTimeRaw } = getTasksForDateSplit(dateStr);
-    const recurring = recurringRaw.filter(t=> taskMatchesPageFilter(t, 'recurring', filter));
-    const oneTime = oneTimeRaw.filter(t=> taskMatchesPageFilter(t, 'oneTime', filter));
+    const recurring = recurringRaw.filter(t=> taskMatchesPageFilter(t, 'recurring', filter, dateStr));
+    const oneTime = oneTimeRaw.filter(t=> taskMatchesPageFilter(t, 'oneTime', filter, dateStr));
     const isToday = dateStr === todayStr();
     const dow = new Date(year, month, day).getDay();
     const isWeekend = weekendDays.includes(DOW_ABBR[dow]);
@@ -5378,9 +6006,9 @@ function renderCalendarView(){
           ${total>0 ? `<span class="density-count">${total}</span>` : ''}
         </div>
         <div class="cal-cell-tasks">
-          ${taskChipsHtml(recurring, 'recurring')}
+          ${taskChipsHtml(recurring, 'recurring', dateStr)}
           ${recurring.length && oneTime.length ? `<div class="cal-cell-sep"></div>` : ''}
-          ${taskChipsHtml(oneTime, 'oneTime')}
+          ${taskChipsHtml(oneTime, 'oneTime', dateStr)}
         </div>
       </div>`;
   }
@@ -5473,7 +6101,11 @@ function renderListsView(){
   };
   const renderFolderCard = (label, lists)=>`
     <div class="lists-toc-folder-card">
-      ${label ? `<div class="lists-toc-folder-header">${escapeHtml(label)}</div>` : ''}
+      ${label ? `<div class="lists-toc-folder-header">
+        <span class="folder-glyph">${label==='No Folder' ? '○' : '▸'}</span>
+        <span class="folder-name">${escapeHtml(label)}</span>
+        <span class="folder-count">${lists.length}</span>
+      </div>` : ''}
       ${lists.map(renderListButton).join('')}
     </div>
   `;
@@ -5826,15 +6458,26 @@ function coreFieldFor(metricId){
 // ever, tracked by a persisted flag. Without this guard, deleting a core
 // metric would just get it silently re-added the next time this runs (e.g.
 // on the next page render), since it'd still look "missing".
-const HYDRATION_ICON_CHOICES = ['🥛','🍶','🧴','☕','🍵','🥤','🧃','💧'];
+const HYDRATION_ICON_CHOICES = [
+  // Water & plain
+  '💧','🥛','🍶','🧴','🚰','🫗',
+  // Coffee & hot drinks
+  '☕','🍵','🫖','🧋',
+  // Cold, juice & soft drinks
+  '🥤','🧃','🍹','🍸','🥥','🍋','🍊','🍓',
+  // Ice & chilled
+  '🧊','❄️',
+  // Sport / energy / other
+  '⚡','🏺','🍯','🥂',
+];
 function ensureHydrationDefaults(){
   if(!state.settings.hydrationDefaultsSeeded){
     if(!state.settings.hydrationContainers.length){
       state.settings.hydrationContainers = [
-        { id:'cont_glass', name:'Glass', ml:250, icon:'🥛' },
-        { id:'cont_bottle_s', name:'Small Bottle', ml:500, icon:'🍶' },
-        { id:'cont_bottle_l', name:'Large Bottle', ml:1000, icon:'🧴' },
-        { id:'cont_mug', name:'Mug', ml:300, icon:'☕' },
+        { id:'cont_glass', name:'Glass', icon:'🥛' },
+        { id:'cont_bottle_s', name:'Small Bottle', icon:'🍶' },
+        { id:'cont_bottle_l', name:'Large Bottle', icon:'🧴' },
+        { id:'cont_mug', name:'Mug', icon:'☕' },
       ];
     }
     state.settings.hydrationDefaultsSeeded = true;
@@ -5887,13 +6530,67 @@ function getHydrationLogsForDate(date){
 function getHydrationTotalForDate(date){
   return getHydrationLogsForDate(date).reduce((sum,l)=> sum+(l.ml||0), 0);
 }
-async function logHydration(date, containerId){
+// Amount is now entered per-log rather than fixed per container, so the same
+// container can record 330ml once and 660ml the next time. Each hydration_logs
+// row already carried its own `ml` column, so this needed no schema change —
+// and existing logs keep whatever amount they were recorded with.
+async function logHydration(date, containerId, ml){
   const container = state.settings.hydrationContainers.find(c=>c.id===containerId);
   if(!container) return;
-  state.hydrationLogs.push({ id:newId('hyd'), date, containerId, ml:container.ml, loggedAt:new Date().toISOString() });
+  const amount = Math.round(Number(ml));
+  if(!isFinite(amount) || amount <= 0){ showToast('Enter an amount in ml'); return; }
+  if(amount > 20000){ showToast('That looks too large — check the amount'); return; }
+  state.hydrationLogs.push({ id:newId('hyd'), date, containerId, ml:amount, loggedAt:new Date().toISOString() });
   await saveHydration();
   renderMain();
-  showToast(`Logged ${container.ml}ml`);
+  showToast(`Logged ${amount}ml — ${container.name}`);
+}
+
+/* ---------- Inline amount entry ----------
+   Tapping a container reveals an inline ml input instead of logging a fixed
+   amount. Kept as direct DOM work rather than a re-render so the field keeps
+   focus while typing. Enter saves, Escape cancels. */
+function openHydrationAmountInput(date, containerId){
+  const container = state.settings.hydrationContainers.find(c=>c.id===containerId);
+  if(!container) return;
+  const host = document.getElementById('hydAmountRow');
+  if(!host) return;
+  host.innerHTML = `
+    <div class="hyd-amount-entry">
+      <span class="hyd-amount-label">${container.icon} ${escapeHtml(container.name)}</span>
+      <input type="number" inputmode="numeric" min="1" step="10" id="hydAmountInput"
+             placeholder="ml" autocomplete="off"
+             onkeydown="handleHydrationAmountKey(event, '${date}', '${containerId}')">
+      <span class="page-sub">ml</span>
+      <button class="btn brass sm" onclick="submitHydrationAmount('${date}','${containerId}')">Add</button>
+      <button class="btn secondary sm" onclick="cancelHydrationAmount()">Cancel</button>
+    </div>
+  `;
+  host.style.display = '';
+  const el = document.getElementById('hydAmountInput');
+  if(el){ el.focus(); el.select(); }
+  // Highlight which container is being logged.
+  document.querySelectorAll('#hydQuickLog .hyd-container-btn').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-cid') === containerId);
+  });
+}
+function handleHydrationAmountKey(event, date, containerId){
+  if(event.key === 'Enter'){ event.preventDefault(); submitHydrationAmount(date, containerId); }
+  else if(event.key === 'Escape'){ event.preventDefault(); cancelHydrationAmount(); }
+}
+async function submitHydrationAmount(date, containerId){
+  const el = document.getElementById('hydAmountInput');
+  if(!el) return;
+  const val = el.value;
+  if(!String(val).trim()){ showToast('Enter an amount in ml'); el.focus(); return; }
+  const amount = Math.round(Number(val));
+  if(!isFinite(amount) || amount <= 0){ showToast('Enter a valid amount in ml'); el.select(); return; }
+  await logHydration(date, containerId, amount);
+}
+function cancelHydrationAmount(){
+  const host = document.getElementById('hydAmountRow');
+  if(host){ host.innerHTML = ''; host.style.display = 'none'; }
+  document.querySelectorAll('#hydQuickLog .hyd-container-btn').forEach(b=> b.classList.remove('active'));
 }
 async function deleteHydrationLog(id){
   state.hydrationLogs = state.hydrationLogs.filter(l=>l.id!==id);
@@ -5931,11 +6628,10 @@ function openHydrationContainerModal(existingId){
     <div class="modal">
       <h3>${existing?'Edit':'Add'} Container</h3>
       <div class="field"><label>Name</label><input type="text" id="hydContName" value="${existing?escapeHtml(existing.name):''}" placeholder="e.g. My Gym Bottle"></div>
-      <div class="field"><label>Size (ml)</label><input type="number" min="1" id="hydContMl" value="${existing?existing.ml:''}" placeholder="e.g. 500"></div>
       <div class="field">
         <label>Icon</label>
-        <div class="radio-pills" id="hydContIconPills">
-          ${HYDRATION_ICON_CHOICES.map(icon=>`<button type="button" class="radio-pill ${hydrationContainerDraftIcon===icon?'active':''}" style="font-size:16px;" onclick="pickHydrationIcon('${icon}')">${icon}</button>`).join('')}
+        <div class="radio-pills" id="hydContIconPills" style="display:flex; flex-wrap:wrap; gap:5px; max-height:150px; overflow-y:auto;">
+          ${HYDRATION_ICON_CHOICES.map(icon=>`<button type="button" class="radio-pill ${hydrationContainerDraftIcon===icon?'active':''}" style="font-size:17px; padding:5px 9px;" onclick="pickHydrationIcon('${icon}')">${icon}</button>`).join('')}
         </div>
       </div>
       <div class="modal-actions">
@@ -5953,13 +6649,15 @@ function pickHydrationIcon(icon){
 }
 async function submitHydrationContainer(existingId){
   const name = (document.getElementById('hydContName').value||'').trim();
-  const ml = Number(document.getElementById('hydContMl').value);
-  if(!name || !ml || ml<=0){ showToast('Name and a valid size are required'); return; }
+  if(!name){ showToast('Give the container a name'); return; }
   if(existingId){
     const c = state.settings.hydrationContainers.find(c=>c.id===existingId);
-    c.name = name; c.ml = ml; c.icon = hydrationContainerDraftIcon;
+    // c.ml is deliberately left untouched rather than deleted: containers no
+    // longer carry a size, but stripping the old value would be a pointless
+    // destructive write to synced settings. It is simply unused.
+    c.name = name; c.icon = hydrationContainerDraftIcon;
   } else {
-    state.settings.hydrationContainers.push({ id:newId('cont'), name, ml, icon:hydrationContainerDraftIcon });
+    state.settings.hydrationContainers.push({ id:newId('cont'), name, icon:hydrationContainerDraftIcon });
   }
   await saveSettings();
   const overlay = document.getElementById('hydContainerOverlay');
@@ -6028,14 +6726,15 @@ function renderHydrationSection(date){
               <input type="number" min="1" value="${goal}" style="width:90px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);" onchange="setHydrationGoal(this.value)">
             </div>
             ${containers.length ? `
-              <div class="page-sub" style="margin-bottom:6px;">Quick log:</div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <div class="page-sub" style="margin-bottom:6px;">Quick log — pick a container, then enter the amount:</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;" id="hydQuickLog">
                 ${containers.map(c=>`
-                  <button class="btn secondary sm" style="display:flex; align-items:center; gap:6px;" onclick="logHydration('${date}','${c.id}')" title="${escapeHtml(c.name)} — ${c.ml}ml">
-                    <span style="font-size:15px;">${c.icon}</span> ${escapeHtml(c.name)} <span class="page-sub">${c.ml}ml</span>
+                  <button class="btn secondary sm hyd-container-btn" data-cid="${escapeHtml(c.id)}" style="display:flex; align-items:center; gap:6px;" onclick="openHydrationAmountInput('${date}','${c.id}')" title="Log ${escapeHtml(c.name)}">
+                    <span style="font-size:15px;">${c.icon}</span> ${escapeHtml(c.name)}
                   </button>
                 `).join('')}
               </div>
+              <div id="hydAmountRow" style="display:none; margin-top:10px;"></div>
             ` : `<div class="page-sub">No containers yet — open ⚙ above to add one.</div>`}
           </div>
         </div>
@@ -6072,7 +6771,7 @@ function renderHydrationSettingsModalBody(){
       </div>
       ${containers.map(c=>`
         <div class="metric-manage-row">
-          <span class="metric-manage-name">${c.icon} ${escapeHtml(c.name)} <span class="page-sub">${c.ml}ml</span></span>
+          <span class="metric-manage-name">${c.icon} ${escapeHtml(c.name)}</span>
           <button class="icon-btn" title="Edit" onclick="openHydrationContainerModal('${c.id}')">✎</button>
           <button class="icon-btn" title="Delete" onclick="deleteHydrationContainer('${c.id}')">✕</button>
         </div>
@@ -6482,11 +7181,13 @@ function renderTrainingView(){
     ['today','◐',"Log Training"],
     ['history','≡','Log History'],
     ['exercises','⛊','Exercise Library'],
+    ['resources','◈','Resources'],
   ];
   const sectionRenderers = {
     today: renderTrainingToday,
     history: renderTrainingHistorySubpage,
     exercises: renderTrainingExercisesSubpage,
+    resources: renderTrainingResourcesSubpage,
   };
   const active = sectionRenderers[state.trainingSection] ? state.trainingSection : 'today';
   const loggedDayCount = new Set(state.training.logs.map(l=>l.date)).size;
@@ -6606,7 +7307,12 @@ function renderTrainingExerciseLogRow(date, block, index){
         </span>
       </div>
       ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
-      ${!isSessionLevel && ex && ex.videoUrl ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Form guide</a>` : ''}
+      ${!isSessionLevel && ex ? `<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        ${exVideoUrls(ex).length ? (exVideoUrls(ex).length===1
+          ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(exVideoUrls(ex)[0])}" target="_blank" rel="noopener">▶ Form guide</a>`
+          : `<button class="btn ghost sm" style="padding-left:0;" onclick="openExerciseVideoPicker('${ex.id}')">▶ Form guides (${exVideoUrls(ex).length})</button>`) : ''}
+        <button class="btn ghost sm" style="padding-left:0;" onclick="openExerciseHistoryModal('${ex.id}','${date}')">↺ History</button>
+      </div>` : ''}
       <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
         <div class="toggle-switch ${completedVal?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','completed', this.classList.contains('on')); updateTrainingDayAggPreview();"><div class="knob"></div></div>
         <div style="display:flex; align-items:center; gap:8px;">
@@ -6739,7 +7445,10 @@ function renderTrainingDayCard(date){
     return `
       <div class="card empty-state" style="margin-bottom:20px;">
         <span class="glyph">🏋</span>No exercises logged for ${humanDate(date)} yet.
-        <div style="margin-top:12px;"><button class="btn brass sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button></div>
+        <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn brass sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button>
+          <button class="btn secondary sm" onclick="openTrainingRandomizerModal('${date}')">🎲 Randomize</button>
+        </div>
       </div>
     `;
   }
@@ -6758,6 +7467,7 @@ function renderTrainingDayCard(date){
 
       <div class="modal-actions" style="justify-content:flex-start; margin-top:4px; flex-wrap:wrap;">
         <button class="btn secondary sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button>
+        <button class="btn secondary sm" onclick="openTrainingRandomizerModal('${date}')">🎲 Randomize</button>
         <button class="btn brass" onclick="saveTrainingDayLogs('${date}')">Save Today's Log</button>
         ${hasLogs ? `<button class="btn secondary" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>` : ''}
       </div>
@@ -6950,6 +7660,142 @@ function afterQuickAddExPick(date){
   quickAddExIndex = 0;
   filterQuickAddExercisePicker(date);
 }
+/* ---------- Training randomizer ----------
+   Picks N exercises from a chosen tag and stages them into the day's log via
+   the SAME addExerciseToDay() path used by the manual picker — so they land
+   as pending adds you still confirm and save, never as silently-written log
+   rows, and duplicates are skipped by that function's own guard.
+
+   Two selection behaviours, chosen at the point of use:
+     - 'fresh'  : prefers what you've trained least recently (never-logged
+                  first, then oldest last-logged). Same pool, better spread.
+     - 'random' : uniformly random from the whole pool.
+   Both are drawn WITHOUT replacement, so you never get the same exercise twice. */
+function exerciseLastLoggedDate(exId){
+  let latest = null;
+  state.training.logs.forEach(l=>{
+    if(l.exerciseId !== exId) return;
+    if(!latest || l.date > latest) latest = l.date;
+  });
+  return latest;
+}
+function pickRandomExercises(pool, n, behaviour){
+  const items = [...pool];
+  if(behaviour === 'fresh'){
+    // Never-logged first (null sorts before any date), then oldest-first.
+    // Ties are broken randomly so repeated presses don't return a fixed order.
+    items.forEach(ex=>{ ex.__last = exerciseLastLoggedDate(ex.id); ex.__jitter = Math.random(); });
+    items.sort((a,b)=>{
+      if(a.__last === b.__last) return a.__jitter - b.__jitter;
+      if(a.__last === null) return -1;
+      if(b.__last === null) return 1;
+      return a.__last < b.__last ? -1 : 1;
+    });
+    const out = items.slice(0, n);
+    items.forEach(ex=>{ delete ex.__last; delete ex.__jitter; });
+    return out;
+  }
+  // Uniform random, Fisher-Yates, without replacement.
+  for(let i=items.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items.slice(0, n);
+}
+
+function openTrainingRandomizerModal(date){
+  const tags = state.settings.exerciseTags || [];
+  const prefs = state.settings.randomizerPrefs || { count:5, behaviour:'fresh', tagId:null };
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'randomizerOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Randomize a Session</h3>
+      <div class="modal-sub">Pick a region and how many exercises. They're added to ${escapeHtml(humanDate(date))} as unsaved rows — you still review and save them.</div>
+      ${tags.length ? `
+        <div class="field">
+          <label>Region</label>
+          <div class="radio-pills" id="randTagPills" style="flex-wrap:wrap;">
+            ${tags.map(t=>{
+              const n = state.training.exercises.filter(ex=>(ex.tagIds||[]).includes(t.id)).length;
+              return `<button type="button" class="radio-pill ${prefs.tagId===t.id?'active':''}" data-tag-id="${t.id}" ${n?'':'disabled style="opacity:.4;"'} onclick="pickRandomizerTag(this)">${escapeHtml(t.name)} <span class="chip-count">${n}</span></button>`;
+            }).join('')}
+          </div>
+          <div class="page-sub" style="margin-top:4px;">Only tagged exercises can be picked. Untagged ones are listed under Exercise Library → Untagged.</div>
+        </div>
+        <div class="field">
+          <label>How many</label>
+          <input type="number" id="randCount" min="1" max="20" value="${prefs.count}" style="width:90px;">
+        </div>
+        <div class="field">
+          <label>Selection</label>
+          <div class="radio-pills" id="randBehaviourPills">
+            <button type="button" class="radio-pill ${prefs.behaviour==='fresh'?'active':''}" data-val="fresh" onclick="pickRandomizerBehaviour(this)">Least recent</button>
+            <button type="button" class="radio-pill ${prefs.behaviour==='random'?'active':''}" data-val="random" onclick="pickRandomizerBehaviour(this)">Pure random</button>
+          </div>
+          <div class="page-sub" style="margin-top:4px;">"Least recent" favours exercises you haven't done in a while; "Pure random" ignores history entirely.</div>
+        </div>
+        <div id="randPreview"></div>
+        <div class="modal-actions">
+          <button class="btn secondary" onclick="document.getElementById('randomizerOverlay').remove();">Cancel</button>
+          <button class="btn brass" onclick="runTrainingRandomizer('${date}')">Add to ${escapeHtml(humanDate(date))}</button>
+        </div>
+      ` : `
+        <div class="card" style="padding:14px;"><span class="page-sub">You need at least one exercise tag before the randomizer can pick by region. Add tags in Exercise Library → ⚙.</span></div>
+        <div class="modal-actions"><button class="btn secondary" onclick="document.getElementById('randomizerOverlay').remove();">Close</button></div>
+      `}
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function pickRandomizerTag(btn){
+  document.querySelectorAll('#randTagPills .radio-pill').forEach(b=> b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function pickRandomizerBehaviour(btn){
+  document.querySelectorAll('#randBehaviourPills .radio-pill').forEach(b=> b.classList.remove('active'));
+  btn.classList.add('active');
+}
+async function runTrainingRandomizer(date){
+  const tagBtn = document.querySelector('#randTagPills .radio-pill.active');
+  if(!tagBtn){ showToast('Pick a region first'); return; }
+  const tagId = tagBtn.dataset.tagId;
+  const behaviourBtn = document.querySelector('#randBehaviourPills .radio-pill.active');
+  const behaviour = behaviourBtn ? behaviourBtn.dataset.val : 'fresh';
+  const countRaw = Number(document.getElementById('randCount').value);
+  const count = Math.max(1, Math.min(20, Math.round(isFinite(countRaw) ? countRaw : 5)));
+
+  const already = getTrainingDayExerciseIds(date);
+  const pool = state.training.exercises.filter(ex=>
+    (ex.tagIds||[]).includes(tagId) && !already.includes(ex.id)
+  );
+  if(!pool.length){
+    const tagName = (state.settings.exerciseTags.find(t=>t.id===tagId)||{}).name || 'that region';
+    showToast(`No more ${tagName} exercises available to add`);
+    return;
+  }
+  const picked = pickRandomExercises(pool, count, behaviour);
+
+  // Remember the choices for next time — a convenience preference, kept local
+  // alongside the other display preferences rather than synced.
+  state.settings.randomizerPrefs = { count, behaviour, tagId };
+  await saveSettings();
+
+  const overlay = document.getElementById('randomizerOverlay');
+  if(overlay) overlay.remove();
+
+  // addExerciseToDay() re-renders each time; stage them all first, then let
+  // the final call do the single render.
+  picked.forEach(ex=> addExerciseToDay(date, ex.id));
+
+  const shortfall = count - picked.length;
+  showToast(shortfall > 0
+    ? `Added ${picked.length} — only ${picked.length} left in that region`
+    : `Added ${picked.length} exercise${picked.length===1?'':'s'}`);
+}
+
 function addExerciseToDayFromPicker(date, el){
   addExerciseToDay(date, el.dataset.exId);
   afterQuickAddExPick(date);
@@ -7177,24 +8023,173 @@ async function deleteTrainingSession(id){
   showToast('Session deleted');
 }
 
+/* ---------- Subpage: Resources (free-form reference library) ----------
+   Deliberately loose: a title plus any combination of a link and free text.
+   Optional tags reuse the SAME exerciseTags list as exercises, so filtering
+   stays consistent across the Training module rather than inventing a second
+   vocabulary. */
+function renderTrainingResourcesSubpage(){
+  const all = state.training.resources || [];
+  const tags = state.settings.exerciseTags || [];
+  const filter = state.resourceTagFilter || 'all';
+  const isUntagged = (r)=> !(r.tagIds||[]).length;
+  const shown = filter==='all' ? all
+    : filter==='untagged' ? all.filter(isUntagged)
+    : all.filter(r=> (r.tagIds||[]).includes(filter));
+  const sorted = [...shown].sort((a,b)=> a.title.localeCompare(b.title));
+  const untaggedCount = all.filter(isUntagged).length;
+
+  return `
+    <div class="section">
+      <div class="section-head">
+        <h2>Resources</h2>
+        <button class="btn brass sm" onclick="openResourceModal()">+ Add Resource</button>
+      </div>
+      <div class="page-sub" style="margin-bottom:10px;">
+        Anything worth keeping that isn't tied to one exercise — programme links, mobility routines, coaching cues, notes to yourself. Tag them with the same tags your exercises use.
+      </div>
+      ${all.length ? `
+        ${(tags.length || untaggedCount) ? `
+          <div class="chip-select" style="margin-bottom:10px; flex-wrap:wrap;">
+            <button class="${filter==='all'?'active':''}" onclick="setResourceTagFilter('all')">All <span class="chip-count">${all.length}</span></button>
+            ${tags.map(t=>{
+              const n = all.filter(r=>(r.tagIds||[]).includes(t.id)).length;
+              return n ? `<button class="${filter===t.id?'active':''}" onclick="setResourceTagFilter('${t.id}')">${escapeHtml(t.name)} <span class="chip-count">${n}</span></button>` : '';
+            }).join('')}
+            ${untaggedCount ? `<button class="chip-untagged ${filter==='untagged'?'active':''}" onclick="setResourceTagFilter('untagged')">Untagged <span class="chip-count">${untaggedCount}</span></button>` : ''}
+          </div>
+        ` : ''}
+        <div class="card" style="padding:4px 0;">
+          ${sorted.length ? sorted.map(r=>`
+            <div class="resource-row">
+              <div class="resource-main">
+                <div class="resource-title">${escapeHtml(r.title)}</div>
+                ${r.body ? `<div class="resource-body">${escapeHtml(r.body)}</div>` : ''}
+                ${(r.tagIds||[]).length ? `<div class="resource-tags">${(r.tagIds||[]).map(tid=>{
+                  const t = tags.find(x=>x.id===tid);
+                  return t ? `<span class="resource-tag">${escapeHtml(t.name)}</span>` : '';
+                }).join('')}</div>` : ''}
+              </div>
+              <span class="resource-actions">
+                ${r.url ? `<a class="btn ghost sm" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">↗ Open</a>` : ''}
+                <button class="icon-btn" title="Edit" onclick="openResourceModal('${r.id}')">✎</button>
+                <button class="icon-btn" title="Delete" onclick="deleteTrainingResource('${r.id}')">✕</button>
+              </span>
+            </div>
+          `).join('') : `<div style="padding:14px;"><span class="page-sub">Nothing under this filter.</span></div>`}
+        </div>
+      ` : `<div class="card" style="padding:16px;"><span class="page-sub">No resources yet. Add a link or a note you want to keep to hand.</span></div>`}
+    </div>
+  `;
+}
+function setResourceTagFilter(v){ state.resourceTagFilter = v; renderMain(); }
+
+let resourceDraftTagIds = [];
+function openResourceModal(existingId){
+  const existing = existingId ? (state.training.resources||[]).find(r=>r.id===existingId) : null;
+  resourceDraftTagIds = existing ? [...(existing.tagIds||[])] : [];
+  const tags = state.settings.exerciseTags || [];
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'resourceOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${existing?'Edit':'Add'} Resource</h3>
+      <div class="field"><label>Title</label><input type="text" id="resTitle" value="${existing?escapeHtml(existing.title):''}" placeholder="e.g. Shoulder mobility routine"></div>
+      <div class="field"><label>Link (optional)</label><input type="text" id="resUrl" value="${existing?escapeHtml(existing.url||''):''}" placeholder="https://..."></div>
+      <div class="field"><label>Notes (optional)</label><textarea id="resBody" rows="5" placeholder="Anything you want to remember">${existing?escapeHtml(existing.body||''):''}</textarea></div>
+      <div class="field">
+        <label>Tags <span class="page-sub" style="font-weight:400;">(optional)</span></label>
+        <div class="radio-pills" id="resTagPills" style="flex-wrap:wrap;">
+          ${tags.map(t=>`<button type="button" class="radio-pill ${resourceDraftTagIds.includes(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('resourceOverlay').remove();">Cancel</button>
+        <button class="btn brass" onclick="submitResource('${existingId||''}')">${existing?'Save':'Add'}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el=document.getElementById('resTitle'); if(el){ el.focus(); el.select(); } }, 50);
+}
+async function submitResource(existingId){
+  const title = (document.getElementById('resTitle').value||'').trim();
+  if(!title){ showToast('Give it a title'); return; }
+  const url = (document.getElementById('resUrl').value||'').trim();
+  const body = (document.getElementById('resBody').value||'').trim();
+  const tagIds = [...document.querySelectorAll('#resTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
+  if(!state.training.resources) state.training.resources = [];
+  if(existingId){
+    const r = state.training.resources.find(x=>x.id===existingId);
+    if(r){ r.title=title; r.url=url; r.body=body; r.tagIds=tagIds; }
+  } else {
+    state.training.resources.push({ id:newId('res'), title, url, body, tagIds });
+  }
+  await saveTraining();
+  const overlay = document.getElementById('resourceOverlay');
+  if(overlay) overlay.remove();
+  renderMain();
+  showToast(existingId?'Resource updated':'Resource added');
+}
+async function deleteTrainingResource(id){
+  const r = (state.training.resources||[]).find(x=>x.id===id);
+  if(!r) return;
+  if(!confirm(`Delete "${r.title}"?`)) return;
+  state.training.resources = state.training.resources.filter(x=>x.id!==id);
+  pendingTrainingDeletes.push({ table:'training_resources', match:{ id } });
+  await saveTraining();
+  renderMain();
+  showToast('Resource deleted');
+}
+
 /* ---------- Subpage: Exercise Library (alphabetical) ---------- */
 function renderTrainingExercisesSubpage(){
-  const sorted = [...state.training.exercises].sort((a,b)=> a.name.localeCompare(b.name));
+  const tagFilter = state.exerciseTagFilter || 'all';
+  const allSorted = [...state.training.exercises].sort((a,b)=> a.name.localeCompare(b.name));
+  // 'untagged' is a pseudo-filter: it isn't a real tag id, it selects every
+  // exercise with no tags at all, so gaps in tagging are easy to spot and fix.
+  const isUntagged = (ex)=> !(ex.tagIds||[]).length;
+  const sorted = tagFilter==='all' ? allSorted
+    : tagFilter==='untagged' ? allSorted.filter(isUntagged)
+    : allSorted.filter(ex=>(ex.tagIds||[]).includes(tagFilter));
+  const tags = state.settings.exerciseTags;
+  const untaggedCount = allSorted.filter(isUntagged).length;
   return `
     <div class="section">
       <div class="section-head">
         <h2>Exercise Library</h2>
-        <button class="btn brass sm" onclick="openAddExerciseModal()">+ Add Exercise</button>
+        <span style="display:flex; gap:6px;">
+          <button class="icon-btn" title="Manage tags" onclick="openManageExerciseTagsModal()">⚙</button>
+          <button class="btn brass sm" onclick="openAddExerciseModal()">+ Add Exercise</button>
+        </span>
       </div>
+      ${(tags.length || untaggedCount) ? `
+        <div class="chip-select" style="margin-bottom:10px; flex-wrap:wrap;">
+          <button class="${tagFilter==='all'?'active':''}" onclick="setExerciseTagFilter('all')">All <span class="chip-count">${allSorted.length}</span></button>
+          ${tags.map(t=>{
+            const n = allSorted.filter(ex=>(ex.tagIds||[]).includes(t.id)).length;
+            return `<button class="${tagFilter===t.id?'active':''}" onclick="setExerciseTagFilter('${t.id}')">${escapeHtml(t.name)} <span class="chip-count">${n}</span></button>`;
+          }).join('')}
+          ${untaggedCount ? `<button class="chip-untagged ${tagFilter==='untagged'?'active':''}" onclick="setExerciseTagFilter('untagged')">Untagged <span class="chip-count">${untaggedCount}</span></button>` : ''}
+        </div>
+        ${tagFilter==='untagged' ? `<div class="page-sub" style="margin-bottom:10px;">These aren't tagged yet, so they won't appear under any body-part filter and the randomizer can't pick them. Tag them to fix that.</div>` : ''}
+      ` : ''}
       <div class="card" style="padding:4px 16px;">
         ${sorted.length ? sorted.map(ex=>`
           <div class="metric-manage-row">
-            <span class="metric-manage-name">${escapeHtml(ex.name)}${ex.category==='walking' ? ' <span class="page-sub" style="font-size:10px; text-transform:uppercase; letter-spacing:0.03em; border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:4px;">Walking</span>' : ''}</span>
-            ${ex.videoUrl ? `<a class="btn ghost sm" href="${escapeHtml(ex.videoUrl)}" target="_blank" rel="noopener">▶ Video</a>` : ''}
+            <span class="metric-manage-name">
+              ${escapeHtml(ex.name)}${ex.category==='walking' ? ' <span class="page-sub" style="font-size:10px; text-transform:uppercase; letter-spacing:0.03em; border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:4px;">Walking</span>' : ''}
+              ${(ex.tagIds||[]).map(tid=>{ const t = tags.find(x=>x.id===tid); return t ? `<span class="page-sub" style="font-size:10px; background:var(--paper-dim); border-radius:4px; padding:1px 6px; margin-left:4px;">${escapeHtml(t.name)}</span>` : ''; }).join('')}
+            </span>
+            ${exVideoUrls(ex).length ? (exVideoUrls(ex).length===1
+              ? `<a class="btn ghost sm" href="${escapeHtml(exVideoUrls(ex)[0])}" target="_blank" rel="noopener">▶ Video</a>`
+              : `<button class="btn ghost sm" onclick="openExerciseVideoPicker('${ex.id}')">▶ Videos (${exVideoUrls(ex).length})</button>`) : ''}
             <button class="icon-btn" title="Edit" onclick="openEditExerciseModal('${ex.id}')">✎</button>
             <button class="icon-btn" title="Delete" onclick="deleteTrainingExercise('${ex.id}')">✕</button>
           </div>
-        `).join('') : `<div class="page-sub" style="padding:10px 0;">No exercises yet — add one with "+ Add Exercise", or import a plan.</div>`}
+        `).join('') : `<div class="page-sub" style="padding:10px 0;">${tagFilter==='all' ? 'No exercises yet — add one with "+ Add Exercise", or import a plan.' : 'No exercises with this tag.'}</div>`}
       </div>
     </div>
 
@@ -7204,6 +8199,10 @@ function renderTrainingExercisesSubpage(){
       <button class="btn danger sm" onclick="confirmClearTrainingExercises()">Clear All Exercises</button>
     </div>
   `;
+}
+function setExerciseTagFilter(tagId){
+  state.exerciseTagFilter = tagId;
+  renderMain();
 }
 async function deleteTrainingExercise(id){
   const ex = state.training.exercises.find(e=>e.id===id);
@@ -7249,7 +8248,10 @@ function renderRecipesView(){
         <h1 class="page-title">Recipes</h1>
         <div class="page-sub">${items.length} recipe${items.length===1?'':'s'} in your library</div>
       </div>
-      <button class="btn brass sm" onclick="openRecipeEditModal()">+ Add Recipe</button>
+      <span style="display:flex; gap:8px; align-items:center;">
+        <button class="btn secondary sm" onclick="openRecipeImportModal()">⇩ Import</button>
+        <button class="btn brass sm" onclick="openRecipeEditModal()">+ Add Recipe</button>
+      </span>
     </div>
     <div class="filter-bar">
       <div class="chip-select">
@@ -7335,6 +8337,221 @@ function setRecipeDesiredServings(v){
 }
 
 let recipeDraft = null;
+/* ---------- Recipe import (paste JSON / file) ----------
+   Mirrors the Training import: nothing is written until an explicit confirm
+   step. One recipe per file by design. On a name clash the user is shown the
+   conflict and can rename before importing, rather than silently overwriting
+   or silently duplicating. */
+let recipeImportPending = null; // { recipe, conflict:bool }
+
+/* The AI instruction template is embedded in the page as a text/markdown
+   script block, so it downloads from whichever machine you're on without
+   needing the file to hand. That embedded copy is the single source of
+   truth — there is no separate .md deliverable to drift out of sync. */
+function getRecipeTemplateMarkdown(){
+  const el = document.getElementById('recipeImportTemplate');
+  return el ? el.textContent.trim() : '';
+}
+function downloadRecipeTemplate(){
+  const md = getRecipeTemplateMarkdown();
+  if(!md){ showToast('Template not found in this build'); return; }
+  const blob = new Blob([md], { type:'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'CalendarOS-Recipe-Import-Template.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  showToast('Template downloaded');
+}
+function copyRecipeTemplate(){
+  const md = getRecipeTemplateMarkdown();
+  if(!md){ showToast('Template not found in this build'); return; }
+  navigator.clipboard.writeText(md)
+    .then(()=> showToast('Template copied — paste it to your AI'))
+    .catch(()=> showToast('Could not copy — use Download instead'));
+}
+
+function openRecipeImportModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'recipeImportOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) closeRecipeImportModal(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Import a Recipe</h3>
+      <div class="modal-sub">Paste the JSON your AI produced from the import template (one recipe at a time). Nothing is saved until you confirm on the next step.</div>
+      <div class="card" style="padding:12px; margin-bottom:12px;">
+        <div class="page-sub" style="margin-bottom:8px;">Don't have the instructions to hand? Grab them here and give them to your AI along with the recipe.</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn secondary sm" onclick="downloadRecipeTemplate()">⇩ Download instructions (.md)</button>
+          <button class="btn secondary sm" onclick="copyRecipeTemplate()">Copy instructions</button>
+        </div>
+      </div>
+      <div class="field">
+        <textarea id="recipeImportText" rows="14" style="font-family:monospace; font-size:12px;" placeholder='{ "name": "...", "mealType": "lunch", "baseServings": 2, "ingredients": [ { "name": "Chicken breast", "grams": 300 } ], "steps": "...", "macros": { "calories": 520 } }'></textarea>
+      </div>
+      <div class="modal-actions" style="justify-content:space-between;">
+        <label class="btn secondary sm" style="cursor:pointer; margin:0;">
+          Load from file…
+          <input type="file" accept="application/json" style="display:none;" onchange="handleRecipeImportFile(event)">
+        </label>
+        <span style="display:flex; gap:8px;">
+          <button class="btn secondary" onclick="closeRecipeImportModal()">Cancel</button>
+          <button class="btn brass" onclick="submitRecipeImport()">Preview &amp; Import</button>
+        </span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function closeRecipeImportModal(){
+  const o = document.getElementById('recipeImportOverlay');
+  if(o) o.remove();
+}
+function handleRecipeImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    event.target.value = '';
+    const ta = document.getElementById('recipeImportText');
+    if(ta) ta.value = e.target.result;
+    else processRecipeImportText(e.target.result);
+  };
+  reader.readAsText(file);
+}
+function submitRecipeImport(){
+  const ta = document.getElementById('recipeImportText');
+  const text = ta ? ta.value : '';
+  if(!text.trim()){ showToast('Paste some JSON first'); return; }
+  processRecipeImportText(text);
+}
+
+// Parses + validates. Returns { recipe } or { error }.
+function parseRecipeImport(text){
+  let data;
+  try{
+    data = JSON.parse(stripJsonComments(text));
+  } catch(e){
+    return { error: 'Could not parse that JSON — check for a syntax error (a trailing comma is the usual culprit).' };
+  }
+  if(Array.isArray(data)){
+    return { error: 'That looks like several recipes in one file. Import one recipe at a time.' };
+  }
+  if(!data || typeof data !== 'object') return { error: 'That JSON is not a recipe object.' };
+  const name = typeof data.name === 'string' ? data.name.trim() : '';
+  if(!name) return { error: 'The recipe needs a "name".' };
+
+  const mealType = RECIPE_MEAL_TYPES.includes(data.mealType) ? data.mealType : '';
+  const baseServings = Number(data.baseServings) > 0 ? Number(data.baseServings) : 1;
+
+  const rawIngs = Array.isArray(data.ingredients) ? data.ingredients : [];
+  const ingredients = [];
+  let droppedIngs = 0;
+  rawIngs.forEach(i=>{
+    if(!i || typeof i.name !== 'string' || !i.name.trim()){ droppedIngs++; return; }
+    const grams = Number(i.grams);
+    ingredients.push({ name: i.name.trim(), grams: isFinite(grams) && grams > 0 ? grams : 0 });
+  });
+
+  const macros = { calories:null, protein:null, carbs:null, fat:null, fiber:null };
+  const m = (data.macros && typeof data.macros === 'object') ? data.macros : {};
+  Object.keys(macros).forEach(k=>{
+    const v = Number(m[k]);
+    macros[k] = (m[k] === null || m[k] === undefined || m[k] === '' || !isFinite(v)) ? null : v;
+  });
+
+  let steps = '';
+  if(typeof data.steps === 'string') steps = data.steps;
+  else if(Array.isArray(data.steps)) steps = data.steps.filter(x=>typeof x === 'string').join('\n');
+
+  return { recipe: {
+    id: newId('recipe'), name, mealType,
+    imageUrl: typeof data.imageUrl === 'string' ? data.imageUrl : '',
+    baseServings, ingredients, steps, macros
+  }, droppedIngs };
+}
+
+function processRecipeImportText(text){
+  const res = parseRecipeImport(text);
+  if(res.error){ showToast('⚠ ' + res.error); return; }
+  recipeImportPending = { recipe: res.recipe, droppedIngs: res.droppedIngs || 0 };
+  closeRecipeImportModal();
+  renderRecipeImportPreview();
+}
+
+function renderRecipeImportPreview(){
+  if(!recipeImportPending) return;
+  const r = recipeImportPending.recipe;
+  const clash = state.recipes.items.find(x=> x.name.trim().toLowerCase() === r.name.trim().toLowerCase());
+  const existing = document.getElementById('recipeImportPreviewOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'recipeImportPreviewOverlay';
+  overlay.onclick = (e)=>{ if(e.target === overlay) closeRecipeImportPreview(); };
+  const macroBits = ['calories','protein','carbs','fat','fiber']
+    .filter(k=> r.macros[k] !== null)
+    .map(k=> `${k}: ${r.macros[k]}`).join(' · ');
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Import "${escapeHtml(r.name)}"?</h3>
+      <div class="modal-sub">Nothing has been saved yet. Check it over, then confirm.</div>
+      ${clash ? `
+        <div class="card" style="padding:12px; margin-bottom:12px; border:1px solid var(--flag); background:color-mix(in srgb, var(--flag) 8%, transparent);">
+          <b style="color:var(--flag);">A recipe called "${escapeHtml(clash.name)}" already exists.</b>
+          <div class="page-sub" style="margin-top:4px;">Nothing will be overwritten — importing will add a second recipe with this name. Rename it below if you'd rather keep them apart.</div>
+        </div>
+      ` : ''}
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="recipeImportName" value="${escapeHtml(r.name)}" oninput="onRecipeImportNameInput(this.value)">
+      </div>
+      <div class="card" style="padding:12px; margin-bottom:12px;">
+        <div class="row"><span>Meal type</span><b style="text-transform:capitalize;">${r.mealType ? escapeHtml(r.mealType) : '—'}</b></div>
+        <div class="row"><span>Base servings</span><b>${r.baseServings}</b></div>
+        <div class="row"><span>Ingredients</span><b>${r.ingredients.length}</b></div>
+        <div class="row"><span>Steps</span><b>${r.steps ? 'yes' : '—'}</b></div>
+        ${macroBits ? `<div class="row"><span>Macros</span><b>${escapeHtml(macroBits)}</b></div>` : ''}
+        ${recipeImportPending.droppedIngs ? `<div class="row"><span style="color:var(--flag);">Ingredients skipped (no name)</span><b style="color:var(--flag);">${recipeImportPending.droppedIngs}</b></div>` : ''}
+      </div>
+      <div class="card" style="padding:12px; margin-bottom:12px; max-height:180px; overflow:auto;">
+        ${r.ingredients.length ? r.ingredients.map(i=>`<div class="row"><span>${escapeHtml(i.name)}</span><b>${i.grams ? i.grams+' g' : '—'}</b></div>`).join('') : '<span class="page-sub">No ingredients in this file.</span>'}
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeRecipeImportPreview()">Cancel</button>
+        <button class="btn brass" onclick="confirmRecipeImport()">Add to Recipes</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+function onRecipeImportNameInput(v){
+  if(recipeImportPending) recipeImportPending.recipe.name = v;
+}
+function closeRecipeImportPreview(){
+  const o = document.getElementById('recipeImportPreviewOverlay');
+  if(o) o.remove();
+  recipeImportPending = null;
+}
+async function confirmRecipeImport(){
+  if(!recipeImportPending) return;
+  const nameEl = document.getElementById('recipeImportName');
+  if(nameEl) recipeImportPending.recipe.name = nameEl.value;
+  const r = recipeImportPending.recipe;
+  if(!r.name.trim()){ showToast('Give the recipe a name first'); return; }
+  state.recipes.items.push(r);
+  recipeImportPending = null;
+  const o = document.getElementById('recipeImportPreviewOverlay');
+  if(o) o.remove();
+  await saveRecipes();
+  renderMain();
+  showToast(`Imported "${r.name}"`);
+}
+
 function openRecipeEditModal(existingId){
   const existing = existingId ? state.recipes.items.find(r=>r.id===existingId) : null;
   recipeDraft = existing
@@ -7592,7 +8809,12 @@ function processTrainingImportText(text){
     if(!ex || !ex.name){ plan.skipped++; return; }
     const id = (ex.id||'').trim();
     const existing = id ? state.training.exercises.find(e=>e.id===id) : null;
-    const fields = { name: ex.name, videoUrl: ex.videoUrl||'', notes: ex.notes||'' };
+    // Accept either the legacy single videoUrl or a videoUrls array from the
+    // import file, and keep both in step so nothing is silently dropped.
+    const importedUrls = Array.isArray(ex.videoUrls)
+      ? ex.videoUrls.filter(u=>typeof u==='string' && u.trim()).map(u=>u.trim())
+      : (ex.videoUrl ? [String(ex.videoUrl).trim()] : []);
+    const fields = { name: ex.name, videoUrl: importedUrls[0]||'', videoUrls: importedUrls, notes: ex.notes||'' };
     if(existing) plan.updEx.push({ existing, fields });
     else plan.newEx.push(Object.assign({ id: id || newId('ex') }, fields));
   });
@@ -7975,6 +9197,129 @@ async function saveSessionDraft(){
   showToast(`Session ${wasNew?'created':'updated'}`);
 }
 
+/* ---------- Exercise history (last 5 sessions) ----------
+   Read-only: pulls straight from training.logs so it can never disagree with
+   what was actually recorded, and writes nothing. Excludes the day currently
+   being logged, since showing today's half-filled row as "history" would be
+   misleading when the point is to decide what to put in it. */
+function getExerciseHistory(exId, excludeDate, limit){
+  return state.training.logs
+    .filter(l=> l.exerciseId === exId && l.date !== excludeDate)
+    .filter(l=> l.completed || l.sets || l.reps || l.weight!=null || l.distanceKm!=null || l.durationMin!=null)
+    .sort((a,b)=> a.date < b.date ? 1 : -1)
+    .slice(0, limit || 5);
+}
+function formatHistoryMetrics(l, isWalking){
+  const bits = [];
+  if(isWalking){
+    if(l.distanceKm!=null) bits.push(`${l.distanceKm} km`);
+    if(l.durationMin!=null) bits.push(`${l.durationMin} min`);
+    if(l.avgPace) bits.push(String(l.avgPace));
+    if(l.avgHeartRate!=null) bits.push(`${l.avgHeartRate} bpm`);
+    if(l.incline) bits.push(`incline ${l.incline}`);
+    if(l.calories!=null) bits.push(`${l.calories} kcal`);
+  } else {
+    // "3 × 10 @ 22.5kg" — the shape asked for.
+    const sr = [l.sets!=null?l.sets:null, l.reps||null].filter(v=>v!==null && v!=='');
+    if(sr.length===2) bits.push(`${l.sets} × ${l.reps}`);
+    else if(l.sets!=null) bits.push(`${l.sets} sets`);
+    else if(l.reps) bits.push(String(l.reps));
+    if(l.weight!=null) bits.push(`@ ${l.weight}kg`);
+  }
+  return bits.join(' ');
+}
+function openExerciseHistoryModal(exId, currentDate){
+  const ex = state.training.exercises.find(e=>e.id===exId);
+  if(!ex) return;
+  const isWalking = ex.category === 'walking';
+  const hist = getExerciseHistory(exId, currentDate, 5);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'exHistoryOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${escapeHtml(ex.name)} — History</h3>
+      <div class="modal-sub">${hist.length ? `Last ${hist.length} logged session${hist.length===1?'':'s'}, most recent first.` : 'Nothing logged for this exercise yet.'}</div>
+      ${hist.length ? `
+        <div class="card" style="padding:4px 0; margin-bottom:12px;">
+          ${hist.map((l,i)=>{
+            const metrics = formatHistoryMetrics(l, isWalking);
+            return `
+              <div class="ex-hist-row">
+                <span class="ex-hist-date">${escapeHtml(humanDate(l.date))}${i===0?' <span class="ex-hist-last">last</span>':''}</span>
+                <span class="ex-hist-metrics">${metrics ? escapeHtml(metrics) : '<span class="page-sub">no numbers recorded</span>'}</span>
+                ${l.difficulty!=null ? `<span class="ex-hist-diff" title="Difficulty">${'●'.repeat(Math.max(0,Math.min(5,l.difficulty)))}</span>` : ''}
+              </div>
+              ${l.notes ? `<div class="ex-hist-note">${escapeHtml(l.notes)}</div>` : ''}
+            `;
+          }).join('')}
+        </div>
+      ` : `<div class="card" style="padding:14px;"><span class="page-sub">Once you log this exercise a few times, the last five sessions will show here so you can pick your weight, sets and reps from what you actually did.</span></div>`}
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('exHistoryOverlay').remove();">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+/* Splits the one-per-line textarea into a clean URL list: trims, drops blanks,
+   and de-duplicates. Deliberately does NOT validate the URL format — people
+   paste timestamped links, playlists and app deep-links, and rejecting those
+   would be more annoying than helpful. */
+function parseVideoUrlLines(text){
+  const out = [];
+  String(text||'').split('\n').forEach(line=>{
+    const t = line.trim();
+    if(t && !out.includes(t)) out.push(t);
+  });
+  return out;
+}
+
+function videoHostLabel(url){
+  try{
+    const h = new URL(url).hostname.replace(/^www\./,'');
+    return h || url;
+  } catch(e){
+    return url;
+  }
+}
+
+function openExerciseVideoPicker(exId){
+  const ex = state.training.exercises.find(e=>e.id===exId);
+  if(!ex) return;
+  const urls = exVideoUrls(ex);
+  if(!urls.length) return;
+  if(urls.length === 1){ window.open(urls[0], '_blank', 'noopener'); return; }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'exVideoPickerOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${escapeHtml(ex.name)} — Videos</h3>
+      <div class="modal-sub">${urls.length} videos saved for this exercise.</div>
+      <div class="card" style="padding:4px 0; margin-bottom:12px;">
+        ${urls.map((u,i)=>`
+          <a class="video-pick-row" href="${escapeHtml(u)}" target="_blank" rel="noopener">
+            <span class="video-pick-idx">${i+1}</span>
+            <span class="video-pick-main">
+              <span class="video-pick-host">${escapeHtml(videoHostLabel(u))}</span>
+              <span class="video-pick-url">${escapeHtml(u)}</span>
+            </span>
+            <span class="video-pick-go">▶</span>
+          </a>
+        `).join('')}
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('exVideoPickerOverlay').remove();">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
 /* ---------- #1: Manual exercise add (so the whole workflow can start from scratch) ---------- */
 function openAddExerciseModal(){
   const overlay = document.createElement('div');
@@ -7993,7 +9338,18 @@ function openAddExerciseModal(){
         </div>
         <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
       </div>
-      <div class="field"><label>Video URL (optional)</label><input type="text" id="newExVideo" placeholder="https://..."></div>
+      <div class="field">
+        <label>Tags <span class="page-sub" style="font-weight:400;">(body parts, etc.)</span></label>
+        <div class="radio-pills" id="newExTagPills" style="flex-wrap:wrap;">
+          ${state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
+        </div>
+        <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
+      </div>
+      <div class="field">
+        <label>Video URLs (optional)</label>
+        <textarea id="newExVideo" rows="3" placeholder="One URL per line"></textarea>
+        <div class="page-sub" style="margin-top:4px;">One per line. With more than one, the ▶ button opens a list to pick from.</div>
+      </div>
       <div class="field"><label>Notes (optional)</label><input type="text" id="newExNotes"></div>
       <div class="modal-actions">
         <button class="btn secondary" onclick="document.getElementById('addExerciseOverlay').remove();">Cancel</button>
@@ -8010,11 +9366,13 @@ function pickExCategoryUI(pillsId, btn){
 async function submitAddExercise(){
   const name = (document.getElementById('newExName').value||'').trim();
   if(!name){ showToast('Name required'); return; }
-  const video = (document.getElementById('newExVideo').value||'').trim();
+  const videoUrls = parseVideoUrlLines(document.getElementById('newExVideo').value);
+  const video = videoUrls[0] || '';
   const notes = (document.getElementById('newExNotes').value||'').trim();
   const categoryBtn = document.querySelector('#newExCategoryPills .radio-pill.active');
   const category = categoryBtn ? categoryBtn.dataset.val : 'strength';
-  const newEx = { id:newId('ex'), name, videoUrl:video, notes, category };
+  const tagIds = [...document.querySelectorAll('#newExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
+  const newEx = { id:newId('ex'), name, videoUrl:video, videoUrls, notes, category, tagIds };
   state.training.exercises.push(newEx);
   await saveTraining();
   const overlay = document.getElementById('addExerciseOverlay');
@@ -8031,6 +9389,7 @@ function openEditExerciseModal(id){
   const ex = state.training.exercises.find(e=>e.id===id);
   if(!ex) return;
   const category = ex.category || 'strength';
+  const exTagIds = ex.tagIds || [];
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'editExerciseOverlay';
@@ -8047,7 +9406,18 @@ function openEditExerciseModal(id){
         </div>
         <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
       </div>
-      <div class="field"><label>Video URL (optional)</label><input type="text" id="editExVideo" value="${escapeHtml(ex.videoUrl||'')}"></div>
+      <div class="field">
+        <label>Tags <span class="page-sub" style="font-weight:400;">(body parts, etc.)</span></label>
+        <div class="radio-pills" id="editExTagPills" style="flex-wrap:wrap;">
+          ${state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${exTagIds.includes(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
+        </div>
+        <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
+      </div>
+      <div class="field">
+        <label>Video URLs (optional)</label>
+        <textarea id="editExVideo" rows="3" placeholder="One URL per line">${escapeHtml(exVideoUrls(ex).join('\n'))}</textarea>
+        <div class="page-sub" style="margin-top:4px;">One per line. With more than one, the ▶ button opens a list to pick from.</div>
+      </div>
       <div class="field"><label>Notes (optional)</label><input type="text" id="editExNotes" value="${escapeHtml(ex.notes||'')}"></div>
       <div class="modal-actions">
         <button class="btn secondary" onclick="document.getElementById('editExerciseOverlay').remove();">Cancel</button>
@@ -8064,16 +9434,120 @@ async function submitEditExercise(id){
   const name = (document.getElementById('editExName').value||'').trim();
   if(!name){ showToast('Name required'); return; }
   ex.name = name;
-  ex.videoUrl = (document.getElementById('editExVideo').value||'').trim();
+  const urls = parseVideoUrlLines(document.getElementById('editExVideo').value);
+  ex.videoUrls = urls;
+  ex.videoUrl = urls[0] || ''; // legacy mirror — kept in step, never orphaned
   ex.notes = (document.getElementById('editExNotes').value||'').trim();
   const categoryBtn = document.querySelector('#editExCategoryPills .radio-pill.active');
   ex.category = categoryBtn ? categoryBtn.dataset.val : 'strength';
+  ex.tagIds = [...document.querySelectorAll('#editExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
   await saveTraining();
   const overlay = document.getElementById('editExerciseOverlay');
   if(overlay) overlay.remove();
   diagLogEvent('activity', `Edited exercise "${name}"`, { id });
   renderMain();
   showToast('Exercise updated');
+}
+
+/* ---------- Exercise tag management (body parts, etc.) ---------- */
+function openManageExerciseTagsModal(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'manageExTagsOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = renderManageExerciseTagsModalBody();
+  document.body.appendChild(overlay);
+}
+function renderManageExerciseTagsModalBody(){
+  const tags = state.settings.exerciseTags;
+  return `
+    <div class="modal">
+      <h3>Manage Exercise Tags</h3>
+      <div class="field">
+        <label>New tag</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="newExTagName" placeholder="e.g. Legs, Push, Core" style="flex:1;">
+          <button class="btn brass sm" onclick="addExerciseTag()">Add</button>
+        </div>
+      </div>
+      ${tags.length ? tags.map(t=>`
+        <div class="metric-manage-row" id="exTagRow_${t.id}">
+          <span class="metric-manage-name" id="exTagLabel_${t.id}">${escapeHtml(t.name)}</span>
+          <button class="icon-btn" title="Rename" onclick="startRenameExerciseTag('${t.id}')">✎</button>
+          <button class="icon-btn" title="Delete" onclick="deleteExerciseTag('${t.id}')">✕</button>
+        </div>
+      `).join('') : `<div class="page-sub" style="padding:8px 0;">No tags yet — add one above.</div>`}
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="document.getElementById('manageExTagsOverlay').remove();">Done</button>
+      </div>
+    </div>
+  `;
+}
+function refreshManageExerciseTagsModal(){
+  const overlay = document.getElementById('manageExTagsOverlay');
+  if(overlay) overlay.innerHTML = renderManageExerciseTagsModalBody();
+}
+async function addExerciseTag(){
+  const input = document.getElementById('newExTagName');
+  const name = (input.value||'').trim();
+  if(!name){ showToast('Tag name required'); return; }
+  if(state.settings.exerciseTags.some(t=>t.name.toLowerCase()===name.toLowerCase())){ showToast('That tag already exists'); return; }
+  state.settings.exerciseTags.push({ id:newId('extag'), name });
+  await saveSettings();
+  refreshManageExerciseTagsModal();
+  refreshOpenExerciseTagPickers();
+  renderMain();
+  showToast('Tag added');
+}
+function startRenameExerciseTag(id){
+  const tag = state.settings.exerciseTags.find(t=>t.id===id);
+  if(!tag) return;
+  const row = document.getElementById(`exTagRow_${id}`);
+  const label = document.getElementById(`exTagLabel_${id}`);
+  if(!row || !label) return;
+  label.outerHTML = `<input type="text" id="exTagRenameInput_${id}" value="${escapeHtml(tag.name)}" style="flex:1;" onkeydown="if(event.key==='Enter'){commitRenameExerciseTag('${id}');}else if(event.key==='Escape'){refreshManageExerciseTagsModal();}">`;
+  setTimeout(()=>{ const el = document.getElementById(`exTagRenameInput_${id}`); if(el){ el.focus(); el.select(); } }, 30);
+}
+async function commitRenameExerciseTag(id){
+  const tag = state.settings.exerciseTags.find(t=>t.id===id);
+  const input = document.getElementById(`exTagRenameInput_${id}`);
+  if(!tag || !input) return;
+  const name = input.value.trim();
+  if(!name){ showToast('Tag name required'); refreshManageExerciseTagsModal(); return; }
+  tag.name = name;
+  await saveSettings();
+  refreshManageExerciseTagsModal();
+  refreshOpenExerciseTagPickers();
+  renderMain();
+  showToast('Tag renamed');
+}
+async function deleteExerciseTag(id){
+  const tag = state.settings.exerciseTags.find(t=>t.id===id);
+  if(!tag) return;
+  if(!confirm(`Delete the tag "${tag.name}"? It will be removed from any exercises using it.`)) return;
+  state.settings.exerciseTags = state.settings.exerciseTags.filter(t=>t.id!==id);
+  state.training.exercises.forEach(ex=>{ if(ex.tagIds) ex.tagIds = ex.tagIds.filter(tid=>tid!==id); });
+  await saveSettings();
+  await saveTraining();
+  refreshManageExerciseTagsModal();
+  refreshOpenExerciseTagPickers();
+  renderMain();
+  showToast('Tag deleted');
+}
+// If the Add/Edit Exercise modal is open behind the tag manager, refresh its
+// tag picker in place so a newly-added/renamed tag shows up immediately
+// without losing whatever else was typed in that modal.
+function refreshOpenExerciseTagPickers(){
+  const addPills = document.getElementById('newExTagPills');
+  if(addPills){
+    const active = new Set([...addPills.querySelectorAll('.radio-pill.active')].map(b=>b.dataset.tagId));
+    addPills.innerHTML = state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${active.has(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>';
+  }
+  const editPills = document.getElementById('editExTagPills');
+  if(editPills){
+    const active = new Set([...editPills.querySelectorAll('.radio-pill.active')].map(b=>b.dataset.tagId));
+    editPills.innerHTML = state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${active.has(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>';
+  }
 }
 
 /* ---------- #1: Assign an existing session to several dates at once ---------- */
@@ -8377,7 +9851,12 @@ function renderSettingsSync(){
 
         <div class="field">
           <label>1. Run this once in your Supabase project's SQL Editor</label>
-          <div class="sql-block" id="sqlBlock">-- SAFETY CHECK — leave this at the top. If this script is ever accidentally
+          <div class="sql-actions">
+            <button class="btn brass sm" onclick="copySql()">Copy SQL</button>
+            <button class="btn secondary sm" id="sqlToggleBtn" onclick="toggleSqlBlock()">Show SQL</button>
+          </div>
+          <div class="page-sub" style="margin-bottom:8px;">Additive and idempotent — safe to run again at any time. You don't need to read it; just copy and paste it into the Supabase SQL editor.</div>
+          <div class="sql-block" id="sqlBlock" style="display:none;">-- SAFETY CHECK — leave this at the top. If this script is ever accidentally
 -- pasted into the LedgerOS Supabase project instead of CalendarOS's, this
 -- aborts immediately before anything else runs, so nothing gets touched.
 do $$
@@ -8434,11 +9913,13 @@ create table if not exists health_metric_defs (
 create table if not exists app_settings (
   pin text primary key, locations jsonb default '[]', silos jsonb default '[]',
   list_folders jsonb default '[]', week_view_presets jsonb default '[]', calendar_view_presets jsonb default '[]',
+  hydration_containers jsonb default '[]', hydration_goal_ml int default 2500, exercise_tags jsonb default '[]',
+  weekend_days jsonb default '["Fri","Sat"]', location_day_rules jsonb default '[]',
   last_active_date date
 );
 create table if not exists training_exercises (
   pin text not null, id text not null, name text not null,
-  video_url text, notes text, category text default 'strength',
+  video_url text, video_urls jsonb default '[]', notes text, category text default 'strength', tag_ids jsonb default '[]',
   updated_at timestamptz default now(),
   primary key (pin, id)
 );
@@ -8495,11 +9976,13 @@ alter table app_settings add column if not exists calendar_view_presets jsonb de
 alter table app_settings add column if not exists hydration_containers jsonb default '[]';
 alter table app_settings add column if not exists hydration_liquid_types jsonb default '[]';
 alter table app_settings add column if not exists hydration_goal_ml int default 2500;
+alter table app_settings add column if not exists exercise_tags jsonb default '[]';
 alter table lists add column if not exists folder text;
 alter table training_logs add column if not exists sets int;
 alter table training_logs add column if not exists reps text;
 alter table training_logs add column if not exists weight_kg numeric;
 alter table training_exercises add column if not exists category text default 'strength';
+alter table training_exercises add column if not exists tag_ids jsonb default '[]';
 alter table training_logs add column if not exists distance_km numeric;
 alter table training_logs add column if not exists duration_min numeric;
 alter table training_logs add column if not exists avg_heart_rate int;
@@ -8518,18 +10001,35 @@ alter table training_logs add column if not exists exercise_id text not null def
 alter table training_logs drop constraint if exists training_logs_pkey;
 alter table training_logs add primary key (pin, log_date, exercise_id);
 
+-- v4.26.0: weekend location rules + weekend days now sync across devices.
+-- Both additive and idempotent; safe to re-run.
+alter table app_settings add column if not exists weekend_days jsonb default '["Fri","Sat"]';
+alter table app_settings add column if not exists location_day_rules jsonb default '[]';
+
+-- v4.28.0: multiple form-guide videos per exercise. video_url is still
+-- written (as the first URL) so older cached builds keep working.
+alter table training_exercises add column if not exists video_urls jsonb default '[]';
+
+-- v4.28.0: Training Resources — a free-form reference library.
+create table if not exists training_resources (
+  pin text not null, id text not null,
+  title text not null, url text, body text,
+  tag_ids jsonb default '[]',
+  created_at timestamptz default now(), updated_at timestamptz default now(),
+  primary key (pin, id)
+);
+
 do $$
 declare t text;
 begin
   for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings',
-                                'training_exercises','training_sessions','training_calendar','training_logs','recipes','recipe_ingredients','hydration_logs'])
+                                'training_exercises','training_sessions','training_calendar','training_logs','training_resources','recipes','recipe_ingredients','hydration_logs'])
   loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists "allow anon all" on %I;', t);
     execute format('create policy "allow anon all" on %I for all using (true) with check (true);', t);
   end loop;
 end $$;</div>
-          <button class="btn secondary sm" style="margin-top:8px;" onclick="copySql()">Copy SQL</button>
           <div class="page-sub" style="margin-top:8px;">
             Already had the old single-table version connected? This SQL only adds the new tables — safe to run again. Hit Connect below and your current data will populate them.
           </div>
@@ -8561,17 +10061,90 @@ end $$;</div>
   `;
 }
 
+/* ---------- Weekend Location Rules (settings UI) ----------
+   Purely a read-time display rule — see taskLocationFor(). Nothing here ever
+   rewrites a task's stored location, so adding, editing or deleting a rule
+   is always non-destructive and instantly reversible. */
+function renderSettingsLocationRules(){
+  const rules = state.settings.locationDayRules || [];
+  const locs = state.settings.locations || [];
+  const wd = state.settings.weekendDays || [];
+  const dayLabel = wd.length ? wd.join(' & ') : 'no weekend days set';
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Weekend Location Rules</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">
+          On your weekend days (currently <b>${escapeHtml(dayLabel)}</b>), tasks in one location can be shown under another instead — e.g. everything you'd normally do at the Office shows up under Home.
+          This only changes how tasks are <b>displayed and grouped</b>; each task keeps its own location, and removing a rule puts everything back exactly as it was.
+          Remapped tasks are marked with a <b>↷</b> so you can always tell.
+        </div>
+        ${!wd.length ? `<div class="page-sub" style="color:var(--flag); margin-bottom:10px;">No weekend days are selected above, so these rules currently have no effect.</div>` : ''}
+        ${locs.length < 2 ? `<div class="page-sub">You need at least two locations before a rule makes sense.</div>` : `
+          <div class="tag-editor" style="flex-direction:column; align-items:stretch; gap:8px;">
+            ${rules.length ? rules.map(r=>`
+              <span class="tag-editable" style="justify-content:space-between;">
+                <span>${escapeHtml(r.from)} &nbsp;↷&nbsp; ${escapeHtml(r.to)}</span>
+                <button onclick="removeLocationDayRule('${escapeHtml(r.id)}')" title="Remove rule">✕</button>
+              </span>
+            `).join('') : '<span class="page-sub">No rules yet — everything stays in its own location all week.</span>'}
+          </div>
+          <div class="add-item-row" style="max-width:520px; margin-top:10px; gap:8px; flex-wrap:wrap;">
+            <select id="locRuleFrom" style="flex:1; min-width:130px;">
+              ${locs.map(l=>`<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('')}
+            </select>
+            <span class="page-sub" style="align-self:center;">↷</span>
+            <select id="locRuleTo" style="flex:1; min-width:130px;">
+              ${locs.map((l,i)=>`<option value="${escapeHtml(l)}" ${i===locs.length-1?'selected':''}>${escapeHtml(l)}</option>`).join('')}
+            </select>
+            <button class="btn secondary sm" onclick="addLocationDayRule()">Add Rule</button>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+async function addLocationDayRule(){
+  const fromEl = document.getElementById('locRuleFrom');
+  const toEl = document.getElementById('locRuleTo');
+  if(!fromEl || !toEl) return;
+  const from = fromEl.value, to = toEl.value;
+  if(!from || !to){ showToast('Pick both locations'); return; }
+  if(from === to){ showToast('Those are the same location'); return; }
+  if(!state.settings.locationDayRules) state.settings.locationDayRules = [];
+  const rules = state.settings.locationDayRules;
+  if(rules.some(r=>r.from===from)){ showToast(`There's already a rule for ${from}`); return; }
+  // Prevent a chain (A→B where B→C already exists) — resolution is a single
+  // hop by design, so a chain would silently not do what it looks like.
+  if(rules.some(r=>r.to===from) || rules.some(r=>r.from===to)){
+    showToast('That would chain two rules together — not supported');
+    return;
+  }
+  rules.push({ id:newId('locrule'), from, to });
+  await saveSettings();
+  renderMain();
+  showToast(`Weekend rule added: ${from} ↷ ${to}`);
+}
+async function removeLocationDayRule(id){
+  state.settings.locationDayRules = (state.settings.locationDayRules||[]).filter(r=>r.id!==id);
+  await saveSettings();
+  renderMain();
+  showToast('Rule removed');
+}
+
 function renderSettingsAppearance(){
   return `
     <div class="section">
       <div class="section-head"><h2>Weekend Days</h2></div>
       <div class="card" style="padding:16px;">
-        <div class="page-sub" style="margin-bottom:10px;">Shown with a distinct color on the Calendar page.</div>
+        <div class="page-sub" style="margin-bottom:10px;">Shown with a distinct color on the Calendar page, and used by the Weekend Location Rules below.</div>
         <div class="chip-select" style="width:fit-content;">
           ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<button class="weekend-day-pill ${(state.settings.weekendDays||[]).includes(d)?'active':''}" onclick="toggleWeekendDay('${d}')">${d}</button>`).join('')}
         </div>
       </div>
     </div>
+
+    ${renderSettingsLocationRules()}
 
     <div class="section">
       <div class="section-head"><h2>Appearance</h2></div>
@@ -9153,6 +10726,16 @@ async function renameListFolder(oldName){
   showToast(`Renamed to "${trimmed}" — updated on all matching lists`);
 }
 
+function toggleSqlBlock(){
+  const block = document.getElementById('sqlBlock');
+  const btn = document.getElementById('sqlToggleBtn');
+  if(!block) return;
+  const hidden = block.style.display === 'none';
+  block.style.display = hidden ? '' : 'none';
+  if(btn) btn.textContent = hidden ? 'Hide SQL' : 'Show SQL';
+}
+// Reads textContent, which is populated regardless of whether the block is
+// currently collapsed — so Copy works without ever expanding it.
 function copySql(){
   const text = document.getElementById('sqlBlock').textContent;
   navigator.clipboard.writeText(text).then(()=> showToast('SQL copied')).catch(()=> showToast('Could not copy — select manually'));
@@ -9537,6 +11120,263 @@ function getNewDayReviewRows(last){
   return rows;
 }
 
+/* =========================================================
+   LOCAL vs ONLINE DIVERGENCE PROMPT
+
+   When the copy on this device and the copy in Supabase disagree in a way
+   that actually matters, do NOT quietly pick a winner. Show exactly what
+   differs and let the person decide. Silent resolution is precisely how
+   completed tasks reverted to pending and lists lost their folder
+   assignments without anyone noticing at the time.
+
+   Deliberate design choices:
+   - Silent when the two copies agree (the overwhelmingly common case).
+   - Whole-app choice, but itemised, so the decision is informed.
+   - Dismissing / closing keeps ONLINE, because Supabase is the shared
+     source of truth and is the safer default of the two.
+   ========================================================= */
+function countCompletions(completions){
+  let n = 0;
+  Object.values(completions||{}).forEach(byDate=>{ n += Object.keys(byDate||{}).length; });
+  return n;
+}
+// Task-level granularity: for a recurring task, "differs" means its whole
+// completions map differs from what's online — not individual completion
+// dates. Every item defaults to choice:'online' (the safe default — the
+// pull has already applied it, so "online" requires no further action;
+// only items explicitly switched to 'local' get restored on Apply).
+//
+// IMPORTANT: comparisons below deliberately ignore metadata that can differ
+// in REPRESENTATION without the underlying data actually differing — e.g.
+// loggedAt timestamps come back from Supabase's timestamptz serialization in
+// a different string format than what gets written locally via
+// toISOString(), even for the exact same instant. A prior version compared
+// raw JSON.stringify() of the whole completion record (which also depends on
+// key order), and that produced false positives on effectively every
+// recurring task — reported directly: a person saw "Local: 28 completion
+// records / Online: 28 completion records" flagged as differing, for
+// basically every task in their list. Only STATUS per date is compared now,
+// since that's the only part that's actually substantive to reconcile.
+function completionsSignature(comp){
+  return Object.keys(comp||{}).sort().map(d=>`${d}:${(comp[d]&&comp[d].status)||''}`).join('|');
+}
+function detectDivergence(local, remote, snapshot){
+  const taskItems = [];
+
+  const localOTById = {}; (local.oneTime||[]).forEach(t=>{ localOTById[t.id]=t; });
+  const remoteOTById = {}; (remote.oneTime||[]).forEach(t=>{ remoteOTById[t.id]=t; });
+  new Set([...Object.keys(localOTById), ...Object.keys(remoteOTById)]).forEach(id=>{
+    const l = localOTById[id], r = remoteOTById[id];
+    const differs = !l || !r || l.done!==r.done || l.doneDate!==r.doneDate || l.due!==r.due || l.name!==r.name;
+    if(!differs) return;
+    taskItems.push({
+      id, kind:'oneTime',
+      name: (r&&r.name) || (l&&l.name) || '(unnamed task)',
+      localSummary: l ? `${l.done?'Done':'Not done'}${l.due?` · due ${humanDate(l.due)}`:''}` : 'Does not exist on this device',
+      onlineSummary: r ? `${r.done?'Done':'Not done'}${r.due?` · due ${humanDate(r.due)}`:''}` : 'Does not exist online',
+      choice: 'online',
+    });
+  });
+
+  const localRecById = {}; (local.recurring||[]).forEach(t=>{ localRecById[t.id]=t; });
+  const remoteRecById = {}; (remote.recurring||[]).forEach(t=>{ remoteRecById[t.id]=t; });
+  new Set([...Object.keys(localRecById), ...Object.keys(remoteRecById)]).forEach(id=>{
+    const l = localRecById[id], r = remoteRecById[id];
+    const lComp = (local.completions&&local.completions[id]) || {};
+    const rComp = (remote.completions&&remote.completions[id]) || {};
+    const differs = !l || !r || completionsSignature(lComp)!==completionsSignature(rComp);
+    if(!differs) return;
+    const lCount = Object.keys(lComp).length, rCount = Object.keys(rComp).length;
+    taskItems.push({
+      id, kind:'recurring',
+      name: (r&&r.name) || (l&&l.name) || '(unnamed task)',
+      localSummary: l ? `${lCount} completion record${lCount===1?'':'s'}` : 'Does not exist on this device',
+      onlineSummary: r ? `${rCount} completion record${rCount===1?'':'s'}` : 'Does not exist online',
+      choice: 'online',
+    });
+  });
+
+  const listItems = [];
+  const localListsById = {}; (local.lists||[]).forEach(l=>{ localListsById[l.id]=l; });
+  const remoteListsById = {}; (remote.lists||[]).forEach(l=>{ remoteListsById[l.id]=l; });
+  new Set([...Object.keys(localListsById), ...Object.keys(remoteListsById)]).forEach(id=>{
+    const l = localListsById[id], r = remoteListsById[id];
+    // Items sorted by id before joining — same false-positive risk as above
+    // if local vs remote item ARRAY ORDER differs even when the actual set
+    // of items is identical.
+    const sig = (x)=> x ? `${x.folder||''}|${(x.items||[]).slice().sort((a,b)=> a.id<b.id?-1:1).map(i=>`${i.id}:${i.text}:${!!i.done}`).join(',')}` : null;
+    const differs = !l || !r || sig(l)!==sig(r);
+    if(!differs) return;
+    listItems.push({
+      id, kind:'list',
+      name: (r&&r.title) || (l&&l.title) || '(unnamed list)',
+      localSummary: l ? `Folder: ${l.folder||'None'} · ${(l.items||[]).length} item${(l.items||[]).length===1?'':'s'}` : 'Does not exist on this device',
+      onlineSummary: r ? `Folder: ${r.folder||'None'} · ${(r.items||[]).length} item${(r.items||[]).length===1?'':'s'}` : 'Does not exist online',
+      choice: 'online',
+    });
+  });
+
+  if(!taskItems.length && !listItems.length) return null;
+  return {
+    categories: {
+      tasks: { label:'Tasks', items:taskItems, expanded:false },
+      lists: { label:'Lists', items:listItems, expanded:false },
+    },
+    snapshot,
+  };
+}
+
+function maybeShowDivergenceModal(){
+  if(!pendingDivergence) return false;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'divergenceOverlay';
+  // Clicking the backdrop keeps ONLINE for everything — the safe default,
+  // stated on the modal so dismissing is never an accidental destructive act.
+  overlay.onclick = (e)=>{ if(e.target===overlay) applyDivergenceChoices(); };
+  document.body.appendChild(overlay);
+  renderDivergenceModalBody();
+  const totalCount = pendingDivergence.categories.tasks.items.length + pendingDivergence.categories.lists.items.length;
+  diagLogEvent('sync', `Divergence prompt shown (${totalCount} item(s) across categories)`);
+  return true;
+}
+function renderDivergenceModalBody(){
+  const overlay = document.getElementById('divergenceOverlay');
+  const d = pendingDivergence;
+  if(!overlay || !d) return;
+  const cats = Object.entries(d.categories).filter(([,c])=>c.items.length);
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:620px; max-height:85vh; overflow-y:auto;">
+      <h3>⚠ This device and the online copy disagree</h3>
+      <div class="modal-sub">Choose per category by default, or expand a category to decide item by item. Nothing has been changed online yet.</div>
+      ${cats.map(([catKey, cat])=>`
+        <div class="card" style="padding:12px 14px; margin-bottom:12px; background:var(--paper-dim);">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <b>${escapeHtml(cat.label)} <span class="page-sub" style="font-weight:400;">(${cat.items.length} differ${cat.items.length===1?'':''})</span></b>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <button class="btn secondary sm" onclick="setDivergenceCategoryChoice('${catKey}','local')">Keep all local</button>
+              <button class="btn secondary sm" onclick="setDivergenceCategoryChoice('${catKey}','online')">Keep all online</button>
+              <button class="icon-btn" title="${cat.expanded?'Collapse':'Expand'}" onclick="toggleDivergenceCategoryExpand('${catKey}')">${cat.expanded?'▾':'▸'}</button>
+            </span>
+          </div>
+          ${cat.expanded ? `
+            <div style="margin-top:10px;">
+              ${cat.items.map(item=>`
+                <div class="metric-manage-row" style="background:var(--paper-raised); border-radius:8px; margin-bottom:6px; padding:8px 10px;">
+                  <span class="metric-manage-name">
+                    <b>${escapeHtml(item.name)}</b>
+                    <div class="page-sub" style="margin-top:3px; line-height:1.5;">
+                      Local: ${escapeHtml(item.localSummary)}<br>Online: ${escapeHtml(item.onlineSummary)}
+                    </div>
+                  </span>
+                  <span class="chip-select" style="flex-shrink:0;">
+                    <button class="${item.choice==='local'?'active':''}" onclick="setDivergenceItemChoice('${catKey}','${item.id}','local')">Local</button>
+                    <button class="${item.choice==='online'?'active':''}" onclick="setDivergenceItemChoice('${catKey}','${item.id}','online')">Online</button>
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          ` : `<div class="page-sub" style="margin-top:6px;">Currently set to keep <b>${cat.items.every(i=>i.choice==='local')?'all local':cat.items.every(i=>i.choice==='online')?'all online':'a mix — expand to review'}</b> for this category.</div>`}
+        </div>
+      `).join('')}
+      <div class="page-sub" style="line-height:1.6; margin:6px 0 12px;">
+        Closing this without applying keeps <b>online</b> for everything — the safe default.
+      </div>
+      <div class="modal-actions">
+        <button class="btn brass" onclick="applyDivergenceChoices()">Apply Choices</button>
+      </div>
+    </div>
+  `;
+}
+function toggleDivergenceCategoryExpand(catKey){
+  pendingDivergence.categories[catKey].expanded = !pendingDivergence.categories[catKey].expanded;
+  renderDivergenceModalBody();
+}
+function setDivergenceCategoryChoice(catKey, choice){
+  pendingDivergence.categories[catKey].items.forEach(item=>{ item.choice = choice; });
+  renderDivergenceModalBody();
+}
+function setDivergenceItemChoice(catKey, itemId, choice){
+  const item = pendingDivergence.categories[catKey].items.find(i=>i.id===itemId);
+  if(item) item.choice = choice;
+  renderDivergenceModalBody();
+}
+async function applyDivergenceChoices(){
+  const d = pendingDivergence;
+  pendingDivergence = null;
+  const overlay = document.getElementById('divergenceOverlay');
+  if(overlay) overlay.remove();
+  // Resume on EVERY exit path, including this early one. If the deferred
+  // review were skipped here it would be dropped for the launch all over
+  // again — precisely the failure this release fixes.
+  if(!d){ resumeDeferredNewDayReview(); return; }
+
+  let touchedLocal = false;
+  const localChoices = [];
+
+  d.categories.tasks.items.forEach(item=>{
+    if(item.choice !== 'local') return; // 'online' is already applied by the pull — nothing to do
+    touchedLocal = true;
+    localChoices.push(`${item.kind} task "${item.name}"`);
+    if(item.kind === 'oneTime'){
+      const snapT = d.snapshot.oneTime.find(t=>t.id===item.id);
+      state.tasks.oneTime = state.tasks.oneTime.filter(t=>t.id!==item.id);
+      if(snapT) state.tasks.oneTime.push(snapT); // omitted entirely if it never existed locally — correctly "undoes" an online-only add
+    } else {
+      const snapT = d.snapshot.recurring.find(t=>t.id===item.id);
+      state.tasks.recurring = state.tasks.recurring.filter(t=>t.id!==item.id);
+      if(snapT) state.tasks.recurring.push(snapT);
+      // Task-level, not per-completion: the whole completions map for this
+      // task id is replaced by the local snapshot's version.
+      if(d.snapshot.completions[item.id]) state.tasks.completions[item.id] = d.snapshot.completions[item.id];
+      else delete state.tasks.completions[item.id];
+    }
+  });
+
+  d.categories.lists.items.forEach(item=>{
+    if(item.choice !== 'local') return;
+    touchedLocal = true;
+    localChoices.push(`list "${item.name}"`);
+    const snapL = d.snapshot.lists.find(l=>l.id===item.id);
+    state.lists = state.lists.filter(l=>l.id!==item.id);
+    if(snapL) state.lists.push(snapL);
+  });
+
+  if(touchedLocal){
+    await saveTasks();
+    await saveLists();
+    diagLogEvent('sync', `Divergence resolved per-item: kept LOCAL for ${localChoices.length} item(s)`, { items: localChoices });
+    if(syncConfigured()){
+      try{
+        await enqueueSync(()=> pushFullStateToSupabase());
+        showToast(`${localChoices.length} local choice${localChoices.length===1?'':'s'} applied and pushed online`);
+      } catch(e){
+        showToast('⚠ Applied locally, but the push online failed — it will retry on the next sync');
+      }
+    } else {
+      showToast(`${localChoices.length} local choice${localChoices.length===1?'':'s'} applied`);
+    }
+  } else {
+    diagLogEvent('sync', 'Divergence resolved: kept ONLINE for everything');
+    showToast('Online copy kept for everything');
+  }
+  renderMain();
+  updateNavActiveState();
+  updateNavBadges();
+
+  resumeDeferredNewDayReview();
+}
+
+/* Resumes the New Day review that stood aside for a divergence prompt at
+   startup. Safe to call on any exit path — it is a no-op unless a review was
+   actually deferred, and it clears the flag first so it can never fire twice. */
+function resumeDeferredNewDayReview(){
+  if(!newDayDeferredByDivergence) return;
+  newDayDeferredByDivergence = false;
+  maybeShowNewDayModal();
+}
+
+
 function maybeShowNewDayModal(){
   const last = state.settings.lastActiveDate;
   const today = todayStr();
@@ -9907,7 +11747,20 @@ async function init(){
     // 30s bypass timer. Now, whatever happens, the app still opens.
     runBackgroundSync().then(()=>{
       revealApp();
-    }).then(()=> maybeShowNewDayModal()).catch((e)=>{
+    }).then(()=>{
+      // Ordered BEFORE the New Day review deliberately: New Day marks
+      // unresolved tasks as missed and writes that up to Supabase, so it must
+      // never run against data the person hasn't confirmed is the right copy.
+      // If a divergence prompt is showing, New Day waits until it's resolved.
+      if(maybeShowDivergenceModal()){
+        // Stand aside, but leave a note so resolution can pick this back up.
+        // New Day writes 'missed' statuses up to Supabase, so it must never
+        // run against data the person hasn't confirmed is the right copy.
+        newDayDeferredByDivergence = true;
+        return;
+      }
+      maybeShowNewDayModal();
+    }).catch((e)=>{
       console.error('Startup sync chain failed unexpectedly — revealing app anyway', e);
       diagLogEvent('startup-sync', 'Startup chain threw — revealed app via safety net', { error: e.message||String(e) });
       revealApp();
