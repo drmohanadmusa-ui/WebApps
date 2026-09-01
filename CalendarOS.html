@@ -1003,6 +1003,39 @@ table.log-table tr.log-row-active td{background:var(--teal-soft);}
   border:1px dashed color-mix(in srgb, var(--brass) 55%, transparent);
 }
 body.dark-mode .tag.tag-loc-moved{color:var(--brass);}
+.divergence-diffs{
+  display:flex; flex-direction:column; gap:2px; margin-top:6px;
+  padding-top:6px; border-top:1px dashed var(--line);
+}
+.divergence-diff{font-family:var(--font-mono); font-size:11px; color:var(--ink);}
+.divergence-arrow{color:var(--slate-light); padding:0 2px;}
+.backup-warning-banner{
+  display:flex; gap:12px; align-items:flex-start;
+  background:color-mix(in srgb, var(--flag) 14%, var(--paper-raised));
+  border:2px solid var(--flag); border-radius:8px;
+  padding:12px 14px; margin:0 0 16px;
+}
+.backup-warning-glyph{font-size:18px; color:var(--flag); flex-shrink:0; line-height:1.3;}
+.backup-warning-text{font-size:12.5px; color:var(--ink); line-height:1.6;}
+.backup-warning-text code{
+  font-family:var(--font-mono); font-size:11px;
+  background:color-mix(in srgb, var(--flag) 20%, transparent);
+  border-radius:3px; padding:1px 5px;
+}
+.idle-lock-overlay{
+  position:fixed; inset:0; z-index:99999;
+  background:var(--paper); display:flex; align-items:center; justify-content:center;
+  padding:24px; text-align:center;
+}
+.idle-lock-card{max-width:440px;}
+.idle-lock-glyph{font-size:44px; color:var(--brass); margin-bottom:12px;}
+.idle-lock-card h2{font-family:var(--font-display); font-size:22px; margin:0 0 12px; color:var(--ink);}
+.idle-lock-card p{font-size:13.5px; color:var(--ink-soft); margin:0 0 10px; line-height:1.55;}
+.idle-lock-card .idle-lock-why{
+  font-size:12.5px; color:var(--slate-light);
+  border-top:1px solid var(--line); padding-top:12px; margin-top:14px;
+}
+.idle-lock-card .btn{margin-top:16px;}
 .resource-row{
   display:flex; align-items:flex-start; gap:12px; padding:12px 16px;
   border-bottom:1px solid var(--paper-dim);
@@ -1026,7 +1059,12 @@ body.dark-mode .tag.tag-loc-moved{color:var(--brass);}
   background:var(--brass); color:#fff; border-radius:3px; padding:1px 4px; margin-left:4px;
 }
 .ex-hist-metrics{flex:1; font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--ink);}
-.ex-hist-diff{color:var(--brass); font-size:10px; letter-spacing:1px; flex-shrink:0;}
+.difficulty-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:22px; padding:0 6px; border-radius:6px;
+  font-family:var(--font-mono); font-size:12px; font-weight:700;
+  line-height:1; flex-shrink:0;
+}
 .ex-hist-note{padding:0 14px 9px 138px; font-size:11.5px; color:var(--slate-light);}
 .chip-count{
   font-family:var(--font-mono); font-size:9.5px; opacity:.75; margin-left:3px;
@@ -1450,6 +1488,249 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
 <script id="seed-data" type="application/json">{"oneTime": [{"id": "ot1", "name": "Look into CME-4 courses", "location": "1.Office", "silo": "Career Development", "due": "2026-09-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot2", "name": "Look into Ali Yield max portfolio and the expected returns", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot3", "name": "Next bull cycle, risk on before halving, and all in on July post having year", "location": "1.Office", "silo": "Financial", "due": "2026-12-31", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot4", "name": "Adjust the trading file so the maximum loss is equivalent to the last trade games + + + Adjust the trading file to show the timeframe of the analysis", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot5", "name": "Start negotiations with Suits Cafe", "location": "1.Office", "silo": "Financial", "due": "2027-01-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot6", "name": "Send follow up Whatsapp Message to Al Balad Al Amin", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot7", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot8", "name": "Book Villa inspection date", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-27", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot9", "name": "Throw out the watermelon", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-19", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot10", "name": "Update Lamees Account details and transfer her amount for this month", "location": "1.Office", "silo": "Financial", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot11", "name": "Convert the Todo file into webapp", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot12", "name": "Do the ironing", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot13", "name": "Follow up with RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot14", "name": "Finalize Meal Plan for the week (Egg Muffins + Ceaser Salad + Creamy pasta with grilled chicken)", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot15", "name": "Change my phone screen protector", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot16", "name": "Buy yougurt + Lemon", "location": "2.Errand", "silo": "Personal Tasks", "due": "2026-07-20", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot17", "name": "Send Rua Details to ABM", "location": "5.Last", "silo": "Personal Tasks", "due": "2026-07-20", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot18", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot19", "name": "Meal Prep (Ceaser Salad)", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": true, "priority": "Medium", "notes": ""}, {"id": "ot20", "name": "Deep Clean the Kitchen after Salad", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot21", "name": "Get in touch with Amazon about the refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot22", "name": "Restart the dishwasher", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-21", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot23", "name": "Create a short and impactful one to two lines fro intrdocutions", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot24", "name": "Book a date for car update & sim installation", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-26", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot25", "name": "Join LinkedIn premium and set monitering for \"Investor Relationgs Manager\"", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-10-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot26", "name": "Maybe a web app for work tasks follow ups?", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-08-01", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot27", "name": "Follow up with Umama from RAM", "location": "1.Office", "silo": "Personal Tasks", "due": "2026-07-28", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot28", "name": "Take two biscusts for Hebah and for Faisal", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-22", "done": false, "priority": "Medium", "notes": ""}, {"id": "ot29", "name": "Re-contact Amazon for refund", "location": "3.Home", "silo": "Personal Tasks", "due": "2026-07-24", "done": false, "priority": "Medium", "notes": ""}], "recurring": [{"id": "rt1", "name": "Lamees birthday preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt2", "name": "Lamees Birthday", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "25-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt3", "name": "Anniversary Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-10", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt4", "name": "Anniversary Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "11-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt5", "name": "Valentine Day preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt6", "name": "Valentine Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "14-02", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt7", "name": "Marriage Day Anniversary preparations", "location": "1.Office", "silo": "Lamees", "type": "Yearly", "detail": "20-03", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt8", "name": "Marriage Day", "location": "3.Home", "silo": "Lamees", "type": "Yearly", "detail": "24-04", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt9", "name": "Make sure wellness benefits balance is used", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-11", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt10", "name": "Update the Personal Dashboard file with new features", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt11", "name": "Send statements to all accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt12", "name": "Post my accrual, budget and holding accounts clearance JVs", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt13", "name": "Review my P&L", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt14", "name": "Close my accounts", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt15", "name": "Transfer the villa rent H2", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-01", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt16", "name": "Transfer the villa rent H1", "location": "1.Office", "silo": "Financial", "type": "Yearly", "detail": "01-06", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt17", "name": "Check if dates are correct (Esp. Monthly)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt18", "name": "Call Lamees' Parents", "location": "2.Errand", "silo": "Personal Tasks", "type": "Weekly", "detail": "Friday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt19", "name": "Pay Zain Data sim fees (SR 287.50) - 0535941766", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt20", "name": "Pay utilities bills for Villa", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "24", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt21", "name": "Shave down", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "5", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt22", "name": "Trim nails", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt23", "name": "Post the family crypto adjustment JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt24", "name": "Reconcile and log all crypto purchases", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt25", "name": "Make sure my ledger is updated", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt26", "name": "Work on / Review my stressors", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt27", "name": "Send Lamees a Song", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "13", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt28", "name": "Arrange work PC folders (Downloads + Desktop)", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt29", "name": "Call for elevator maintenance", "location": "1.Office", "silo": "Financial", "type": "Every X Days", "detail": "55", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt30", "name": "Weekly buying of crypto", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt31", "name": "Read a part of the Mastering the Mental Game of Trading", "location": "3.Home", "silo": "Self Development", "type": "Every X Days", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt32", "name": "What will be Lamees' Gift for this month", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt33", "name": "Clean the dishwasher", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "120", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt34", "name": "Clean the washing machine & dryer", "location": "4.Madinah", "silo": "Home Maintenance", "type": "Every X Days", "detail": "90", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt35", "name": "Prepare next day \"Casual\" clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt36", "name": "Send to Hussam his spending report", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "15", "start": "2026-01-01", "end": "2026-05-17", "priority": "Medium", "notes": ""}, {"id": "rt37", "name": "Lamees' Parents Birthday (Hala 09-05, Fareed 29-05)", "location": "1.Office", "silo": "Personal Tasks", "type": "Yearly", "detail": "01-05", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt38", "name": "Make sure all trades are logged", "location": "1.Office", "silo": "Financial", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt39", "name": "Pay Off Rajhi Visa & SNB Master Card", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "27", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt40", "name": "Post Budget JV", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt41", "name": "Reconcile Malaa rental income portfolio", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt42", "name": "Invest in Drahim - Abdulrahim Portfolio (for lower fees)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt43", "name": "Keep track of the 14th of every month (Crypto Volatility)", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "12", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt44", "name": "Renew Mushtaq Authorization", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "170", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt45", "name": "Download simah report", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt46", "name": "Send other departments portal emails", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt47", "name": "Take last month's SNB cashback and invest it", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt48", "name": "Go through the Udemy (Break into CRE) Course or the Udacity Nano Degree", "location": "1.Office", "silo": "Self Development", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt49", "name": "Buy a new zain Data Sim (Look into buying the 171 SAR sim)", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "85", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt50", "name": "Respond to \"Partner with RUA\" queries", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt51", "name": "Do my laundry", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt52", "name": "Press my clothes", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt53", "name": "Deep Clean the Kitchen", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt54", "name": "Water the plants if needed (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt55", "name": "Meal Prep", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt56", "name": "Water the plants if needed (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Bi-Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt57", "name": "Plan my meals for the week + Order Groceries", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Thursday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt58", "name": "Send current month PHD progress report", "location": "1.Office", "silo": "Self Development", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt59", "name": "Use the nose spray (Work)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt60", "name": "Use the nose spray (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-06", "priority": "Medium", "notes": ""}, {"id": "rt61", "name": "Take the money from Hussam account", "location": "3.Home", "silo": "Personal Tasks", "type": "Monthly", "detail": "26", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt62", "name": "Take the multivitamins + Zinc", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt63", "name": "Watch some videos from tools of the trade curriculum", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt64", "name": "Take the Vitamin D tablet (after food)", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2026-01-01", "end": "2026-05-18", "priority": "Medium", "notes": ""}, {"id": "rt65", "name": "Drink Electrolytes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt66", "name": "Catchup on my inbox (Work)", "location": "1.Office", "silo": "Work", "type": "Weekly", "detail": "Tuesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt67", "name": "Add new courses to LinkedIn", "location": "1.Office", "silo": "Career Development", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt68", "name": "Check if I have extra cash to deposit into Malaa", "location": "1.Office", "silo": "Financial", "type": "Weekly", "detail": "Sunday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt69", "name": "Check the JED>MED list", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Wednesday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt70", "name": "Check the Goals sheet and compare against the plan", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "2", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt71", "name": "Invest last month's rental income", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "3", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt72", "name": "Check the Buy wish list", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "28", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt73", "name": "Go over some of the document in the \"To Read\" List", "location": "1.Office", "silo": "Work", "type": "Daily", "detail": "", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt74", "name": "Take my GLP-1 injection", "location": "3.Home", "silo": "Personal Tasks", "type": "Weekly", "detail": "Saturday", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt75", "name": "Refrsh the Car ad (Office)", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt76", "name": "Conslidate my Learning Respources (Icloud notes, and linkedin)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": "", "start": "2026-01-01", "end": "2026-05-11", "priority": "Medium", "notes": ""}, {"id": "rt77", "name": "Review LinkedIn and look for new jobs", "location": "1.Office", "silo": "Personal Tasks", "type": "Weekly", "detail": "Monday", "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt78", "name": "Monjaro Follow up", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt79", "name": "Apply for a job", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2027-01-01", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt80", "name": "Categorize Linkedin Posts (Saved)", "location": "1.Office", "silo": "Career Development", "type": "Daily", "detail": null, "start": "2026-05-04", "end": "2026-06-01", "priority": "Medium", "notes": ""}, {"id": "rt81", "name": "Work on my ledger app on https://lovable.dev/ & https://www.figma.com/ - OLD", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-07-19", "priority": "Medium", "notes": ""}, {"id": "rt82", "name": "Revisit Lamees Birthday Preparations", "location": "1.Office", "silo": "Personal Tasks", "type": "Every X Days", "detail": "3", "start": "2026-05-05", "end": "2026-05-31", "priority": "Medium", "notes": ""}, {"id": "rt83", "name": "Send to Anan the water Bill", "location": "1.Office", "silo": "Financial", "type": "Monthly", "detail": "5", "start": "2026-05-05", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt84", "name": "Refrsh the Car ad (Home)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-05", "end": "2026-05-12", "priority": "Medium", "notes": ""}, {"id": "rt85", "name": "Catchup on my inbox (Personal)", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt86", "name": "Log Current Weight", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt87", "name": "Log Meal - Breakfast", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt88", "name": "Log Meal - Lunch", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt89", "name": "Log Meal - Snack", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt90", "name": "Log Meal - Dinner", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-07", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt91", "name": "List the car in other selling sites", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-08", "end": "2026-05-10", "priority": "Medium", "notes": ""}, {"id": "rt92", "name": "3d Print Graduation hats", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-10", "end": "2026-05-14", "priority": "Medium", "notes": ""}, {"id": "rt93", "name": "Do LinkedIn Quizzes", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt94", "name": "Close previous day in Lose It!", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-05-21", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt95", "name": "Clear the \"Done\" one time tasks", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "1", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt96", "name": "Update the LedgerOS app with Claude", "location": "1.Office", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt97", "name": "Train it home", "location": "3.Home", "silo": "Personal Tasks", "type": "Days of Week", "detail": "Mon,Wed,Fri", "start": "2026-07-19", "end": null, "priority": "Medium", "notes": ""}, {"id": "rt98", "name": "Apply ear medcine", "location": "3.Home", "silo": "Personal Tasks", "type": "Daily", "detail": null, "start": "2026-07-20", "end": "2026-07-24", "priority": "Medium", "notes": ""}, {"id": "rt99", "name": "Send to Anan his water bill", "location": "1.Office", "silo": "Personal Tasks", "type": "Monthly", "detail": "25", "start": "2026-01-01", "end": null, "priority": "Medium", "notes": ""}]}</script>
 <script id="seed-lists" type="application/json">[{"title": "Things to Pack (MED > JED)", "items": [], "id": "list1"}, {"title": "Things to buy from JARIR", "items": [], "id": "list2"}, {"title": "Things to buy from Super Market", "items": [], "id": "list3"}, {"title": "Things to buy from Jawharat", "items": [], "id": "list4"}, {"title": "Things to Buy (Wish List)", "items": [{"text": "Replica brand shoes", "category": "Clothes", "done": false, "id": "list5_item1"}], "id": "list5"}, {"title": "Things to Pack (JED > MED)", "items": [], "id": "list6"}, {"title": "Things to buy from Saudia Amazon", "items": [], "id": "list7"}, {"title": "Things to buy from Mini Market", "items": [], "id": "list8"}, {"title": "To buy from Vegetable Store", "items": [], "id": "list9"}, {"title": "Career Discussion Points with Kashif", "items": [{"text": "Need to start leading some initiatives", "done": false, "id": "list10_item1"}, {"text": "Any feedback on the way I handled the developer selection project?", "done": false, "id": "list10_item2"}, {"text": "Any feedback on the way I handled the developer database project?", "done": false, "id": "list10_item3"}, {"text": "Manager = Senior Manager? If yes, what do I need to improve?", "done": false, "id": "list10_item4"}, {"text": "For next level (Director), what do I need to work on?", "done": false, "id": "list10_item5"}], "id": "list10"}, {"title": "To Do Before Travel", "items": [{"text": "Go home", "done": false, "id": "list11_item1"}, {"text": "Move laptop things to hotel bag", "done": false, "id": "list11_item2"}, {"text": "Make coffee", "done": false, "id": "list11_item3"}, {"text": "Empty the dishwasher", "done": false, "id": "list11_item4"}, {"text": "Start dishwasher cleaner", "done": false, "id": "list11_item5"}, {"text": "Take medicine", "done": false, "id": "list11_item6"}, {"text": "Take the electrolytes pills", "done": false, "id": "list11_item7"}, {"text": "Take the bags to my car", "done": false, "id": "list11_item8"}, {"text": "Hit the road", "done": false, "id": "list11_item9"}], "id": "list11"}, {"title": "Gift Ideas For Lamees", "items": [{"text": "I DO clock with the exact time", "done": false, "id": "list12_item1"}, {"text": "Disney projector", "done": false, "id": "list12_item2"}], "id": "list12"}, {"title": "Things to Buy (Realistic)", "items": [{"text": "Good size taqias", "category": "Clothes", "done": false, "id": "list13_item1"}, {"text": "Good size eqals", "category": "Clothes", "done": false, "id": "list13_item2"}, {"text": "Cartier copy pens (the green one)", "category": "Accessories", "done": false, "id": "list13_item3"}, {"text": "Sirwal sunnah", "category": "Clothes", "done": false, "id": "list13_item4"}], "id": "list13"}, {"title": "Home Cleaning Steps (Before a Visit)", "items": [{"text": "Iron all clothes", "done": false, "id": "list14_item1"}, {"text": "Finish laundry", "done": false, "id": "list14_item2"}, {"text": "Deep clean the bathrooms", "done": false, "id": "list14_item3"}, {"text": "Deep clean the kitchen", "done": false, "id": "list14_item4"}, {"text": "Wipe all surfaces", "done": false, "id": "list14_item5"}, {"text": "Clean the couches", "done": false, "id": "list14_item6"}, {"text": "Vacuum the floors", "done": false, "id": "list14_item7"}, {"text": "Wipe the floors", "done": false, "id": "list14_item8"}], "id": "list14"}, {"title": "Car Selling Websites", "items": [], "id": "list15"}, {"title": "Things to Pack (For Canada Trip)", "items": [], "id": "list16"}, {"title": "Zain SIM Tracker", "items": [{"text": "Jeddah Home", "done": false, "id": "list17_item1"}, {"text": "Madinah Home", "done": false, "id": "list17_item2"}, {"text": "Muhammad Madani", "done": false, "id": "list17_item3"}, {"text": "Lamees Car", "done": false, "id": "list17_item4"}, {"text": "BYD Car", "done": false, "id": "list17_item5"}], "id": "list17"}]</script>
 
+<script type="text/plain" id="backupScriptTemplate">
+#!/usr/bin/env python3
+"""
+CalendarOS automated backup script.
+
+Pulls every table (scoped to your PIN, matching how the app itself scopes
+every query) from the CalendarOS Supabase project and writes one JSON file
+containing the raw rows exactly as stored — no field renaming. The output
+shape is unchanged: a top-level object of {table_name: [rows...]}, so
+restore_calendaros.py keeps working as-is.
+
+Usage:
+    python3 backup_calendaros.py --out backups/calendaros/2026-08-26.json
+
+Requires:
+    CALENDAROS_SUPABASE_URL
+    CALENDAROS_SUPABASE_ANON_KEY
+    CALENDAROS_PIN
+
+--------------------------------------------------------------------------
+CHANGES vs the previous version, and why each one matters
+--------------------------------------------------------------------------
+1. TABLE COVERAGE. The old list had 9 tables; the app syncs 17. Training,
+   Recipes and Hydration were never backed up at all. All 8 missing tables
+   are now included.
+
+2. PAGINATION. The old script issued one unbounded request per table.
+   PostgREST caps rows per response (Supabase's default cap is commonly
+   1000), and it truncates SILENTLY — you get 200 OK with a partial body.
+   task_completions was at 830 rows and growing ~27/day, so this would have
+   begun quietly discarding completions within about a week, with the backup
+   still looking healthy. Every table is now fetched in pages via Range
+   headers until exhausted.
+
+3. FAILURES ARE FATAL, NOT EMPTY. The old fetch_table() caught HTTPError,
+   printed to stderr, and returned []. A missing table, a permissions
+   problem or a transient 5xx therefore produced a backup file that looked
+   complete but contained an empty list for that table — and, worse, one
+   that a restore would happily treat as "there is no data here". Errors now
+   abort the whole run so no misleading file is ever committed.
+
+4. PER-TABLE REGRESSION CHECK. The old safety check only looked at the two
+   core task tables. It now compares against the most recent previous backup
+   in the same directory and fails if any table that previously had rows
+   comes back empty, or if any table shrinks by more than SHRINK_TOLERANCE.
+   Deliberate mass deletions will trip this; --allow-shrink overrides it once
+   you have confirmed the shrink is real.
+"""
+import argparse
+import json
+import os
+import re
+import sys
+import urllib.error
+import urllib.request
+
+# Every table the app syncs. Keep this in step with the supaUpsert() calls in
+# CalendarOS.html — if a new module adds a table, it must be added here too.
+__TABLES_BLOCK__
+
+# Tables that may legitimately not exist yet, because they arrive with a
+# migration the person may not have run. A 404 here is reported and recorded
+# but does not fail the run; anything else still does.
+OPTIONAL_TABLES = {"training_resources"}
+
+PAGE_SIZE = 1000
+SHRINK_TOLERANCE = 0.10  # allow up to 10% shrink before failing
+
+
+class BackupError(Exception):
+    pass
+
+
+def fetch_page(base_url, api_key, table, pin, offset, limit):
+    url = f"{base_url}/rest/v1/{table}?pin=eq.{pin}&select=*"
+    req = urllib.request.Request(url, headers={
+        "apikey": api_key,
+        "Authorization": f"Bearer {api_key}",
+        # Range is how PostgREST paginates. count=exact makes it report the
+        # true total in Content-Range so truncation cannot go unnoticed.
+        "Range-Unit": "items",
+        "Range": f"{offset}-{offset + limit - 1}",
+        "Prefer": "count=exact",
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            content_range = resp.headers.get("Content-Range", "")
+            return body, content_range
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        raise BackupError(f"HTTP {e.code} fetching {table}: {detail}") from e
+    except urllib.error.URLError as e:
+        raise BackupError(f"Network error fetching {table}: {e.reason}") from e
+
+
+def total_from_content_range(content_range):
+    """Content-Range looks like '0-999/2451'. Returns the total, or None."""
+    m = re.search(r"/(\d+)$", content_range or "")
+    return int(m.group(1)) if m else None
+
+
+def fetch_table(base_url, api_key, table, pin):
+    """Fetches every row, paging until exhausted. Raises on any error."""
+    rows = []
+    offset = 0
+    expected_total = None
+    while True:
+        page, content_range = fetch_page(base_url, api_key, table, pin, offset, PAGE_SIZE)
+        if expected_total is None:
+            expected_total = total_from_content_range(content_range)
+        rows.extend(page)
+        if len(page) < PAGE_SIZE:
+            break
+        offset += PAGE_SIZE
+        if offset > 500_000:  # runaway guard
+            raise BackupError(f"{table}: exceeded 500k rows — aborting as a safety measure")
+
+    # If the server told us the true total, insist we actually got it all.
+    if expected_total is not None and len(rows) != expected_total:
+        raise BackupError(
+            f"{table}: fetched {len(rows)} rows but server reports {expected_total} — "
+            "refusing to write a truncated backup"
+        )
+    return rows
+
+
+def find_previous_backup(out_path):
+    """Most recent existing backup in the same directory, if any."""
+    directory = os.path.dirname(out_path) or "."
+    if not os.path.isdir(directory):
+        return None, None
+    target = os.path.basename(out_path)
+    candidates = sorted(
+        f for f in os.listdir(directory)
+        if f.endswith(".json") and f != target
+    )
+    if not candidates:
+        return None, None
+    path = os.path.join(directory, candidates[-1])
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f), path
+    except Exception as e:  # a corrupt previous file must not stop today's backup
+        print(f"  ! could not read previous backup {path}: {e}", file=sys.stderr)
+        return None, None
+
+
+def check_against_previous(backup, previous, previous_path, allow_shrink):
+    """Fails loudly if a table emptied out or shrank sharply since last time."""
+    if not previous:
+        print("No previous backup found — skipping regression check.")
+        return
+    print(f"\nComparing against {os.path.basename(previous_path)}:")
+    problems = []
+    for table in TABLES:
+        now = len(backup.get(table, []))
+        before = len(previous.get(table, []))
+        if table not in previous:
+            print(f"  {table:22} {now:>6}  (new in this backup)")
+            continue
+        delta = now - before
+        flag = ""
+        if before > 0 and now == 0:
+            flag = "  <-- EMPTIED"
+            problems.append(f"{table}: {before} rows -> 0")
+        elif before > 0 and delta < 0 and abs(delta) / before > SHRINK_TOLERANCE:
+            flag = "  <-- SHRANK"
+            problems.append(f"{table}: {before} -> {now} ({delta})")
+        print(f"  {table:22} {now:>6}  ({delta:+d}){flag}")
+
+    if problems and not allow_shrink:
+        print("\nERROR: one or more tables lost data since the last backup:", file=sys.stderr)
+        for p in problems:
+            print(f"  - {p}", file=sys.stderr)
+        print("\nNot committing this backup. If the loss is real and intended, "
+              "re-run with --allow-shrink.", file=sys.stderr)
+        raise SystemExit(2)
+    if problems and allow_shrink:
+        print("\nWARNING: data loss detected but --allow-shrink was set; continuing.", file=sys.stderr)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", required=True)
+    parser.add_argument("--allow-shrink", action="store_true",
+                        help="Proceed even if tables lost rows since the last backup.")
+    args = parser.parse_args()
+
+    base_url = os.environ.get("CALENDAROS_SUPABASE_URL", "").rstrip("/")
+    api_key = os.environ.get("CALENDAROS_SUPABASE_ANON_KEY", "")
+    pin = os.environ.get("CALENDAROS_PIN", "")
+    if not base_url or not api_key or not pin:
+        print("ERROR: CALENDAROS_SUPABASE_URL, CALENDAROS_SUPABASE_ANON_KEY, "
+              "and CALENDAROS_PIN must all be set", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Backing up CalendarOS from {base_url} (pin {pin}) ...")
+    backup = {}
+    missing_optional = []
+    for table in TABLES:
+        try:
+            rows = fetch_table(base_url, api_key, table, pin)
+        except BackupError as e:
+            if table in OPTIONAL_TABLES and "HTTP 404" in str(e):
+                print(f"  {table}: not present yet (migration not run) — skipping")
+                missing_optional.append(table)
+                continue
+            # Everything else is fatal. A backup with a silently empty table is
+            # worse than no backup, because it looks fine.
+            print(f"\nERROR: {e}", file=sys.stderr)
+            print("Aborting without writing a file, rather than committing an "
+                  "incomplete backup.", file=sys.stderr)
+            sys.exit(1)
+        backup[table] = rows
+        print(f"  {table}: {len(rows)} row(s)")
+
+    # Core-table sanity check, as before.
+    if len(backup.get("one_time_tasks", [])) == 0 and len(backup.get("recurring_tasks", [])) == 0:
+        print("\nERROR: both one_time_tasks and recurring_tasks came back empty — "
+              "this looks suspicious for an established install. Failing rather "
+              "than writing a hollow backup.", file=sys.stderr)
+        sys.exit(2)
+
+    previous, previous_path = find_previous_backup(args.out)
+    check_against_previous(backup, previous, previous_path, args.allow_shrink)
+
+    out_dir = os.path.dirname(args.out)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    with open(args.out, "w", encoding="utf-8") as f:
+        json.dump(backup, f, indent=2, ensure_ascii=False, default=str)
+
+    total = sum(len(v) for v in backup.values())
+    print(f"\nWrote {args.out} — {len(backup)} tables, {total} rows total")
+    if missing_optional:
+        print(f"Note: skipped (not yet migrated): {', '.join(missing_optional)}")
+
+
+if __name__ == "__main__":
+    main()
+
+</script>
 <script type="text/markdown" id="recipeImportTemplate">
 # CalendarOS — Recipe Import Template
 
@@ -1631,7 +1912,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.28.0';
+const APP_VERSION = '4.35.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1639,6 +1920,48 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.35.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'New: Deletion History (Settings \u2192 Activity & Error Log). Every deletion of training data on this device is now recorded durably, surviving reloads, keeping the last 40. Deletions of training logs were previously invisible after the fact: they were not written to the activity log at all, and the session log is wiped on every reload \u2014 so by the time you notice something is missing, days later, there was no way to tell whether the app deleted it or it was lost some other way. If data goes missing and the deletion is NOT listed there, the app did not delete it, which narrows the search enormously.',
+    'Local-only and never synced, since it records what happened on this particular device.',
+  ]},
+  { v:'4.34.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'Difficulty now shows as a colour-graded NUMBER everywhere it appears, not dots: 1 is green, 5 is red, and everything between is interpolated (an average of 3.5 lands on amber-orange). Applied to the exercise History popup, the Log History table, and the per-day average.',
+    'It is drawn as a filled badge rather than coloured text on purpose: coloured text fell below the readability floor at the amber end on light themes (about 2.8x), and there are seven themes including two dark ones. A filled badge carries its own background, and the text colour is chosen per badge by luminance, so every value stays legible on every theme.',
+  ]},
+  { v:'4.33.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'FIXED: importing a recipe broke recipe syncing. The importer created ingredients without an id, but recipe_ingredients.id is not-null and forms half the upsert key, so every recipe sync afterwards failed with "null value in column id violates not-null constraint". The manual recipe editor always assigned an id; only the importer did not. Imported ingredients now get one.',
+    'Recipes already imported before this fix are repaired automatically the next time recipes are saved \u2014 missing ids are backfilled in place. Without that, an already-imported recipe would have gone on failing forever with no way out except deleting it. The repair only ever adds an id where none exists, never changes one that is already there, and is safe to run repeatedly.',
+    'Two further guards: the row builder now refuses to send a null id under any circumstances, and deleting a recipe no longer queues delete requests for ingredients that never had an id (there is nothing on the server to delete).',
+  ]},
+  { v:'4.32.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'FIXED: the "this device and the online copy disagree" prompt could appear for items that were in fact identical, showing two summary lines reading exactly the same with no way to tell what was wrong. Cause: the local copy is snapshotted through JSON, which DROPS any field whose value is undefined, while Supabase returns an explicit null for an empty column. A task with no completion date therefore compared undefined against null and counted as a difference \u2014 invisible, because the summary line only shows done state and due date. Empty values are now compared by meaning, so null, undefined and blank all count as the same absence. Same class of mistake as the 4.25.1 fix: comparing how a value is stored rather than what it means.',
+    'The disagreement prompt now SPELLS OUT which fields actually differ (e.g. "Completed on: (none) vs Thu, Aug 20") underneath the summary lines. A prompt you cannot see the reason for is worse than no prompt, since there is no basis on which to choose.',
+    'Settings \u2192 Cloud Sync now carries the daily backup script alongside the SQL, with Copy and Download buttons and the code collapsed by default. Its table list is GENERATED from the tables this app actually syncs, so the code you copy is correct by construction \u2014 when the red coverage banner appears, copying from here and pasting into the repo is all that is needed.',
+  ]},
+  { v:'4.31.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'FIXED (latent data loss): reads from Supabase were a single unbounded request per table. PostgREST caps how many rows it returns in one response (commonly 1000 on Supabase) and truncates SILENTLY \u2014 a normal 200 response with a partial body and no sign anything is missing. Because a pull replaces local data wholesale and the app then pushes that back, a truncated read would have turned into a real deletion on the next save. task_completions was already around 830 rows and growing roughly 28 a day, so this was days from causing exactly that. Reads are now paged until the table is exhausted.',
+    'Reads also now verify themselves: Supabase is asked to report the true row count, and if what arrives does not match, the read FAILS rather than being used. A partial read is deliberately treated as an error, not as "there are fewer rows now" \u2014 every caller already treats a failed read as "leave the local copy alone", so a refusal is safe where a short answer would be destructive. A server that ignores paging and returns everything at once is handled without duplicating rows.',
+  ]},
+  { v:'4.30.0', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'FIXED (silent data loss): a sync job could die without leaving any trace and permanently disable syncing for that data for the rest of the session. scheduleSync() built its list of steps OUTSIDE any error handler, so if building them threw, three things happened at once: nothing was written to the Activity & Error Log, no error badge appeared, and the "job in flight" flag was never cleared \u2014 so every later save of that data returned early as "already in flight" and did nothing. The result was data that looked saved locally, never reached Supabase, and produced no error anywhere. Building the steps is now inside the handler, failures are recorded properly, and the flag is cleared on every path.',
+    'FIXED: the idle session lock introduced in 4.29.0 had the same stuck-flag problem. It marked a job in flight and then refused to run it, leaving the flag set. The lock is now checked BEFORE the flag is set.',
+    'New: backup coverage banner. The app now knows which tables it writes to Supabase and which the daily backup script actually pulls, and shows a red banner on every page if anything is written but not backed up. Training, Recipes and Hydration had been syncing without any backup coverage at all \u2014 eight tables \u2014 and nothing surfaced that. The regression test asserts the app\'s table list matches its real upsert calls, so it cannot silently drift again.',
+  ]},
+  { v:'4.29.0', changes: [
+    'No SQL migration needed for this release \u2014 every change is front-end only.',
+    'Adding an exercise from the Exercise Library no longer jumps you to Training \u2192 Today and drops it into the day\'s log. It is added to the library and you stay where you were. The "add a new exercise" link inside the day picker still adds to that day, because that flow starts from an explicit intent to log it \u2014 the two entry points are now told apart rather than sharing one behaviour.',
+    'Ctrl/Cmd+Enter now confirms the open dialog, which also works from inside a text box where a plain Enter has to stay as a newline. It fires the topmost dialog\'s primary action only. It deliberately refuses to fire anything destructive (delete, remove, clear, reset, discard, disconnect and similar) \u2014 Enter is a reflex key and a shortcut that could silently delete a list is not worth the convenience.',
+    'New: idle session lock. After 30 minutes without activity (configurable in Settings \u2192 Appearance, 0 turns it off) this tab closes itself with an explanation and a Relaunch button. While locked, ALL outbound sync is blocked at the single point every write passes through, so a tab left open on one device cannot later overwrite newer changes made on another. Relaunch does a full reload, so you come back on the current copy rather than resuming on top of stale state.',
+    'The idle lock will never lock while you have unsaved or unsynced work \u2014 unsaved training drafts, staged exercises, or anything still queued to sync. It waits and re-checks instead, including one final check the moment the countdown ends. Losing unsaved work in order to prevent a data problem would be a poor trade.',
+    'The idle lock warns 60 seconds before locking with an "I\'m still here" button, and any real activity during that countdown cancels it. Returning to a tab that has been hidden past the timeout is checked immediately rather than waiting for the next tick, since a forgotten background tab is the main case this is for.',
+    'Copying a list as text now copies straight to the clipboard when you press the button \u2014 no popup. The popup is kept only as a rescue for browsers that block clipboard access outright (it is unavailable on insecure origins), because silently copying nothing would lose the text with no way to recover it.',
+  ]},
   { v:'4.28.0', changes: [
     '\u{1F534} SQL migration required \u2014 Settings \u2192 Cloud Sync \u2192 Copy SQL. Adds video_urls to training_exercises, and a new training_resources table (also added to the row-level-security loop). Additive and idempotent, safe to re-run.',
     'Fixed: after resolving an online/local difference at startup, the day-completion review was skipped entirely and only reappeared on the NEXT launch. init() deliberately stood aside for the divergence prompt, but nothing ever resumed the review once the prompt was answered \u2014 the deferral was implemented, the resumption was not. It now resumes as soon as you apply your choices. The original ordering is unchanged and intentional: the day review marks outstanding items as missed and pushes that upstream, so it must never run against data you have not yet confirmed. Startup-only, as before.',
@@ -2046,6 +2369,10 @@ const DEFAULT_SETTINGS_EXTRAS = {
   // NEVER rewritten; this is a pure read-time resolution (see taskLocationFor).
   // Shape: [{ id, from, to }]. Empty = feature off, behaviour identical to before.
   locationDayRules: [],
+  // Minutes of inactivity before this tab locks itself. 0 disables it.
+  // Deliberately NOT synced: it describes how you use THIS device, and a
+  // shared value would need an app_settings column for no real benefit.
+  idleTimeoutMin: 30,
   completedColor: '#3C7A73',
   accentColor: '#B9862F',
   recurTypeColors: {
@@ -2147,6 +2474,7 @@ const STORAGE_KEYS = {
   RECIPES: 'dispatch:recipes', // { items:[ {id,name,mealType,imageUrl,baseServings,ingredients:[],steps,macros} ] }
   HYDRATION: 'dispatch:hydration', // [ {id,date,containerId,ml,loggedAt} ]
   SYNC_ERROR_HISTORY: 'dispatch:syncerrorhistory', // durable, bounded, local-only — see recordSyncErrorHistory()
+  DELETION_HISTORY: 'dispatch:deletionhistory', // durable, bounded, local-only — see recordDeletion()
 };
 
 /* ---------- App State ---------- */
@@ -2549,7 +2877,7 @@ async function loadSettingsOnly(){
 
 async function loadAll(){
   try{
-    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, recipesRes, hydrationRes, syncErrHistRes] = await Promise.all([
+    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, recipesRes, hydrationRes, syncErrHistRes, delHistRes] = await Promise.all([
       safeGet(STORAGE_KEYS.TASKS),
       safeGet(STORAGE_KEYS.LISTS),
       safeGet(STORAGE_KEYS.HEALTH),
@@ -2559,8 +2887,10 @@ async function loadAll(){
       safeGet(STORAGE_KEYS.RECIPES),
       safeGet(STORAGE_KEYS.HYDRATION),
       safeGet(STORAGE_KEYS.SYNC_ERROR_HISTORY),
+      safeGet(STORAGE_KEYS.DELETION_HISTORY),
     ]);
     state.syncErrorHistory = syncErrHistRes ? JSON.parse(syncErrHistRes.value) : [];
+    state.deletionHistory = delHistRes ? JSON.parse(delHistRes.value) : [];
 
     if(tasksRes){
       const parsed = JSON.parse(tasksRes.value);
@@ -2749,6 +3079,89 @@ async function markSyncError(message){
    Security note: RLS on these tables is permissive (open to anyone holding
    the anon key). The PIN is an app-level convenience, not a cryptographic
    guarantee. */
+/* ---------- Backup coverage guard ----------
+   Every table the app pushes to Supabase, and every table the backup script
+   actually pulls. These are DECLARED lists, not a live check of the script —
+   the app cannot read the repo. Their value is that adding a table to the app
+   without adding it to the backup produces a visible red banner instead of a
+   silent gap that goes unnoticed for months.
+
+   SYNCED_TABLES is verified against the real supaUpsert() calls by the test
+   suite, so it cannot drift from what the app actually writes.
+
+   Keep BACKED_UP_TABLES in step with TABLES in backup_calendaros.py. */
+const SYNCED_TABLES = [
+  'one_time_tasks','recurring_tasks','task_completions','lists','list_items',
+  'health_logs','daily_ratings','health_metric_defs','app_settings',
+  'training_exercises','training_sessions','training_calendar','training_logs',
+  'training_resources','recipes','recipe_ingredients','hydration_logs',
+];
+const BACKED_UP_TABLES = [
+  'one_time_tasks','recurring_tasks','task_completions','lists','list_items',
+  'health_logs','daily_ratings','health_metric_defs','app_settings',
+  'training_exercises','training_sessions','training_calendar','training_logs',
+  'training_resources','recipes','recipe_ingredients','hydration_logs',
+];
+/* Builds the backup script with its TABLES list generated from SYNCED_TABLES,
+   so the code you copy is always current by construction. The banner tells you
+   coverage has drifted; this makes fixing it a copy-paste rather than a
+   hand-edit you could get wrong. */
+function buildBackupScript(){
+  const el = document.getElementById('backupScriptTemplate');
+  if(!el) return '';
+  const lines = [];
+  lines.push('TABLES = [');
+  lines.push('    # Generated from the app\'s own table list \u2014 keep in step by');
+  lines.push('    # re-copying this from Settings whenever the banner appears.');
+  SYNCED_TABLES.forEach(t=> lines.push(`    "${t}",`));
+  lines.push(']');
+  return el.textContent.replace('__TABLES_BLOCK__', lines.join('\n')).trim();
+}
+function copyBackupScript(){
+  const code = buildBackupScript();
+  if(!code){ showToast('Backup script not found in this build'); return; }
+  copyTextToClipboard(code).then(okCopy=>{
+    showToast(okCopy ? 'Backup script copied \u2014 paste it into backup_calendaros.py' : 'Could not copy \u2014 use Download instead');
+  });
+}
+function downloadBackupScript(){
+  const code = buildBackupScript();
+  if(!code){ showToast('Backup script not found in this build'); return; }
+  const blob = new Blob([code], { type:'text/x-python;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'backup_calendaros.py';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  showToast('Backup script downloaded');
+}
+function toggleBackupScriptBlock(){
+  const block = document.getElementById('backupScriptBlock');
+  const btn = document.getElementById('backupScriptToggleBtn');
+  if(!block) return;
+  const hidden = block.style.display === 'none';
+  block.style.display = hidden ? '' : 'none';
+  if(btn) btn.textContent = hidden ? 'Hide script' : 'Show script';
+}
+
+function unbackedUpTables(){
+  return SYNCED_TABLES.filter(t=> !BACKED_UP_TABLES.includes(t));
+}
+function renderBackupCoverageBanner(){
+  const missing = unbackedUpTables();
+  if(!missing.length) return '';
+  return `
+    <div class="backup-warning-banner">
+      <span class="backup-warning-glyph">\u26A0</span>
+      <span class="backup-warning-text">
+        <b>${missing.length} table${missing.length===1?' is':'s are'} not covered by the daily backup:</b>
+        ${missing.map(t=>`<code>${escapeHtml(t)}</code>`).join(' ')}
+        <br>Data in ${missing.length===1?'it':'them'} exists only in Supabase and on your devices \u2014 if it is lost, there is nothing to restore from. Add ${missing.length===1?'it':'them'} to <code>TABLES</code> in <code>backup_calendaros.py</code>.
+      </span>
+    </div>
+  `;
+}
+
 function syncConfigured(){
   const s = state.settings.sync;
   return !!(s && s.url && s.anonKey && s.pin);
@@ -2805,16 +3218,80 @@ async function supaDeleteMatch(table, matchQuery){
   }
   diagLogEvent('supabase', `delete ${table} OK`, { matchQuery });
 }
+const SUPA_PAGE_SIZE = 1000;
+
+/* Reads EVERY row of a table, in pages.
+
+   This used to be a single unbounded request. PostgREST caps how many rows it
+   will return in one response (Supabase's default cap is commonly 1000) and it
+   truncates SILENTLY — a 200 OK with a partial body and no indication that
+   anything is missing. That is uniquely dangerous here, because a pull replaces
+   local state wholesale and the app then pushes that state back: a truncated
+   read would have become a real deletion on the next save. task_completions was
+   already at ~830 rows and growing ~28/day, so this was days away from biting.
+
+   Two safety rules, both deliberate:
+   1. Any failure THROWS rather than returning what we managed to collect.
+      Callers are already written to treat a throw as "leave local alone"
+      (see the fault-isolated pull blocks), whereas a short array would be
+      indistinguishable from "the server really has fewer rows now".
+   2. If the server reports a total via Content-Range and we did not end up
+      with exactly that many rows, that is also a throw. Silent truncation is
+      the thing being defended against, so a count mismatch must never pass. */
 async function supaSelectAll(table){
   const s = state.settings.sync;
-  const url = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?pin=eq.${encodeURIComponent(s.pin)}&select=*`;
-  const res = await fetchWithTimeout(url, { headers: supaHeaders() });
-  if(!res.ok){
-    diagLogEvent('supabase', `select ${table} FAILED`, { status: res.status });
-    throw new Error(`${table} select failed: ${res.status}`);
+  const base = `${s.url.replace(/\/$/,'')}/rest/v1/${table}?pin=eq.${encodeURIComponent(s.pin)}&select=*`;
+  const rows = [];
+  let offset = 0;
+  let reportedTotal = null;
+
+  while(true){
+    const res = await fetchWithTimeout(base, {
+      headers: supaHeaders({
+        'Range-Unit': 'items',
+        'Range': `${offset}-${offset + SUPA_PAGE_SIZE - 1}`,
+        // count=exact makes PostgREST report the true total in Content-Range,
+        // which is what lets us prove we got everything.
+        'Prefer': 'count=exact'
+      })
+    });
+    if(!res.ok){
+      diagLogEvent('supabase', `select ${table} FAILED`, { status: res.status, offset });
+      throw new Error(`${table} select failed: ${res.status}`);
+    }
+    const page = await res.json();
+    if(!Array.isArray(page)){
+      throw new Error(`${table} select returned an unexpected payload`);
+    }
+    if(reportedTotal === null){
+      const cr = res.headers && res.headers.get ? res.headers.get('Content-Range') : null;
+      const m = cr && /\/(\d+)\s*$/.exec(cr);
+      if(m) reportedTotal = parseInt(m[1], 10);
+    }
+
+    // A server that ignores Range hands back the whole table at once. Paging
+    // on from there would duplicate rows, so treat it as complete.
+    if(page.length > SUPA_PAGE_SIZE){
+      rows.length = 0;
+      rows.push(...page);
+      break;
+    }
+
+    rows.push(...page);
+    if(page.length < SUPA_PAGE_SIZE) break; // last page
+    offset += SUPA_PAGE_SIZE;
+
+    if(offset > 500000){
+      throw new Error(`${table} select exceeded 500k rows — aborting rather than looping`);
+    }
   }
-  const rows = await res.json();
-  diagLogEvent('supabase', `select ${table} OK`, { rows: rows.length });
+
+  if(reportedTotal !== null && rows.length !== reportedTotal){
+    diagLogEvent('supabase', `select ${table} TRUNCATED`, { got: rows.length, expected: reportedTotal });
+    throw new Error(`${table} select incomplete: got ${rows.length} of ${reportedTotal} rows — refusing to use a partial read`);
+  }
+
+  diagLogEvent('supabase', `select ${table} OK`, { rows: rows.length, pages: Math.max(1, Math.ceil(rows.length / SUPA_PAGE_SIZE)) });
   return rows;
 }
 
@@ -2924,6 +3401,10 @@ function rowToRecipe(r, ingredientRows){
 }
 function recipeIngredientToRow(ing, recipeId, idx){
   const s = state.settings.sync;
+  // Last line of defence: id is not-null in the schema, so a missing one must
+  // never reach the network. ensureRecipeIngredientIds() should have handled
+  // it already; this makes a null impossible by construction.
+  if(!ing.id) ing.id = newId('ing');
   return { pin:s.pin, id:ing.id, recipe_id:recipeId, name:ing.name, amount_grams:ing.grams||0, sort_order:idx };
 }
 function rowToRecipeIngredient(r){
@@ -3668,6 +4149,16 @@ async function saveTasksLocalWithFallback(){
 // when the click happened.
 let syncChain = Promise.resolve();
 function enqueueSync(taskFn){
+  // Hard stop when the session is locked. This is the single choke point every
+  // outbound write passes through, so guarding here means a locked tab cannot
+  // transmit anything — which is the entire point of the idle lock. A task
+  // arriving after the lock is DROPPED, not deferred: it was built from state
+  // this tab has been sitting on, and that is exactly the stale data we are
+  // refusing to send. Relaunching re-pulls the authoritative copy.
+  if(sessionLocked){
+    diagLogEvent('idle-lock', 'Outbound sync blocked — session is locked');
+    return Promise.resolve();
+  }
   const run = () => taskFn().catch(e=> console.error('queued sync task failed', e));
   syncChain = syncChain.then(run, run);
   return syncChain;
@@ -3705,6 +4196,14 @@ async function runSyncSteps(steps){
 const syncScheduled = { tasks:false, lists:false, health:false, ratings:false, metricDefs:false, settings:false };
 const syncDirtyDuringRun = { tasks:false, lists:false, health:false, ratings:false, metricDefs:false, settings:false };
 function scheduleSync(key, buildSteps){
+  // Checked BEFORE the in-flight flag is set. enqueueSync also refuses while
+  // locked, but if we set the flag first and it then refused, the flag would
+  // never be cleared and every later save for this key would be silently
+  // swallowed as "already in flight". That is a data-loss bug, not a no-op.
+  if(sessionLocked){
+    diagLogEvent('sync-queue', `${key}: not scheduled — session is locked`);
+    return;
+  }
   if(syncScheduled[key]){
     // a job for this data is already in flight — don't stack another one,
     // just flag that there's more to catch once it's done.
@@ -3716,15 +4215,33 @@ function scheduleSync(key, buildSteps){
   syncDirtyDuringRun[key] = false;
   diagLogEvent('sync-queue', `${key}: new job scheduled`);
   enqueueSync(async ()=>{
-    await runSyncSteps(buildSteps());
-    // anything that arrived while that run was in flight gets exactly one
-    // guaranteed follow-up pass (reading fresh state), instead of being lost
-    if(syncDirtyDuringRun[key]){
-      syncDirtyDuringRun[key] = false;
-      diagLogEvent('sync-queue', `${key}: running guaranteed follow-up pass`);
+    try{
+      // buildSteps() is called INSIDE this try on purpose. It reads live state
+      // (e.g. state.training.exercises.map(...)) and can therefore throw. It
+      // used to be evaluated outside any handler that records anything, so a
+      // throw here produced: nothing in the Activity & Error Log, no toast, no
+      // badge — and syncScheduled[key] left permanently true, which made every
+      // subsequent save for this key return early as "already in flight".
+      // The result was a category of failure with no data reaching the server
+      // and no error anywhere. Now it is caught, recorded, and the flag is
+      // always cleared.
       await runSyncSteps(buildSteps());
+      // anything that arrived while that run was in flight gets exactly one
+      // guaranteed follow-up pass (reading fresh state), instead of being lost
+      if(syncDirtyDuringRun[key]){
+        syncDirtyDuringRun[key] = false;
+        diagLogEvent('sync-queue', `${key}: running guaranteed follow-up pass`);
+        await runSyncSteps(buildSteps());
+      }
+    } catch(e){
+      const msg = `${key} sync job failed before it could run: ${e.message||String(e)}`;
+      console.error(msg, e);
+      diagLogEvent('sync-queue', `${key}: job threw outside runSyncSteps`, { error: e.message||String(e) });
+      await markSyncError(msg);
+    } finally {
+      // ALWAYS clears, on every path. This is the invariant that was missing.
+      syncScheduled[key] = false;
     }
-    syncScheduled[key] = false;
   });
 }
 // True whenever ANYTHING is queued-but-not-yet-synced — drives the
@@ -3876,7 +4393,29 @@ async function saveTraining(){
     ]);
   }
 }
+/* Backfills ids onto any ingredient missing one.
+
+   Fixing the importer alone is not enough: a recipe imported before the fix is
+   already sitting in local storage with id-less ingredients, and would go on
+   failing its upsert forever with no way out short of deleting the recipe.
+   This repairs such rows in place the next time recipes are saved. It only
+   ever ADDS an id where none exists, so it cannot disturb ingredients that
+   already have one. Returns true if anything was repaired. */
+function ensureRecipeIngredientIds(){
+  let repaired = 0;
+  (state.recipes.items||[]).forEach(r=>{
+    (r.ingredients||[]).forEach(ing=>{
+      if(!ing.id){ ing.id = newId('ing'); repaired++; }
+    });
+  });
+  if(repaired){
+    diagLogEvent('recipes', `Backfilled ids on ${repaired} ingredient(s) missing one`);
+  }
+  return repaired > 0;
+}
+
 async function saveRecipes(){
+  ensureRecipeIngredientIds();
   await safeStorageSet(STORAGE_KEYS.RECIPES, JSON.stringify(state.recipes), 'recipes');
   if(syncConfigured()){
     scheduleSync('recipes', ()=>[
@@ -4033,6 +4572,33 @@ async function recordSyncErrorHistory(source, message){
     state.syncErrorHistory = history; // keep in-memory copy in sync so the Settings page reflects it immediately, no reload needed
   } catch(e){ console.error('failed to persist sync error history (non-fatal)', e); }
 }
+/* Durable record of DESTRUCTIVE actions.
+
+   diagLog is deliberately session-only, so an activity entry describing a
+   deletion is gone the moment the tab reloads — which is exactly when you want
+   it, because you only go looking after noticing something is missing days
+   later. Deletions are irreversible and are the class of action most worth
+   accounting for afterwards, so they get their own small, bounded, local-only
+   history that survives reloads. Never synced: it records what happened on
+   THIS device. */
+const MAX_DELETION_HISTORY = 40;
+async function recordDeletion(what, detail){
+  const entry = { t: new Date().toISOString(), what, detail: detail || null };
+  try{
+    const res = await safeGet(STORAGE_KEYS.DELETION_HISTORY);
+    const history = res ? JSON.parse(res.value) : [];
+    history.push(entry);
+    while(history.length > MAX_DELETION_HISTORY) history.shift();
+    await safeStorageSet(STORAGE_KEYS.DELETION_HISTORY, JSON.stringify(history), 'deletion history', {silent:true});
+    state.deletionHistory = history;
+  } catch(e){ console.error('failed to persist deletion history (non-fatal)', e); }
+}
+async function clearDeletionHistory(){
+  try{ await window.storage.delete(STORAGE_KEYS.DELETION_HISTORY, false); } catch(e){}
+  state.deletionHistory = [];
+  renderMain();
+}
+
 async function clearSyncErrorHistory(){
   try{ await window.storage.delete(STORAGE_KEYS.SYNC_ERROR_HISTORY, false); } catch(e){}
   state.syncErrorHistory = [];
@@ -4823,6 +5389,7 @@ function updateNavBadges(){
 }
 
 function setView(v){
+  noteActivity();
   diagLogEvent('activity', `Navigated to ${v}`);
   state.view = v;
   state.searchQuery = '';
@@ -4846,6 +5413,11 @@ function renderMain(){
   if((state.settings.hiddenPages||[]).includes(state.view)){
     state.view = 'dashboard';
   }
+  // Prepended to EVERY page rather than tucked away in Settings: an uncovered
+  // table is a standing risk to data you cannot see, so it should not be
+  // possible to use the app for weeks without noticing. Empty string when
+  // coverage is complete, so it costs nothing in the normal case.
+  const backupBanner = renderBackupCoverageBanner();
   try{
     if(state.view === 'dashboard') el.innerHTML = renderDashboard();
     else if(state.view === 'overdue') el.innerHTML = renderOverdueView();
@@ -4858,6 +5430,7 @@ function renderMain(){
     else if(state.view === 'health') el.innerHTML = renderHealthView();
     else if(state.view === 'training') el.innerHTML = renderTrainingView();
     else if(state.view === 'settings') el.innerHTML = renderSettingsView();
+    if(backupBanner) el.innerHTML = backupBanner + el.innerHTML;
   } catch(err){
     console.error('Render error on view:', state.view, err);
     el.innerHTML = `
@@ -6362,29 +6935,71 @@ function buildListExportText(list){
   }
   return lines.join('\n');
 }
+/* Copies straight to the clipboard on click — no popup in normal use.
+   The popup is kept ONLY as a last-resort rescue: navigator.clipboard is
+   unavailable on insecure origins and can be blocked outright, and silently
+   doing nothing would lose the text with no way to get it back. Normal path
+   never shows it. */
 function exportListAsText(listId){
   const list = state.lists.find(l=>l.id===listId);
   if(!list) return;
   const text = buildListExportText(list);
+  copyTextToClipboard(text).then(okCopy=>{
+    if(okCopy){
+      diagLogEvent('activity', `Copied list "${list.title}" as text`);
+      showToast(`"${list.title}" copied to clipboard`);
+    } else {
+      diagLogEvent('activity', `Clipboard blocked — fell back to popup for list "${list.title}"`);
+      showListExportFallback(list, text);
+    }
+  });
+}
+
+/* Tries the async Clipboard API, then the legacy execCommand path (which
+   still works in some contexts where the modern API is blocked). Resolves
+   true/false rather than throwing, so callers always get an answer. */
+function copyTextToClipboard(text){
+  const legacy = ()=>{
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const okExec = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!okExec;
+    } catch(e){ return false; }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(()=>true, ()=> legacy());
+  }
+  return Promise.resolve(legacy());
+}
+
+function showListExportFallback(list, text){
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'listExportOverlay';
   overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
   overlay.innerHTML = `
     <div class="modal" style="max-width:480px;">
-      <h3>Export "${escapeHtml(list.title)}"</h3>
-      <div class="modal-sub">Select all is done for you — just hit Copy, or select manually.</div>
+      <h3>Copy "${escapeHtml(list.title)}"</h3>
+      <div class="modal-sub">Your browser blocked automatic copying. The text is selected below — use Ctrl/Cmd+C.</div>
       <div class="field">
         <textarea id="listExportText" rows="12" readonly style="font-family:var(--font-mono); font-size:12.5px;" onclick="this.select();">${escapeHtml(text)}</textarea>
       </div>
       <div class="modal-actions">
         <button class="btn secondary" onclick="document.getElementById('listExportOverlay').remove();">Close</button>
-        <button class="btn brass" onclick="copyListExportText()">Copy</button>
+        <button class="btn brass" onclick="copyListExportText()">Try Copy Again</button>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
-  diagLogEvent('activity', `Opened export popup for list "${list.title}"`);
   setTimeout(()=>{
     const ta = document.getElementById('listExportText');
     if(ta){ ta.focus(); ta.select(); }
@@ -6393,10 +7008,10 @@ function exportListAsText(listId){
 function copyListExportText(){
   const ta = document.getElementById('listExportText');
   if(!ta) return;
-  navigator.clipboard.writeText(ta.value).then(
-    ()=> showToast('Copied to clipboard'),
-    ()=>{ ta.select(); showToast('Could not auto-copy — text is selected, try Ctrl/Cmd+C'); }
-  );
+  copyTextToClipboard(ta.value).then(okCopy=>{
+    if(okCopy) showToast('Copied to clipboard');
+    else { ta.select(); showToast('Still blocked — text is selected, try Ctrl/Cmd+C'); }
+  });
 }
 async function deleteList(listId){
   if(!confirm('Delete this entire list?')) return;
@@ -7068,6 +7683,7 @@ function setTrainingViewDate(d){
   renderMain();
 }
 function setTrainingSection(key){
+  noteActivity();
   state.trainingSection = key;
   renderMain();
 }
@@ -7430,7 +8046,7 @@ function renderTrainingDayCard(date){
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <span style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
           <h2 style="margin:0; font-family:var(--font-display);">Training logged</h2>
-          ${agg ? `<span class="page-sub" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
+          ${agg ? `<span class="page-sub" style="margin-left:auto; display:inline-flex; align-items:center; gap:6px;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg ${difficultyBadge(agg.avgDifficulty)}`:''}</span>` : ''}
         </div>
         <div class="page-sub" style="margin-top:6px;">${humanDate(date)}.</div>
         <div class="modal-actions" style="justify-content:flex-start; margin-top:10px;">
@@ -7581,7 +8197,7 @@ function openQuickAddExerciseModal(date){
                onblur="setTimeout(()=>hideQuickAddExercisePickerResults(), 200)">
         <div id="quickAddExResults" class="ex-picker-results tall" style="display:none;"></div>
       </div>
-      <div class="page-sub" style="margin-top:4px;">Not in your library yet? <a href="#" onclick="event.preventDefault(); closeQuickAddExerciseModal(); openAddExerciseModal();">Add a new exercise</a> first, then come back and search for it.</div>
+      <div class="page-sub" style="margin-top:4px;">Not in your library yet? <a href="#" onclick="event.preventDefault(); closeQuickAddExerciseModal(); openAddExerciseModal('${date}');">Add a new exercise</a> first, then come back and search for it.</div>
       <div class="modal-actions">
         <button class="btn secondary" onclick="closeQuickAddExerciseModal()">Done</button>
       </div>
@@ -7806,6 +8422,11 @@ async function deleteTrainingExerciseLog(date, exerciseId){
   if(!confirm(`Delete this log entry? This can't be undone.`)) return;
   state.training.logs = state.training.logs.filter(l=> !(l.date===date && l.exerciseId===exerciseId));
   pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:exerciseId } });
+  // Deleting training data is irreversible and is the one thing most worth
+  // being able to account for after the fact, so it goes in the activity log
+  // alongside task and list deletions rather than only in the raw sync trace.
+  diagLogEvent('activity', `Deleted training log for ${date}`, { exerciseId });
+  await recordDeletion(`Training log for ${date}`, `exercise ${exerciseId}`);
   await saveTraining();
   renderMain();
   showToast('Log entry deleted');
@@ -7816,6 +8437,8 @@ async function deleteTrainingDayLogs(date){
   if(!confirm(`Delete all ${logs.length} logged exercise${logs.length===1?'':'s'} for ${humanDate(date)}? This can't be undone.`)) return;
   logs.forEach(l=> pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:l.exerciseId } }));
   state.training.logs = state.training.logs.filter(l=>l.date!==date);
+  diagLogEvent('activity', `Deleted ALL ${logs.length} training log(s) for ${date}`, { exerciseIds: logs.map(l=>l.exerciseId) });
+  await recordDeletion(`ALL training logs for ${date}`, `${logs.length} entr${logs.length===1?'y':'ies'}`);
   await saveTraining();
   renderMain();
   showToast('Logs deleted');
@@ -7961,7 +8584,7 @@ function renderTrainingHistorySubpage(){
                     <td>${name}</td>
                     <td>${l.completed?'✓':'—'}</td>
                     <td>${statsCell}</td>
-                    <td>${l.difficulty===null||l.difficulty===undefined?'—':l.difficulty}</td>
+                    <td>${l.difficulty===null||l.difficulty===undefined?'—':difficultyBadge(l.difficulty)}</td>
                     <td style="max-width:240px; white-space:normal;">${escapeHtml(l.notes||'')}</td>
                     <td><button class="icon-btn" title="Delete" onclick="deleteTrainingExerciseLog('${date}','${escapeHtml(l.exerciseId)}')">✕</button></td>
                   </tr>`;
@@ -8454,7 +9077,11 @@ function parseRecipeImport(text){
   rawIngs.forEach(i=>{
     if(!i || typeof i.name !== 'string' || !i.name.trim()){ droppedIngs++; return; }
     const grams = Number(i.grams);
-    ingredients.push({ name: i.name.trim(), grams: isFinite(grams) && grams > 0 ? grams : 0 });
+    // id is REQUIRED — recipe_ingredients.id is not-null and is half the
+    // upsert key. The manual editor assigns one; the importer originally did
+    // not, so imported recipes pushed a null id and every recipe sync failed
+    // with a not-null constraint violation until the recipe was deleted.
+    ingredients.push({ id: newId('ing'), name: i.name.trim(), grams: isFinite(grams) && grams > 0 ? grams : 0 });
   });
 
   const macros = { calories:null, protein:null, carbs:null, fat:null, fiber:null };
@@ -8678,7 +9305,11 @@ async function deleteRecipe(id){
   if(!recipe) return;
   if(!confirm(`Delete "${recipe.name}"? This can't be undone.`)) return;
   pendingRecipeDeletes.push({ table:'recipes', match:{ id } });
-  (recipe.ingredients||[]).forEach(ing=> pendingRecipeDeletes.push({ table:'recipe_ingredients', match:{ id:ing.id } }));
+  // Skip ingredients that never had an id — there is nothing on the server to
+  // delete, and a delete matching on undefined is at best a wasted call.
+  (recipe.ingredients||[]).forEach(ing=>{
+    if(ing.id) pendingRecipeDeletes.push({ table:'recipe_ingredients', match:{ id:ing.id } });
+  });
   state.recipes.items = state.recipes.items.filter(r=>r.id!==id);
   await saveRecipes();
   state.recipesSelectedId = null;
@@ -8962,6 +9593,8 @@ function confirmClearTrainingLogs(){
 }
 async function clearTrainingLogs(){
   const count = state.training.logs.length;
+  diagLogEvent('activity', `Deleted EVERY training log (${state.training.logs.length} entries, all dates)`);
+  await recordDeletion('EVERY training log, all dates', `${state.training.logs.length} entries`);
   state.training.logs.forEach(l=> pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:l.date, exercise_id:l.exerciseId } }));
   state.training.logs = [];
   await saveTraining();
@@ -9197,6 +9830,55 @@ async function saveSessionDraft(){
   showToast(`Session ${wasNew?'created':'updated'}`);
 }
 
+/* ---------- Difficulty colour scale ----------
+   1 = bright green through to 5 = fire red, via lime/amber/orange. A straight
+   green-to-red RGB interpolation passes through muddy brown, so the scale is
+   five hand-picked stops with linear interpolation between them (which also
+   makes it usable for fractional values like an average difficulty).
+
+   Rendered as a SOLID badge rather than coloured text. Coloured text failed
+   the readability floor at the amber end on light themes (2.77x), and the app
+   has seven themes including two dark ones. A filled badge carries its own
+   background, so contrast no longer depends on what is behind it — the text
+   colour is chosen per-badge by luminance and measures at least 4.8x
+   everywhere. */
+const DIFFICULTY_STOPS = ['#16A34A','#84A70B','#E0A100','#F06A0C','#DC2626'];
+
+function difficultyColor(v){
+  const n = Number(v);
+  if(!isFinite(n)) return DIFFICULTY_STOPS[2];
+  const clamped = Math.max(1, Math.min(5, n));
+  const lowIdx = Math.max(0, Math.min(3, Math.floor(clamped) - 1));
+  const frac = clamped - (lowIdx + 1);
+  const a = DIFFICULTY_STOPS[lowIdx], b = DIFFICULTY_STOPS[lowIdx + 1];
+  const hex = (h)=> [1,3,5].map(i=> parseInt(h.substr(i,2),16));
+  const [r1,g1,b1] = hex(a), [r2,g2,b2] = hex(b);
+  const mix = (x,y)=> Math.round(x + (y - x) * frac);
+  return '#' + [mix(r1,r2), mix(g1,g2), mix(b1,b2)]
+    .map(c=> c.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+
+/* Picks black or white text for whatever the badge colour turns out to be,
+   using relative luminance, so an interpolated colour is legible too. */
+function difficultyTextColor(bg){
+  const lin = (c)=>{ c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const [r,g,b] = [1,3,5].map(i=> parseInt(bg.substr(i,2),16));
+  const L = 0.2126*lin(r) + 0.7152*lin(g) + 0.0722*lin(b);
+  const contrast = (l1,l2)=> (Math.max(l1,l2)+0.05) / (Math.min(l1,l2)+0.05);
+  return contrast(L, 1) >= contrast(L, 0.0116) ? '#FFFFFF' : '#1A1A1A';
+}
+
+function difficultyBadge(v, opts){
+  const n = Number(v);
+  if(!isFinite(n)) return '';
+  const bg = difficultyColor(n);
+  const fg = difficultyTextColor(bg);
+  // Whole numbers show plain; a fractional average keeps one decimal.
+  const label = Number.isInteger(n) ? String(n) : n.toFixed(1);
+  const title = (opts && opts.title) || `Difficulty ${label} of 5`;
+  return `<span class="difficulty-badge" style="background:${bg}; color:${fg};" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
 /* ---------- Exercise history (last 5 sessions) ----------
    Read-only: pulls straight from training.logs so it can never disagree with
    what was actually recorded, and writes nothing. Excludes the day currently
@@ -9249,7 +9931,7 @@ function openExerciseHistoryModal(exId, currentDate){
               <div class="ex-hist-row">
                 <span class="ex-hist-date">${escapeHtml(humanDate(l.date))}${i===0?' <span class="ex-hist-last">last</span>':''}</span>
                 <span class="ex-hist-metrics">${metrics ? escapeHtml(metrics) : '<span class="page-sub">no numbers recorded</span>'}</span>
-                ${l.difficulty!=null ? `<span class="ex-hist-diff" title="Difficulty">${'●'.repeat(Math.max(0,Math.min(5,l.difficulty)))}</span>` : ''}
+                ${l.difficulty!=null ? difficultyBadge(l.difficulty) : ''}
               </div>
               ${l.notes ? `<div class="ex-hist-note">${escapeHtml(l.notes)}</div>` : ''}
             `;
@@ -9321,10 +10003,16 @@ function openExerciseVideoPicker(exId){
 }
 
 /* ---------- #1: Manual exercise add (so the whole workflow can start from scratch) ---------- */
-function openAddExerciseModal(){
+/* addToDayDate: when set, the exercise is also added to that day's log and
+   the view lands on Training -> Today. Only the quick-add picker's "add a new
+   exercise" link passes it, because that flow started from an explicit intent
+   to log something today. Opening this from the Exercise Library leaves you
+   exactly where you were. */
+function openAddExerciseModal(addToDayDate){
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'addExerciseOverlay';
+  overlay.dataset.addToDay = addToDayDate || '';
   overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
   overlay.innerHTML = `
     <div class="modal">
@@ -9373,17 +10061,24 @@ async function submitAddExercise(){
   const category = categoryBtn ? categoryBtn.dataset.val : 'strength';
   const tagIds = [...document.querySelectorAll('#newExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
   const newEx = { id:newId('ex'), name, videoUrl:video, videoUrls, notes, category, tagIds };
+  const overlay = document.getElementById('addExerciseOverlay');
+  // Read the context flag BEFORE removing the overlay that carries it.
+  const addToDay = overlay ? (overlay.dataset.addToDay || '') : '';
   state.training.exercises.push(newEx);
   await saveTraining();
-  const overlay = document.getElementById('addExerciseOverlay');
   if(overlay) overlay.remove();
   diagLogEvent('activity', `Added exercise "${name}" manually`);
-  // Land on Training → Today with the new exercise already added, ready to
-  // log — regardless of whether this was opened from the Exercise Library's
-  // own button or the "add a new exercise" link inside the day picker.
-  // addExerciseToDay() already handles the navigation guarantee.
-  addExerciseToDay(todayStr(), newEx.id);
-  showToast('Exercise added');
+  if(addToDay){
+    // Came from the day picker — the point was to log it today, so add it and
+    // land on Training -> Today. addExerciseToDay() re-renders.
+    addExerciseToDay(addToDay, newEx.id);
+    showToast('Exercise added to today');
+  } else {
+    // Came from the Exercise Library — just add it to the library and stay
+    // put. Re-render so the new row appears in the list being viewed.
+    renderMain();
+    showToast('Exercise added to library');
+  }
 }
 function openEditExerciseModal(id){
   const ex = state.training.exercises.find(e=>e.id===id);
@@ -10030,6 +10725,17 @@ begin
     execute format('create policy "allow anon all" on %I for all using (true) with check (true);', t);
   end loop;
 end $$;</div>
+          <div class="section-head" style="margin-top:22px;"><h2 style="font-size:15px;">Daily Backup Script</h2></div>
+          <div class="page-sub" style="margin-bottom:8px;">
+            The <code>backup_calendaros.py</code> that runs in GitHub Actions. The table list below is generated from what this app actually syncs, so copying it here is always correct \u2014 paste it straight into the repo whenever the red coverage banner appears.
+          </div>
+          <div class="sql-actions">
+            <button class="btn brass sm" onclick="copyBackupScript()">Copy backup script</button>
+            <button class="btn secondary sm" onclick="downloadBackupScript()">\u21e9 Download .py</button>
+            <button class="btn secondary sm" id="backupScriptToggleBtn" onclick="toggleBackupScriptBlock()">Show script</button>
+          </div>
+          <div class="sql-block" id="backupScriptBlock" style="display:none;">${escapeHtml(buildBackupScript())}</div>
+
           <div class="page-sub" style="margin-top:8px;">
             Already had the old single-table version connected? This SQL only adds the new tables — safe to run again. Hit Connect below and your current data will populate them.
           </div>
@@ -10104,6 +10810,18 @@ function renderSettingsLocationRules(){
     </div>
   `;
 }
+async function saveIdleTimeout(){
+  const el = document.getElementById('idleTimeoutInput');
+  if(!el) return;
+  const v = Math.round(Number(el.value));
+  if(!isFinite(v) || v < 0 || v > 1440){ showToast('Enter a value between 0 and 1440'); return; }
+  state.settings.idleTimeoutMin = v;
+  await saveSettings();
+  lastActivityAt = Date.now(); // changing it shouldn't instantly trip an old timeout
+  renderMain();
+  showToast(v === 0 ? 'Idle lock turned off' : `Idle lock set to ${v} minutes`);
+}
+
 async function addLocationDayRule(){
   const fromEl = document.getElementById('locRuleFrom');
   const toEl = document.getElementById('locRuleTo');
@@ -10145,6 +10863,21 @@ function renderSettingsAppearance(){
     </div>
 
     ${renderSettingsLocationRules()}
+
+    <div class="section">
+      <div class="section-head"><h2>Idle Session Lock</h2></div>
+      <div class="card" style="padding:16px;">
+        <div class="page-sub" style="margin-bottom:10px;">
+          If this tab sits unused for this long, it closes itself and stops sending anything, so a forgotten tab can't overwrite newer changes made on another device. You'll get a 60-second warning first, and it will never lock while you have unsaved or unsynced work. Relaunching loads the current version.
+        </div>
+        <div class="add-item-row" style="max-width:320px; gap:8px;">
+          <input type="number" id="idleTimeoutInput" min="0" max="1440" step="5" value="${Number(state.settings.idleTimeoutMin)||0}" style="width:100px;">
+          <span class="page-sub" style="align-self:center;">minutes (0 = never)</span>
+          <button class="btn secondary sm" onclick="saveIdleTimeout()">Save</button>
+        </div>
+        <div class="page-sub" style="margin-top:8px;">This setting applies to this device only.</div>
+      </div>
+    </div>
 
     <div class="section">
       <div class="section-head"><h2>Appearance</h2></div>
@@ -10386,6 +11119,17 @@ function renderSettingsDiagnostics(){
   return `
     ${renderStorageUsagePanel()}
     <div class="section">
+      <div class="section-head"><h2>Deletion History</h2></div>
+      <div class="card" style="padding:14px; margin-bottom:18px;">
+        <div class="page-sub" style="margin-bottom:10px;">
+          Every deletion of training data made on this device, kept across reloads (last ${MAX_DELETION_HISTORY}). If data goes missing, check here first \u2014 if the deletion is not listed, the app did not delete it and something else is responsible.
+        </div>
+        ${(state.deletionHistory||[]).length ? `
+          <div class="sql-block" style="max-height:220px;">${(state.deletionHistory||[]).slice().reverse().map(e=>`[${escapeHtml(e.t)}] ${escapeHtml(e.what)}${e.detail?` \u2014 ${escapeHtml(e.detail)}`:''}`).join('\n')}</div>
+          <button class="btn secondary sm" style="margin-top:8px;" onclick="clearDeletionHistory()">Clear</button>
+        ` : `<span class="page-sub">No deletions recorded on this device.</span>`}
+      </div>
+
       <div class="section-head"><h2>Sync Error History</h2></div>
       <div class="card" style="padding:16px;">
         <div class="page-sub" style="margin-bottom:12px;">
@@ -11160,6 +11904,38 @@ function countCompletions(completions){
 function completionsSignature(comp){
   return Object.keys(comp||{}).sort().map(d=>`${d}:${(comp[d]&&comp[d].status)||''}`).join('|');
 }
+/* Treats null, undefined and '' as the same absence of a value.
+
+   This matters because the two sides arrive by different routes. The local
+   snapshot goes through JSON.parse(JSON.stringify(...)), which DELETES keys
+   whose value is undefined, while Supabase returns an explicit null for an
+   empty column. A task with no doneDate therefore compared as undefined vs
+   null and was reported as a disagreement — with both summaries reading
+   identically, because the summary line only shows done state and due date.
+   That produced a prompt with no visible difference and no way to act on it
+   sensibly. Same class of false positive as the 4.25.1 fix: comparing
+   representation instead of meaning. */
+function sameValue(a, b){
+  const norm = (v)=> (v === undefined || v === null || v === '') ? null : v;
+  return norm(a) === norm(b);
+}
+
+/* Returns the fields that genuinely differ, with display values. Used both to
+   decide whether to prompt at all and to SAY what differs — a prompt you
+   cannot see the reason for is worse than no prompt, because there is no
+   basis on which to choose. */
+function fieldDiffs(l, r, fields){
+  const out = [];
+  fields.forEach(([key, label, fmt])=>{
+    const lv = l ? l[key] : undefined;
+    const rv = r ? r[key] : undefined;
+    if(sameValue(lv, rv)) return;
+    const show = (v)=> (v === undefined || v === null || v === '') ? '(none)' : (fmt ? fmt(v) : String(v));
+    out.push({ key, label, local: show(lv), online: show(rv) });
+  });
+  return out;
+}
+
 function detectDivergence(local, remote, snapshot){
   const taskItems = [];
 
@@ -11167,13 +11943,22 @@ function detectDivergence(local, remote, snapshot){
   const remoteOTById = {}; (remote.oneTime||[]).forEach(t=>{ remoteOTById[t.id]=t; });
   new Set([...Object.keys(localOTById), ...Object.keys(remoteOTById)]).forEach(id=>{
     const l = localOTById[id], r = remoteOTById[id];
-    const differs = !l || !r || l.done!==r.done || l.doneDate!==r.doneDate || l.due!==r.due || l.name!==r.name;
+    const diffs = (l && r) ? fieldDiffs(l, r, [
+      ['done', 'Status', v=> v ? 'Done' : 'Not done'],
+      ['doneDate', 'Completed on', v=> humanDate(v)],
+      ['due', 'Due', v=> humanDate(v)],
+      ['name', 'Name'],
+    ]) : [];
+    // Only a missing side, or a REAL field difference, is worth asking about.
+    const differs = !l || !r || diffs.length > 0;
     if(!differs) return;
+    const summarise = (t)=> `${t.done?'Done':'Not done'}${t.due?` · due ${humanDate(t.due)}`:''}`;
     taskItems.push({
       id, kind:'oneTime',
       name: (r&&r.name) || (l&&l.name) || '(unnamed task)',
-      localSummary: l ? `${l.done?'Done':'Not done'}${l.due?` · due ${humanDate(l.due)}`:''}` : 'Does not exist on this device',
-      onlineSummary: r ? `${r.done?'Done':'Not done'}${r.due?` · due ${humanDate(r.due)}`:''}` : 'Does not exist online',
+      localSummary: l ? summarise(l) : 'Does not exist on this device',
+      onlineSummary: r ? summarise(r) : 'Does not exist online',
+      diffs,
       choice: 'online',
     });
   });
@@ -11267,6 +12052,7 @@ function renderDivergenceModalBody(){
                     <b>${escapeHtml(item.name)}</b>
                     <div class="page-sub" style="margin-top:3px; line-height:1.5;">
                       Local: ${escapeHtml(item.localSummary)}<br>Online: ${escapeHtml(item.onlineSummary)}
+                      ${(item.diffs && item.diffs.length) ? `<div class="divergence-diffs">${item.diffs.map(d=>`<span class="divergence-diff"><b>${escapeHtml(d.label)}:</b> ${escapeHtml(d.local)} <span class="divergence-arrow">vs</span> ${escapeHtml(d.online)}</span>`).join('')}</div>` : ''}
                     </div>
                   </span>
                   <span class="chip-select" style="flex-shrink:0;">
@@ -11714,6 +12500,7 @@ async function init(){
     document.getElementById('app').classList.remove('hidden');
     render();
     setInterval(updateSyncBadge, 30000);
+    startIdleWatch();
     if(!usingNativeAppStorage){
       setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
     }
@@ -11917,6 +12704,208 @@ function handleCmdPaletteKey(e){
   else if(e.key==='Enter'){ e.preventDefault(); if(results[cmdPaletteIndex]) results[cmdPaletteIndex].action(); }
   else if(e.key==='Escape'){ closeCommandPalette(); }
 }
+/* =========================================================
+   IDLE SESSION LOCK
+   Guards against a forgotten tab transmitting stale data after you have
+   moved to another device. After IDLE_TIMEOUT_MIN of no activity the tab
+   locks: all outbound sync is blocked (see enqueueSync), timers are cleared,
+   and the only way forward is Relaunch, which does a full reload and so
+   re-pulls the authoritative copy.
+
+   Two deliberate safety properties:
+   1. It NEVER locks while there is unsaved or unsynced work. Losing your
+      unsaved training log in order to prevent a data problem would be a bad
+      trade. It waits, re-checking, and locks once the work is clear.
+   2. It warns first, with a countdown and a way to stay, so you cannot lose
+      an in-progress edit you stepped away from mid-keystroke.
+   ========================================================= */
+let sessionLocked = false;
+let lastActivityAt = Date.now();
+let idleCheckTimer = null;
+let idleWarningTimer = null;
+let idleWarningDeadline = null;
+
+const IDLE_WARNING_SECONDS = 60;
+const IDLE_CHECK_INTERVAL_MS = 15000;
+
+function idleTimeoutMs(){
+  const mins = Number(state.settings.idleTimeoutMin);
+  if(!isFinite(mins) || mins <= 0) return 0; // 0 / invalid = feature off
+  return mins * 60 * 1000;
+}
+
+/* Unsaved = anything that would be lost by a reload, or anything queued but
+   not yet pushed. Kept deliberately broad: when in doubt, do not lock. */
+function hasUnsavedLocalWork(){
+  if(hasUnsyncedWork()) return true;
+  const drafts = state.trainingDraftValues || {};
+  if(Object.keys(drafts).length) return true;
+  const pending = state.trainingPendingAdds || {};
+  if(Object.keys(pending).some(d => (pending[d]||[]).length)) return true;
+  return false;
+}
+
+function noteActivity(){
+  if(sessionLocked) return;
+  lastActivityAt = Date.now();
+  // Any real activity during the warning countdown cancels it — you are here.
+  if(idleWarningDeadline) dismissIdleWarning(true);
+}
+
+function onVisibilityChangeForIdle(){
+  // Returning to a tab that has been hidden past the timeout is the exact
+  // forgotten-tab case, so check immediately rather than waiting for a tick.
+  if(!document.hidden) checkIdle();
+}
+function startIdleWatch(){
+  ['mousedown','keydown','touchstart','wheel'].forEach(evt=>{
+    document.addEventListener(evt, noteActivity, { passive:true });
+  });
+  // Named (not inline) so a repeat startIdleWatch() call de-duplicates via
+  // addEventListener's identical-listener rule rather than stacking handlers.
+  document.addEventListener('visibilitychange', onVisibilityChangeForIdle);
+  if(idleCheckTimer) clearInterval(idleCheckTimer);
+  idleCheckTimer = setInterval(checkIdle, IDLE_CHECK_INTERVAL_MS);
+}
+
+function checkIdle(){
+  if(sessionLocked) return;
+  const timeout = idleTimeoutMs();
+  if(!timeout) return; // disabled
+  if(idleWarningDeadline) return; // already counting down
+  if(Date.now() - lastActivityAt < timeout) return;
+  if(hasUnsavedLocalWork()){
+    // Do not lock over unsaved work — re-check on the next tick instead.
+    diagLogEvent('idle-lock', 'Idle timeout reached but unsaved work present — holding off');
+    return;
+  }
+  showIdleWarning();
+}
+
+function showIdleWarning(){
+  if(sessionLocked || idleWarningDeadline) return;
+  idleWarningDeadline = Date.now() + IDLE_WARNING_SECONDS * 1000;
+  diagLogEvent('idle-lock', 'Idle warning shown');
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'idleWarningOverlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:420px;">
+      <h3>Still there?</h3>
+      <div class="modal-sub">This tab has been idle for a while. To make sure it never sends out-of-date information after you have used ${escapeHtml(APP_NAME)} somewhere else, it will lock in <b id="idleCountdown">${IDLE_WARNING_SECONDS}</b>s.</div>
+      <div class="modal-actions">
+        <button class="btn brass" onclick="dismissIdleWarning()">I'm still here</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if(idleWarningTimer) clearInterval(idleWarningTimer);
+  idleWarningTimer = setInterval(tickIdleWarning, 1000);
+}
+
+function tickIdleWarning(){
+  if(!idleWarningDeadline) return;
+  const left = Math.ceil((idleWarningDeadline - Date.now()) / 1000);
+  const el = document.getElementById('idleCountdown');
+  if(el) el.textContent = String(Math.max(0, left));
+  if(left <= 0){
+    // Re-check unsaved work at the last moment — something may have queued
+    // during the countdown, and that must still take priority over locking.
+    if(hasUnsavedLocalWork()){
+      diagLogEvent('idle-lock', 'Countdown elapsed but unsaved work appeared — cancelling lock');
+      dismissIdleWarning(true);
+      return;
+    }
+    lockSession();
+  }
+}
+
+function dismissIdleWarning(silent){
+  if(idleWarningTimer){ clearInterval(idleWarningTimer); idleWarningTimer = null; }
+  idleWarningDeadline = null;
+  const o = document.getElementById('idleWarningOverlay');
+  if(o) o.remove();
+  lastActivityAt = Date.now();
+  if(!silent) diagLogEvent('idle-lock', 'Idle warning dismissed by user');
+}
+
+function lockSession(){
+  if(sessionLocked) return;
+  sessionLocked = true; // set FIRST — enqueueSync checks this
+  if(idleWarningTimer){ clearInterval(idleWarningTimer); idleWarningTimer = null; }
+  idleWarningDeadline = null;
+  if(idleCheckTimer){ clearInterval(idleCheckTimer); idleCheckTimer = null; }
+  const w = document.getElementById('idleWarningOverlay');
+  if(w) w.remove();
+  diagLogEvent('idle-lock', 'Session locked — outbound sync disabled until relaunch');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'idle-lock-overlay';
+  overlay.id = 'idleLockOverlay';
+  overlay.innerHTML = `
+    <div class="idle-lock-card">
+      <div class="idle-lock-glyph">⏻</div>
+      <h2>Session closed</h2>
+      <p>${escapeHtml(APP_NAME)} closed this tab after ${escapeHtml(String(state.settings.idleTimeoutMin))} minutes of inactivity.</p>
+      <p class="idle-lock-why">If you have used ${escapeHtml(APP_NAME)} on another device since, this tab's copy is out of date. It has stopped sending anything, so nothing here can overwrite newer changes. Relaunching loads the current version.</p>
+      <button class="btn brass" onclick="relaunchAfterLock()">Relaunch</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function relaunchAfterLock(){
+  // Full reload: the point is to come back with a fresh pull rather than
+  // resuming on top of state this tab has been holding.
+  location.reload();
+}
+
+/* ---------- Ctrl/Cmd+Enter submits the open modal ----------
+   Fires the primary (brass) action of the TOPMOST modal, so it works from
+   inside a textarea where a bare Enter has to stay as a newline.
+
+   Deliberately refuses to fire destructive actions. Enter is a key people hit
+   on reflex, and a modifier combo that could silently delete a list or a day's
+   logs is not worth the convenience. Native confirm() dialogs are outside the
+   page and unaffected either way. */
+const DESTRUCTIVE_ACTION_RE = /delete|remove|clear|reset|wipe|discard|revoke|disconnect/i;
+
+function modalPrimaryButton(modal){
+  // Prefer an explicit primary; fall back to the last brass button, which is
+  // the established convention for the confirming action in this codebase.
+  const candidates = [...modal.querySelectorAll('.modal-actions .btn.brass')];
+  if(!candidates.length) return null;
+  return candidates[candidates.length - 1];
+}
+function isDestructiveButton(btn){
+  if(!btn) return true; // unknown -> treat as unsafe
+  const label = (btn.textContent || '').trim();
+  const handler = btn.getAttribute('onclick') || '';
+  return DESTRUCTIVE_ACTION_RE.test(label) || DESTRUCTIVE_ACTION_RE.test(handler);
+}
+function submitTopmostModal(){
+  // Last overlay in the DOM is the topmost one.
+  const overlays = [...document.querySelectorAll('.modal-overlay')];
+  if(!overlays.length) return false;
+  const modal = overlays[overlays.length - 1].querySelector('.modal');
+  if(!modal) return false;
+  const btn = modalPrimaryButton(modal);
+  if(!btn || btn.disabled) return false;
+  if(isDestructiveButton(btn)){
+    showToast('Use the button for that one');
+    return true; // handled: deliberately did nothing destructive
+  }
+  btn.click();
+  return true;
+}
+
+document.addEventListener('keydown', (e)=>{
+  if((e.metaKey||e.ctrlKey) && e.key === 'Enter'){
+    if(submitTopmostModal()) e.preventDefault();
+    return;
+  }
+});
+
 document.addEventListener('keydown', (e)=>{
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){
     e.preventDefault();

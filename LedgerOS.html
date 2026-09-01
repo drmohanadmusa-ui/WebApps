@@ -88,7 +88,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .panel h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 12px;font-weight:700}
 .row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 350px));gap:10px}
 
 table{width:100%;border-collapse:collapse;font-size:13px}
 .sticky-table{border-collapse:separate;border-spacing:0}
@@ -344,12 +344,89 @@ const SEED = {"accounts":[],"ledger":[],"budget":[],"templates":[],"categories":
 <script>
 /* ============================= STATE ============================= */
 // Bump this on every shipped change (major.minor.patch). Shown in Settings.
-const APP_VERSION = '4.28.0';
+const APP_VERSION = '4.44.0';
 // STANDING CONVENTION (as of v3.6.1, applies to every release from here on):
 // every time APP_VERSION is bumped, add a matching entry to CHANGELOG below —
 // version, date (YYYY-MM-DD), and a short bullet list of what changed. This is
 // shown to the person in Settings → Change Log. Do not skip this step.
 const CHANGELOG = [
+  {version:'4.44.0', date:'2026-09-01', changes:[
+    'FIXED: the Forecast Snapshot comparison table could show a huge, unexplained Closing Balance difference with every category row showing no change at all \u2014 because the table never showed Starting Balance, which is very often the actual driver of a Closing Balance gap across a month boundary. It\u2019s now shown as its own row, both against a current live forecast and against another snapshot.',
+    'FIXED: the sign-convention warning on that same comparison could confidently claim a convention had changed when it genuinely hadn\u2019t \u2014 any snapshot taken before sign-flip tracking existed has its historical flip state permanently unrecoverable (backfilled to an empty default the moment the database column was added), which is indistinguishable from \u201Cconfirmed nothing was flipped.\u201D The warning now says so plainly for that case, instead of asserting something the data can\u2019t actually support.',
+  ]},
+  {version:'4.42.0', date:'2026-09-01', changes:[
+    'FIXED: v4.40.0\u2019s accrual JV fix introduced a new bug \u2014 once the calendar rolled past the accrual month, every category silently showed Budget === Actual with zero variance, because the Forecast Grid\u2019s own \u201Ca month before today is closed history\u201D rule was collapsing the plan into the actual figure retroactively. That rule is correct for the Grid, which has no reason to show variance for the past, but it defeated the entire point of running the accrual JV at month-end. Fixed by computing each month\u2019s plan as it was AT THE TIME, regardless of how long ago that month closed.',
+  ]},
+  {version:'4.41.0', date:'2026-09-01', changes:[
+    'Investments page: Annualised Return (XIRR) is gone, replaced by a new row \u2014 Invested Amount (the sum of each platform\u2019s Out account balance, covering every platform), Current Value (unchanged), and P/L (Current Value minus Invested Amount).',
+    'Your Cost Basis, Current Value, Your Unrealised P/L, and Held for Family are now grouped BY PLATFORM instead of by individual position. Click a platform row to drill into the positions behind it, then Back to return \u2014 Robo-Investment platforms aren\u2019t drillable, since they have no individual holdings to show.',
+    'New JV: added a Clear All button next to Balance Check \u2014 resets every line back to two blank ones (confirmation required), keeps the date as-is.',
+    'Account statement view: added a CSV export button next to Print statement, respecting the current sort order.',
+  ]},
+  {version:'4.40.0', date:'2026-09-01', changes:[
+    'FIXED: Month End JV \u2013 Post Accrual could badly understate Budget for any category containing an account whose plan comes from Provisions or a Smart Rule (the \u2018P\u2019 badge on the Forecast Grid) rather than a manually-typed row in the old, separate Budget table. Bills showing Budget 818 instead of the true ~7,068 (both rent accounts missing) is exactly this \u2014 the accrual JV now reads the same Forecast Plan figures the Forecast Grid and the Budget vs Actual report already show, so the two can\u2019t disagree again. Actual was already correct and is unchanged.',
+  ]},
+  {version:'4.39.0', date:'2026-08-30', changes:[
+    'FIXED: a Robo-Investment platform where Withdrawn was larger than Invested (e.g. the linked accounts assigned the wrong way round) could show a wildly inflated Gain/Loss \u2014 subtracting a negative cost basis added it instead. Now uses the cost basis MAGNITUDE for Gain/Loss, the portfolio KPI totals, and the allocation charts, and the card itself warns when this happens so the underlying account assignment can be checked.',
+    'NEW: every KPI widget on the Investments page (Your Cost Basis, Your Current Value, Your Unrealised P/L, Held for Family, Annualised Return) is now clickable \u2014 opens a pop-out showing exactly which positions (and Robo-Investment platforms) add up to that figure, with a total that matches the widget exactly. Annualised Return shows the actual cash flows the percentage was computed from, since a money-weighted return isn\u2019t a simple sum.',
+  ]},
+  {version:'4.38.0', date:'2026-08-30', changes:[
+    'FIXED: the idle lock could fail to activate after the device was locked or the tab sat backgrounded for a while. A backgrounded/locked tab can pause its own timers outright, and the very act of tapping back into it is itself a click \u2014 which was resetting the inactivity clock before the lock ever got a chance to see how much time had actually passed. It now checks immediately the moment the tab becomes visible again, using whatever the clock still held from before you left, so returning to a genuinely stale tab can no longer quietly erase the evidence.',
+    'FIXED: the sync conflict window could show a version with no text at all for either side, making it impossible to actually choose between them. The list behind that text only ever covered 6 of the tables this app now has \u2014 anything added since (Investments, Real Estate, Forecast Snapshots, and so on) rendered blank. Now falls back to showing every real field on the row for any table that isn\u2019t on the curated list, so this can\u2019t go silently blank for whatever gets added next either.',
+  ]},
+  {version:'4.37.0', date:'2026-08-30', changes:[
+    'Robo-Investment platforms now count as Stocks in both the \u2018By Asset Class\u2019 and \u2018By Platform\u2019 doughnut charts on the Investments page, where they were previously invisible (no position, so nothing to chart).',
+    'NEW: every update to a Robo-Investment platform\u2019s value is now logged with its date, not just overwritten. The Portfolio Value history chart uses this to plot a real trend from whenever you start logging \u2014 nothing invented for dates before that.',
+    'Closing Balance Watch now sits in its own row below Short Term Equity / Cash Bank Account / Long Term Equity, at a fixed width, instead of sharing their row.',
+    'Forecast Snapshot comparison overhauled. It now shows the full category breakdown (Income, Expense, Provision, and so on) for both sides, not just one collapsed Closing Balance figure \u2014 the same rows the real Cash Position grid shows, so you can actually verify where the numbers come from. Explicitly labelled as sourced from \uD83D\uDCB0 Bank Accounts \u2014 Projected Cash Position.',
+    'NEW: compare one snapshot against ANOTHER snapshot, not only against the current forecast \u2014 same category-by-category breakdown, so you can see exactly what changed between two points in time.',
+    'NEW: if a category\u2019s sign-convention setting has changed since a snapshot was taken, the comparison now says so explicitly \u2014 that alone can account for part of a difference, and previously looked identical to a real change with no way to tell them apart.',
+    'The snapshot trend chart now shows the actual value at each point directly on the chart, not only in a hover tooltip.',
+    'DATABASE CHANGE: adds pd_forecast_snapshots.sign_flips and the new pd_inv_robo_value_log table. Copy and run the script under Settings \u2192 Database Schema \u2014 it upgrades an existing database in place.',
+  ]},
+  {version:'4.36.0', date:'2026-08-29', changes:[
+    'NEW: Robo-Investment platforms. For platforms that only ever show one lump portfolio figure, never a per-holding breakdown \u2014 flag it as Robo-Investment (\u2718 Edit Platform) and it gets a simplified card instead of a position table: cost basis worked out automatically from that platform\u2019s own Invested/Withdrawn accounts, and a current value you log yourself, with Gain/Loss shown directly. Excluded from Reconciliation and the +Position/Deposit/Withdraw/Transfer/Cash log actions, since none of those apply. Its value still counts toward Your Cost Basis / Your Current Value on the Investments page.',
+    'Every platform now shows its linked Invested (Out) / Withdrawn (In) / Profit account balances when expanded, right above the position table \u2014 so you can see exactly how much has actually gone into that platform at a glance. Shows {un-assigned} for any of the three that isn\u2019t linked yet.',
+    'Portfolio value now shows next to the cash balance on every platform, both collapsed and expanded.',
+    'The position table has a new Value (USD) column alongside the existing SAR one.',
+    'DATABASE CHANGE: adds is_robo / robo_value / robo_value_date to pd_inv_platforms. Copy and run the script under Settings \u2192 Database Schema \u2014 it upgrades an existing database in place.',
+  ]},
+  {version:'4.35.0', date:'2026-08-29', changes:[
+    'FIXED: Closing Balance Watch (Dashboard) and Forecast Snapshots were both computing figures from the RAW forecast chain, bypassing the \u2018anchor to actual\u2019 correction the real Cash Position grid applies by default \u2014 so the numbers could disagree sharply with what the grid itself shows for the same month. Both now use the exact same calculation path as the grid, so they can never disagree again.',
+    'FIXED: the Dashboard feeling slow after last version. Both new features were re-scanning the entire ledger on every single dashboard render instead of using the fast-path lookup index every other expensive forecast calculation in the app already relies on. Now wrapped the same way.',
+    'Closing Balance Watch now sits in the same auto-fitting grid as Short Term Equity / Cash Bank Account / Long Term Equity, at the same width, instead of spanning the full page \u2014 and that grid now auto-wraps, so future widgets can be added at the same size without more layout work.',
+  ]},
+  {version:'4.34.0', date:'2026-08-29', changes:[
+    'NEW: Forecast Snapshots (Forecast Settings \u2192 Forecast Snapshots). Every time the app is opened in a new calendar month, it automatically saves the full projected chain \u2014 not just one figure \u2014 for a configurable horizon forward (12 months by default), so months later you can compare the whole curve you\u2019re seeing now against what was actually planned back then. A one-time banner on the Dashboard confirms when an automatic snapshot was just taken. Take an extra one anytime with \u2018Take Snapshot Now\u2019, and delete any snapshot you no longer want.',
+    'NEW: snapshot comparison. Pick a snapshot and a month to see what was projected back then next to what\u2019s projected now, plus a trend chart showing how that month\u2019s prediction moved across every snapshot that captured it.',
+    'DATABASE CHANGE: adds the pd_forecast_snapshots table. Copy and run the script under Settings \u2192 Database Schema \u2014 it upgrades an existing database in place.',
+  ]},
+  {version:'4.33.0', date:'2026-08-29', changes:[
+    'NEW: Closing Balance Watch on the Dashboard \u2014 pick any up to three months (not necessarily consecutive) and see their Closing Balance from the Cash Position chain, without scrolling the whole Forecast grid.',
+    'FIXED: the bank Statement Balance field was saving \u2014 and stamping today\u2019s reconciled date \u2014 the moment you clicked away, even without pressing Enter. It now only saves on Enter; clicking away without confirming discards the unconfirmed edit and keeps the original value.',
+    'Clicking a figure on the Dashboard to reconcile a bank account now lands the cursor directly in the first line\u2019s Description field, ready to type.',
+    'The JV total, the reconcile banner, and the Balance Check subtotal no longer recalculate on every keystroke while typing an amount \u2014 only when you leave the field or press Enter, matching how the figure itself is actually evaluated (including typed formulas like 105*10).',
+  ]},
+  {version:'4.32.0', date:'2026-08-29', changes:[
+    'NEW: Balance Check on the New JV page. A toggle next to Drafts turns every line into a checkbox and shows a live subtotal for just the lines you\u2019ve selected \u2014 turning \u2018hunt for the wrong line across 15 rows\u2019 into \u2018select the lines that should offset each other and watch the subtotal.\u2019 Deliberately no automatic grouping or account-flagging \u2014 you already know which lines belong together (your own bank statement, a Jamiah leg, a family split) far better than a solver guessing from account numbers alone.',
+    'Unselected lines dim while Balance Check is on, so whatever subset you\u2019re auditing actually stands out. Selection is safely remapped if you remove a line while checking, and resets whenever you turn the mode on, start a new JV, or open a different one, so it can never silently carry over and mislead you.',
+  ]},
+  {version:'4.31.0', date:'2026-08-29', changes:[
+    'Idle Session Lock is now configurable, in Settings \u2192 Cloud Sync \u2192 Idle Session Lock \u2014 set any number of minutes, or 0 to disable it entirely. This setting lives on the device, not the account, so it does not sync between devices.',
+    'A 60-second warning now appears before the lock actually fires, dismissed by moving the mouse or pressing any key.',
+    'The lock now also holds off while a modal is open, not only while something is unsynced \u2014 that covers most in-progress editing in the app (transactions, cash movements, platform edits, and more). It does not cover the New JV page, since that is a full page rather than a modal; idle time spent there mid-entry is not shielded by this guard.',
+    'FIXED: a never-configured idle lock setting was being read as \'explicitly set to 0\' (disabled) instead of falling back to the 30-minute default \u2014 found and fixed before this shipped.',
+  ]},
+  {version:'4.30.0', date:'2026-08-26', changes:[
+    'FIXED: restoring a JSON backup on a cloud-connected session could crash. Restoring a backup file that predated the Investments, Real Estate, or Smart Rules modules (or was simply missing one of those fields) left several parts of the data undefined, and the cloud-restore step read their .length unconditionally \u2014 a hard crash partway through, on exactly the kind of older or partial backup file this feature exists to handle. Restoring now defaults every missing field the same way a fresh load does, and reuses that same defaulting logic (normalizeDataShape) so the two paths can\u2019t drift apart again.',
+  ]},
+  {version:'4.29.0', date:'2026-08-26', changes:[
+    'NEW: the app locks itself after 30 minutes with no click or keypress, behind a full-screen screen that only \u201cRelaunch\u201d (a fresh reload) can clear. This guards against the classic multi-device trap \u2014 a forgotten tab acting on data that\u2019s since changed elsewhere. If anything is still unsynced when the timer would fire, it waits rather than risk discarding those changes, and locks as soon as the queue empties.',
+    'Investments page: platforms are now listed alphabetically everywhere \u2014 Portfolio tab and Reconciliation tab both.',
+    'The five per-platform buttons (+ Position, Deposit, Withdraw, Transfer, Cash log) moved off each platform panel and up to the top of the page as shared actions. Click one and, if you have more than one platform, a picker asks which one \u2014 skipped automatically when there\u2019s only one, and the buttons are disabled with none at all. Each platform panel now shows only its Edit button.',
+    'Log Prices is gone as a separate window \u2014 folded entirely into the Reconciliation sub-page. One combined CSV now covers both statement units AND prices in a single export/import; the manual price-entry table (with staleness) moved there too.',
+    'FIXED: the descriptive text at the top of the Portfolio tab was capped at a hardcoded 540px and wrapped awkwardly inside its wider box. It now fills the available width.',
+  ]},
   {version:'4.28.0', date:'2026-08-24', changes:[
     'Investments page: the four top widgets (Your Cost Basis, Your Current Value, Your Unrealised P/L, Held for Family) and the four widgets inside a position\u2019s detail window now show USD (bold) and SAR (smaller, underneath) together, instead of SAR only.',
     'Removed the price-date line under each position\u2019s price in the platform table \u2014 it was cluttering the table. The price itself is always plain text now. Stale-price alerts live only in Log Prices going forward; the separate \u201cPrices need refreshing\u201d panel on the main Investments page is gone.',
@@ -794,7 +871,7 @@ const CHANGELOG = [
     'Added an iPhone/iPad home-screen icon, so adding the site to your home screen shows a real icon instead of a blank screenshot.',
   ]},
 ];
-let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[], invOwners:[], invPlatforms:[], invPositions:[], invTransactions:[], invValuations:[], invCashMovements:[], invSettings:{fxUsdSar:3.75, mgmtFeePct:0}, uiPrefs:{pageOrder:null}};
+let D = {accounts:[], ledger:[], budget:[], templates:[], categories:[], subcategories:[], provisionGroups:[], accrualMappings:[], jamiahs:[], forecastPlans:{}, nameTranslations:{}, descrTranslations:{}, realEstateBuildings:[], forecastAccountRules:[], customForecastCategories:[], invOwners:[], invPlatforms:[], invPositions:[], invTransactions:[], invValuations:[], invCashMovements:[], invSettings:{fxUsdSar:3.75, mgmtFeePct:0}, uiPrefs:{pageOrder:null}, forecastSnapshots:[], invRoboValueLog:[]};
 let jvDrafts = []; // local-only scratchpad of unfinished JVs — not synced to cloud
 function loadJVDrafts(){ try{ return JSON.parse(localStorage.getItem('jvDrafts_v1')||'[]'); }catch(e){ return []; } }
 function saveJVDraftsList(){ try{ safeSetItem('jvDrafts_v1', JSON.stringify(jvDrafts)); }catch(e){} }
@@ -840,6 +917,42 @@ function accShort(id){ const a=ACC_BY_ID[id]; return a? (a.name? a.name.replace(
 // name that was captured at posting time — so a later account rename doesn't rewrite history.
 // Falls back to the live name for older rows posted before this existed (no snapshot recorded).
 function ledgerAccName(l){ return l.accNameSnapshot || accShort(l.acc); }
+// Fills in every field D can carry that a given snapshot might be missing, defaulting to an
+// empty array/object rather than leaving it undefined. Two call sites need this: loading the
+// local offline cache (which might predate a field added in a later version), and restoring a
+// JSON backup (same reasoning — an older backup file, or one from before a module existed).
+// STANDING CONVENTION: any time a new top-level field is added to D, add its default here too.
+// This used to be duplicated inline at the local-cache-load site only; restoreFromBackup read
+// several of these fields (D.realEstateBuildings, D.forecastAccountRules,
+// D.customForecastCategories, the whole Investments module, D.uiPrefs) without ever defaulting
+// them, which crashed on `.length` of undefined the moment those fields were genuinely absent —
+// exactly the case for a backup taken before that module existed. Centralizing here closes that
+// gap for both call sites at once and is the only place this needs to be kept current going forward.
+function normalizeDataShape(D){
+  if(!Array.isArray(D.categories)) D.categories = [];
+  if(!Array.isArray(D.subcategories)) D.subcategories = [];
+  if(!Array.isArray(D.provisionGroups)) D.provisionGroups = [];
+  if(!Array.isArray(D.accrualMappings)) D.accrualMappings = [];
+  if(!Array.isArray(D.jamiahs)) D.jamiahs = [];
+  if(!Array.isArray(D.invOwners)) D.invOwners = [];
+  if(!Array.isArray(D.invPlatforms)) D.invPlatforms = [];
+  if(!Array.isArray(D.invPositions)) D.invPositions = [];
+  if(!Array.isArray(D.invTransactions)) D.invTransactions = [];
+  if(!Array.isArray(D.invValuations)) D.invValuations = [];
+  if(!D.invSettings || typeof D.invSettings!=='object') D.invSettings = {fxUsdSar:3.75, mgmtFeePct:0};
+  if(!Array.isArray(D.invCashMovements)) D.invCashMovements = [];
+  if(D.invSettings.reconStartDate===undefined) D.invSettings.reconStartDate = null;
+  if(!D.uiPrefs || typeof D.uiPrefs!=='object') D.uiPrefs = {pageOrder:null};
+  if(!Array.isArray(D.realEstateBuildings)) D.realEstateBuildings = [];
+  if(!Array.isArray(D.forecastAccountRules)) D.forecastAccountRules = [];
+  if(!Array.isArray(D.customForecastCategories)) D.customForecastCategories = [];
+  if(!Array.isArray(D.forecastSnapshots)) D.forecastSnapshots = [];
+  if(!Array.isArray(D.invRoboValueLog)) D.invRoboValueLog = [];
+  if(!D.forecastPlans || typeof D.forecastPlans!=='object') D.forecastPlans = {};
+  if(!D.nameTranslations || typeof D.nameTranslations!=='object') D.nameTranslations = {};
+  if(!D.descrTranslations || typeof D.descrTranslations!=='object') D.descrTranslations = {};
+  return D;
+}
 function rebuildIndex(){ ACC_BY_ID={}; D.accounts.forEach(a=>ACC_BY_ID[a.id]=a); }
 function postableAccounts(){ return D.accounts.filter(a=>(a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted' && a.status!=='Inactive').sort((a,b)=>a.id-b.id); }
 // Shared account-search matcher used by every searchable account dropdown in the app.
@@ -1244,6 +1357,7 @@ function useCachedDataNow(){
   updateSyncBadge();
 }
 async function boot(){
+  initIdleLock();
   applyTheme(localStorage.getItem('uiTheme') || 'light');
   applyContentWidth();
   applySidebarPinState();
@@ -1278,26 +1392,7 @@ async function boot(){
       // but — per explicit instruction — don't reveal it yet. The splash stays up and the app
       // stays blocked until the real sync below actually finishes, not just the local load.
       D = loaded.data;
-      if(!Array.isArray(D.categories)) D.categories = [];
-      if(!Array.isArray(D.subcategories)) D.subcategories = [];
-      if(!Array.isArray(D.provisionGroups)) D.provisionGroups = [];
-      if(!Array.isArray(D.accrualMappings)) D.accrualMappings = [];
-      if(!Array.isArray(D.jamiahs)) D.jamiahs = [];
-      if(!Array.isArray(D.invOwners)) D.invOwners = [];
-      if(!Array.isArray(D.invPlatforms)) D.invPlatforms = [];
-      if(!Array.isArray(D.invPositions)) D.invPositions = [];
-      if(!Array.isArray(D.invTransactions)) D.invTransactions = [];
-      if(!Array.isArray(D.invValuations)) D.invValuations = [];
-      if(!D.invSettings || typeof D.invSettings!=='object') D.invSettings = {fxUsdSar:3.75, mgmtFeePct:0};
-      if(!Array.isArray(D.invCashMovements)) D.invCashMovements = [];
-      if(D.invSettings.reconStartDate===undefined) D.invSettings.reconStartDate = null;
-      if(!D.uiPrefs || typeof D.uiPrefs!=='object') D.uiPrefs = {pageOrder:null};
-      if(!Array.isArray(D.realEstateBuildings)) D.realEstateBuildings = [];
-      if(!Array.isArray(D.forecastAccountRules)) D.forecastAccountRules = [];
-      if(!Array.isArray(D.customForecastCategories)) D.customForecastCategories = [];
-      if(!D.forecastPlans || typeof D.forecastPlans!=='object') D.forecastPlans = {};
-      if(!D.nameTranslations || typeof D.nameTranslations!=='object') D.nameTranslations = {};
-      if(!D.descrTranslations || typeof D.descrTranslations!=='object') D.descrTranslations = {};
+      normalizeDataShape(D);
       rebuildIndex();
       syncCustomForecastCategories();
       renderNav();
@@ -1554,12 +1649,28 @@ function fieldLabelsFor(table){
     pd_templates: ['name'],
     pd_drafts: ['entry_date','saved_at'],
     pd_provisions: ['name'],
-  }[table] || [];
+  }[table] || null; // null (not []) — distinguishes "no curated list" from "deliberately show nothing"
 }
+// A curated field list reads better for the handful of tables people actually hit conflicts on
+// most (ledger, accounts...), but that list only ever covered 6 of the many tables this app now
+// has — every other table (Investments, Real Estate, Forecast Snapshots, and anything added
+// since) fell through to an empty array and rendered a conflict row with NO TEXT AT ALL, which is
+// worse than a plain listing: it looks broken and gives no way to actually choose between the two
+// versions. This generic fallback guarantees every table shows something real, and — same lesson
+// as the restoreFromBackup fix — means a table added in the future can't silently go blank here
+// again without anyone needing to remember to update a list.
 function rowSummary(table, row){
   if(!row) return '<span class="mut">(deleted)</span>';
-  const fields = fieldLabelsFor(table);
-  return fields.map(f=> f+': <b>'+esc(String(row[f]===undefined||row[f]===null?'—':row[f]))+'</b>').join(', ');
+  const curated = fieldLabelsFor(table);
+  const fields = curated || Object.keys(row).filter(k=> k!=='id' && k!=='updated_at');
+  const parts = fields.map(f=>{
+    let v = row[f];
+    if(v===null||v===undefined) v = '—';
+    else if(typeof v==='object') v = JSON.stringify(v).slice(0,80)+(JSON.stringify(v).length>80?'…':''); // jsonb columns (owners, months, subrows, ...)
+    else v = String(v);
+    return f+': <b>'+esc(v)+'</b>';
+  });
+  return parts.join(', ') || '<span class="mut">(no fields to show)</span>';
 }
 let conflictChoices = {}; // qid -> 'mine'|'server'
 function showConflictModal(){
@@ -1733,12 +1844,12 @@ async function fetchAllFromCloud(forceFullLedger){
   // slowest of the 16) with zero visible movement. Ledger's own page-by-page fetch progress
   // (ledgerProgress below) is blended in as a fraction of its single slot, so the bar now advances
   // smoothly through that wait instead of appearing to hang.
-  const TOTAL_SOURCES = 24;
-  let completedSources = 0; // counts the 23 non-ledger sources only
+  const TOTAL_SOURCES = 26;
+  let completedSources = 0; // counts the 24 non-ledger sources only
   let ledgerFraction = 0; // 0..1, how far through Ledger's own paginated fetch we are
   const recomputeSplashProgress = () => updateSplashProgress((completedSources + ledgerFraction) / TOTAL_SOURCES * 100);
   const tp = (p, isLedger) => p.then(r=>{ if(isLedger) ledgerFraction = 1; else completedSources++; recomputeSplashProgress(); return r; });
-  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats,invOwn,invPlat,invPos,invTx,invVal,invCash,invSet,uiPrefs] = await Promise.all([
+  const [acc,led,bud,tpl,cat,subcat,drafts,prov,accr,jam,fplans,nameTr,descrTr,reBuild,farules,customCats,invOwn,invPlat,invPos,invTx,invVal,invCash,invSet,uiPrefs,fcSnaps,roboLog] = await Promise.all([
     tp(fetchAllRows('pd_accounts','id')),
     tp(canSkipLedger? Promise.resolve({data: D.ledger.map(l=>({id:l.id,jv:l.jv,entry_date:l.date,acc:l.acc,descr:l.descr,amt:l.amt,alloc:l.alloc,allocatable:l.allocatable,acc_name_snapshot:l.accNameSnapshot||null,updated_at:l.updated_at||null})), error:null}) : fetchAllRows('pd_ledger','id','*',ledgerProgress), true),
     tp(fetchAllRows('pd_budget','id')),
@@ -1763,6 +1874,8 @@ async function fetchAllFromCloud(forceFullLedger){
     tp(fetchAllRows('pd_inv_cash_movements','id')),
     tp(fetchAllRows('pd_inv_settings','id')),
     tp(fetchAllRows('pd_ui_prefs','id')),
+    tp(fetchAllRows('pd_forecast_snapshots','id')),
+    tp(fetchAllRows('pd_inv_robo_value_log','id')),
   ]);
   if(acc.error||led.error||bud.error||tpl.error){ toast('Cloud load error',true); return; }
   D.accounts = acc.data.map(a=>({id:a.id, descr:a.descr, balance:a.balance, direction:a.direction, acc_type:a.acc_type, name:a.name, cf_type:a.cf_type, category:a.category, status:a.status, is_savings:!!a.is_savings, is_allocatable:!!a.is_allocatable, is_credit_card:!!a.is_credit_card, credit_limit:a.credit_limit, stmt_balance:a.stmt_balance, stmt_available:a.stmt_available, stmt_date:a.stmt_date||null, forecast_category:a.forecast_category||null, updated_at:a.updated_at||null}));
@@ -1782,13 +1895,15 @@ async function fetchAllFromCloud(forceFullLedger){
   if(!farules.error){ D.forecastAccountRules = farules.data.map(r=>({id:r.id, name:r.name, account:r.account, rule:r.rule, targetOffset:r.target_offset||0, freezeAfterTarget:!!r.freeze_after_target, updated_at:r.updated_at||null})); }
   if(!customCats.error){ D.customForecastCategories = customCats.data.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior, updated_at:c.updated_at||null})); }
   if(!invOwn.error){ D.invOwners = invOwn.data.map(o=>({id:o.id, name:o.name, nameAr:o.name_ar||'', isSelf:!!o.is_self, outAcc:o.out_acc||null, inAcc:o.in_acc||null, profitAcc:o.profit_acc||null, updated_at:o.updated_at||null})); }
-  if(!invPlat.error){ D.invPlatforms = invPlat.data.map(p=>({id:p.id, name:p.name, outAcc:p.out_acc||null, inAcc:p.in_acc||null, profitAcc:p.profit_acc||null, stmtCashUsd:(p.stmt_cash_usd===null||p.stmt_cash_usd===undefined)?null:Number(p.stmt_cash_usd), stmtDate:p.stmt_date||null, updated_at:p.updated_at||null})); }
+  if(!invPlat.error){ D.invPlatforms = invPlat.data.map(p=>({id:p.id, name:p.name, outAcc:p.out_acc||null, inAcc:p.in_acc||null, profitAcc:p.profit_acc||null, stmtCashUsd:(p.stmt_cash_usd===null||p.stmt_cash_usd===undefined)?null:Number(p.stmt_cash_usd), stmtDate:p.stmt_date||null, isRobo:!!p.is_robo, roboValue:(p.robo_value===null||p.robo_value===undefined)?null:Number(p.robo_value), roboValueDate:p.robo_value_date||null, updated_at:p.updated_at||null})); }
   if(!invPos.error){ D.invPositions = invPos.data.map(p=>({id:p.id, platformId:p.platform_id, name:p.name, ticker:p.ticker||'', assetClass:p.asset_class||'Other', currency:p.currency||'SAR', status:p.status||'Active', stmtUnits:(p.stmt_units===null||p.stmt_units===undefined)?null:Number(p.stmt_units), stmtDate:p.stmt_date||null, updated_at:p.updated_at||null})); }
   if(!invTx.error){ D.invTransactions = invTx.data.map(t=>({id:t.id, positionId:t.position_id, date:t.entry_date, kind:t.kind, units:Number(t.units)||0, totalSar:Number(t.total_sar)||0, owners:t.owners||[], note:t.note||'', cashSide:t.cash_side||'bank', usdAmount:Number(t.usd_amount)||0, feePct:Number(t.fee_pct)||0, linkId:t.link_id||null, feeUnits:Number(t.fee_units)||0, updated_at:t.updated_at||null})); }
   if(!invVal.error){ D.invValuations = invVal.data.map(v=>({id:v.id, positionId:v.position_id, date:v.entry_date, price:Number(v.price)||0, updated_at:v.updated_at||null})); }
   if(!invCash.error){ D.invCashMovements = invCash.data.map(m=>({id:m.id, platformId:m.platform_id, date:m.entry_date, kind:m.kind||'deposit', usdAmount:Number(m.usd_amount)||0, toPlatformId:m.to_platform_id||null, feeUsd:Number(m.fee_usd)||0, capitalUsd:Number(m.capital_usd)||0, profitUsd:Number(m.profit_usd)||0, owners:m.owners||[], note:m.note||'', updated_at:m.updated_at||null})); }
   if(!invSet.error && invSet.data.length){ D.invSettings = {fxUsdSar: Number(invSet.data[0].fx_usd_sar)||3.75, mgmtFeePct: Number(invSet.data[0].mgmt_fee_pct)||0, reconStartDate: invSet.data[0].recon_start_date||null, updated_at: invSet.data[0].updated_at||null}; }
   if(!uiPrefs.error && uiPrefs.data.length){ D.uiPrefs = {pageOrder: Array.isArray(uiPrefs.data[0].page_order)? uiPrefs.data[0].page_order : null, updated_at: uiPrefs.data[0].updated_at||null}; }
+  if(!fcSnaps.error){ D.forecastSnapshots = fcSnaps.data.map(s=>({id:s.id, anchorMonth:s.anchor_month, takenAt:s.taken_at, kind:s.kind||'auto', months:Array.isArray(s.months)?s.months:[], signFlips:(s.sign_flips&&typeof s.sign_flips==='object')?s.sign_flips:{}, updated_at:s.updated_at||null})); }
+  if(!roboLog.error){ D.invRoboValueLog = roboLog.data.map(r=>({id:r.id, platformId:r.platform_id, date:r.entry_date, value:Number(r.value)||0, updated_at:r.updated_at||null})); }
   syncCustomForecastCategories();
   if(serverLedgerMarker) safeSetItem('ledgerLastChanged', serverLedgerMarker);
 }
@@ -2249,6 +2364,10 @@ create table if not exists pd_inv_owners (
 -- stmt_cash_usd / stmt_date hold what the platform's own statement says the USD cash balance
 -- is, for the Reconciliation sub-page. Synced rather than per-device so the check reads the
 -- same on every device.
+-- is_robo/robo_value/robo_value_date support "Robo-Investment" platforms — ones that only ever
+-- show a single lump portfolio figure, never a per-holding breakdown (many robo-advisors work
+-- this way). No positions, no per-holding cost tracking: cost basis is simply the net of the
+-- platform's own Out/In account balances, and robo_value is a manually logged current total.
 create table if not exists pd_inv_platforms (
   id            bigint primary key,
   name          text not null,
@@ -2257,6 +2376,9 @@ create table if not exists pd_inv_platforms (
   profit_acc    bigint,
   stmt_cash_usd numeric,
   stmt_date     date,
+  is_robo       boolean default false,
+  robo_value    numeric,
+  robo_value_date date,
   updated_at    timestamptz default now()
 );
 
@@ -2358,6 +2480,42 @@ create table if not exists pd_ui_prefs (
   updated_at  timestamptz default now()
 );
 
+-- anchor_month is the month the snapshot's horizon starts from (e.g. '2026-09' — captured when
+-- the app was first opened in September, or whenever a manual snapshot was taken). months is a
+-- jsonb array of {month, starting, inflow, outflow, change, closing, subrows} covering the
+-- configured horizon forward from anchor_month — the same shape computeMonthlyCashFlowPure
+-- already returns, just persisted rather than recomputed live. kind is 'auto' (one per calendar
+-- month, taken automatically the next time the app loads after a new month starts) or 'manual'
+-- (as many as the person wants, taken on demand). sign_flips captures which Forecast categories
+-- had a reversed sign convention active AT CAPTURE TIME — comparing this against the CURRENT
+-- setting is what lets the comparison UI tell "the figures changed because your data changed"
+-- apart from "the figures changed because you flipped a sign convention since this was taken",
+-- which otherwise looks identical and was the source of real confusion.
+create table if not exists pd_forecast_snapshots (
+  id             bigint primary key,
+  anchor_month   text,
+  taken_at       date,
+  kind           text default 'auto',
+  months         jsonb default '[]'::jsonb,
+  sign_flips     jsonb default '{}'::jsonb,
+  updated_at     timestamptz default now()
+);
+create index if not exists idx_forecast_snapshots_anchor on pd_forecast_snapshots(anchor_month);
+
+-- One row per date a Robo-Investment platform's total portfolio value was logged (see
+-- pd_inv_platforms.robo_value for the latest one, kept there for quick access). This history is
+-- what lets the Portfolio Value chart plot a real trend for a Robo platform instead of either
+-- guessing a flat line backward or leaving it out of the chart altogether — the trend only
+-- exists from whenever logging actually started, which is the honest answer.
+create table if not exists pd_inv_robo_value_log (
+  id            bigint primary key,
+  platform_id   bigint,
+  entry_date    date,
+  value         numeric default 0,
+  updated_at    timestamptz default now()
+);
+create index if not exists idx_inv_robo_log_platform on pd_inv_robo_value_log(platform_id);
+
 create index if not exists idx_inv_positions_platform on pd_inv_positions(platform_id);
 create index if not exists idx_inv_tx_position        on pd_inv_transactions(position_id);
 create index if not exists idx_inv_val_position       on pd_inv_valuations(position_id);
@@ -2422,6 +2580,8 @@ begin
     'pd_custom_forecast_categories','pd_name_translations','pd_descr_translations',
     'pd_real_estate_buildings','pd_inv_owners','pd_inv_platforms','pd_inv_positions',
     'pd_inv_transactions','pd_inv_valuations','pd_inv_cash_movements','pd_inv_settings','pd_ui_prefs',
+    'pd_forecast_snapshots',
+    'pd_inv_robo_value_log',
     'pd_sync_meta'
   ]
   loop
@@ -3635,6 +3795,58 @@ function nwRow(label, catName, value, isLiabilityType){
   }
   return `<tr><td class="mut click" onclick="viewCategoryAccounts('${safeCat}')">${esc(label)}</td><td class="num mono">${absMoney(value)}</td></tr>`;
 }
+// ---- Dashboard: Closing Balance Watch — pick up to 3 (not necessarily consecutive) months and
+// see their Closing Balance from the Cash Position chain, without scrolling the full Forecast
+// grid. A personal display preference, stored per-device like the idle-lock setting, since which
+// months matter to you is not data anyone else's session needs. ----
+function getClosingBalanceWatchMonths(){
+  try{
+    const raw = localStorage.getItem('closingBalanceWatchMonths');
+    if(raw===null) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr)? arr.filter(m=>typeof m==='string').slice(0,3) : [];
+  }catch(e){ return []; }
+}
+function setClosingBalanceWatchMonth(slot, monthKey){
+  const months = getClosingBalanceWatchMonths();
+  while(months.length<3) months.push('');
+  months[slot] = monthKey||'';
+  localStorage.setItem('closingBalanceWatchMonths', JSON.stringify(months));
+  renderDashboard();
+}
+function renderClosingBalanceWatchWidget(){
+  const months = getClosingBalanceWatchMonths();
+  while(months.length<3) months.push('');
+  const currentMonth = todayStr().slice(0,7);
+  const picked = months.filter(Boolean);
+  // computeMonthlyCashFlow (not the ...Pure variant) is what the real grid uses — it applies the
+  // default-on "anchor to actual" correction that re-bases the current month's starting balance
+  // to your real bank balance. Calling the pure/unanchored chain here was the bug: it produced
+  // numbers that could disagree sharply with what the grid itself shows for the same month.
+  // beginForecastFastPath/endForecastFastPath turns the underlying per-account-per-month lookups
+  // from an O(ledger size) scan into O(1) — without it, this widget re-scans the whole ledger on
+  // every single dashboard render, which is what made the dashboard feel heavy after this shipped.
+  let results = [];
+  if(picked.length){
+    try{ beginForecastFastPath(); results = computeMonthlyCashFlow(picked, currentMonth); }
+    finally{ endForecastFastPath(); }
+  }
+  const byMonth = {}; results.forEach(r=>{ byMonth[r.month] = r; });
+  return `<div class="panel">
+    <h3 style="text-align:center;color:var(--accent);text-transform:none;font-size:15px">📅 Closing Balance Watch</h3>
+    <div class="mut" style="font-size:11.5px;text-align:center;margin-bottom:10px">Pick any up to three months to see their Closing Balance from the Cash Position chain, side by side.</div>
+    <table><tbody>
+      ${[0,1,2].map(i=>{
+        const mk = months[i];
+        const r = mk? byMonth[mk] : null;
+        return `<tr>
+          <td style="width:50%"><input type="month" value="${esc(mk)}" onchange="setClosingBalanceWatchMonth(${i}, this.value)"></td>
+          <td class="num mono ${r? moneyClass(r.closing) : 'mut'}" style="font-weight:700">${r? money(r.closing) : (mk? '—' : 'Choose a month')}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>
+  </div>`;
+}
 function netWorthPanels(){
   const bank = bankBalance();
   const stRec = categoryBalance('Short Term Receivables');
@@ -3705,7 +3917,7 @@ function netWorthPanels(){
       <tr style="background:var(--chip)"><td style="font-weight:700">Long Term Equity =</td><td class="num mono ${moneyClass(longTermEquity)}" style="font-weight:700">${money(longTermEquity)}</td></tr>
     </tbody></table></div>`;
 
-  return `<div class="grid3">${t1}${t2}${t3}</div>`;
+  return t1+t2+t3;
 }
 function viewCategoryAccounts(catName){
   const ids = categoryAccountIds(catName);
@@ -3803,7 +4015,12 @@ function driftAlertsCard(){
     }).join('')}
   </div>`;
 }
+let forecastSnapshotCheckedThisSession = false;
 function renderDashboard(){
+  if(!forecastSnapshotCheckedThisSession){
+    forecastSnapshotCheckedThisSession = true;
+    checkAutoForecastSnapshot().then(()=>{ if(forecastSnapshotBannerMonth && screen==='dashboard') renderDashboard(); });
+  }
   const allBankAccs = D.accounts.filter(a=>a.category==='Bank Accounts' && a.id!==10199 && (a.acc_type==='Individual Account'||a.acc_type==='Accrual Account') && a.status!=='Deleted').sort((a,b)=>a.id-b.id);
   const bankAccs = allBankAccs.filter(a=>a.status!=='Inactive'); // reconciliation table: Inactive accounts aren't reconciled, so they're left off this list entirely
   const bankTotal = allBankAccs.reduce((s,a)=>s+accountBalance(a.id),0); // KPI total still reflects every bank account's real balance, active or not
@@ -3815,6 +4032,7 @@ function renderDashboard(){
 
   const kpiAnim = dashboardNeedsCountUp ? ' fade-in' : '';
   document.getElementById('app').innerHTML = `
+    ${forecastSnapshotBannerHTML()}
     <div class="cards">
       <div class="kpi${kpiAnim}"><div class="l">Bank Accounts Balance</div>${kpiValue(bankTotal, '', 'absMoney')}</div>
       <div class="kpi${kpiAnim}"><div class="l">This Month Income</div>${kpiValue(incomeMTD, '', 'absMoney')}</div>
@@ -3843,7 +4061,7 @@ function renderDashboard(){
           <td class="num noprint">${noLimit? `<input disabled class="num" style="width:130px" placeholder="set limit first" title="Set a credit limit for this account in Accounts → edit">` : `
           <input id="stmtBal_${a.id}" type="text" inputmode="decimal" class="num" style="width:130px" value="${hasStmt? fmt2(typedVal) : ''}" placeholder="${isCC?'avail. limit':'—'}" data-raw="${hasStmt? typedVal : ''}"
             onfocus="this.value = this.dataset.raw"
-            onblur="saveStmtBalance(${a.id}, this.value)"
+            onblur="this.value = this.dataset.raw? fmt2(this.dataset.raw) : ''"
             onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveStmtBalance(${a.id}, this.value, ${nextId||'null'}); }">`}</td>
           <td class="num mono">${!hasStmt? '<span class="mut">—</span>' : (reconciled? `<span style="font-weight:600;color:${reconciledToday?'var(--green)':'var(--red)'}">Reconciled – ${fmtDateShort(a.stmt_date)}</span>` : `<span style="cursor:pointer;text-decoration:underline;color:var(--red)" onclick="startReconcile(${a.id})">${money(variance)}</span>`)}</td>
           </tr>`;
@@ -3854,14 +4072,27 @@ function renderDashboard(){
       </tr></tfoot></table>
       </div>
     </div>
-    ${netWorthPanels()}`;
+    <div class="grid3">${netWorthPanels()}</div>
+    <div class="grid3">${renderClosingBalanceWatchWidget()}</div>`;
   animateKpiCountUps();
 }
 
 /* ============================= NEW JV ============================= */
 let jvDraft = { date: todayStr(), lines: [] };
+let jvBalanceCheckMode = false;
+let jvBalanceCheckSelected = new Set();
 function freshLine(){ return {key:Math.random().toString(36).slice(2), acc:'', descr:'', amt:'', _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1}; }
-function resetJVDraft(){ jvDraft = { date: todayStr(), lines: [freshLine(),freshLine()] }; }
+function resetJVDraft(){ jvDraft = { date: todayStr(), lines: [freshLine(),freshLine()] }; jvBalanceCheckSelected = new Set(); }
+// Clears every entry box back to two blank lines — the date is deliberately left as-is, since
+// the person is usually still working on the same day's JV and re-typing the date would be
+// exactly the kind of friction this button exists to remove.
+function clearAllJVLines(){
+  if(!confirm('Clear every line in this JV? This cannot be undone.')) return;
+  jvDraft.lines = [freshLine(), freshLine()];
+  jvBalanceCheckSelected = new Set();
+  renderNewJV();
+  toast('Cleared ✓');
+}
 if(jvDraft.lines.length===0) resetJVDraft();
 
 function jvTotal(){ return jvDraft.lines.reduce((s,l)=>s+(Number(l.amt)||0),0); }
@@ -3922,10 +4153,13 @@ function renderNewJV(){
         </div>
         <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="goManageTemplates()">+ Manage templates</button></div>
         <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="openDraftsModal()">📝 Drafts${jvDrafts.length? ' ('+jvDrafts.length+')':''}</button></div>
+        <div><label class="fl">&nbsp;</label><button class="btn ${jvBalanceCheckMode?'pri':'ghost'} sm" onclick="toggleJvBalanceCheck()">🔍 Balance Check</button></div>
+        <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="clearAllJVLines()">🗑 Clear All</button></div>
       </div>
+      ${jvBalanceCheckMode? renderJvBalanceCheckBar() : ''}
       ${accrualPanelOpen? renderAccrualPanel() : ''}
       <table class="jv-lines">
-        <thead><tr><th style="width:38%">Account</th><th style="width:38%">Description</th><th style="width:16%">Amount</th><th></th></tr></thead>
+        <thead><tr>${jvBalanceCheckMode? '<th style="width:34px"></th>' : ''}<th style="width:38%">Account</th><th style="width:38%">Description</th><th style="width:16%">Amount</th><th></th></tr></thead>
         <tbody id="jvLinesBody">${jvDraft.lines.map((l,i)=>jvLineRow(l,i)).join('')}</tbody>
       </table>
       <div class="row noprint" style="margin-top:10px">
@@ -3951,9 +4185,64 @@ function updateJVTotals(){
   const btn = document.getElementById('jvPostBtn');
   if(btn){ btn.disabled = !bal || syncInProgress; }
   updateReconcileBanner();
+  if(jvBalanceCheckMode){
+    const {sum, count} = jvBalanceCheckSubtotal();
+    const zero = Math.abs(sum)<0.005;
+    const bcSum = document.getElementById('jvBcSum');
+    const bcCount = document.getElementById('jvBcCount');
+    if(bcSum){ bcSum.textContent = money(sum); bcSum.style.color = count? (zero?'var(--green)':'var(--red)') : 'inherit'; }
+    if(bcCount) bcCount.textContent = count+' line'+(count===1?'':'s')+' selected · Subtotal:';
+  }
+}
+// ---- Balance Check: a lens for auditing an already-entered JV, not a change to the JV itself ----
+// Turns "hunt for the wrong line across 15 rows" into "select the lines that should offset each
+// other and watch the subtotal." Deliberately no automatic grouping or account-flagging: the
+// person already knows which lines belong together (their own bank statement, a Jamiah leg, a
+// family split) far better than any solver guessing from account numbers alone — this just gives
+// them a fast, zero-setup way to see that subset's own subtotal instead of only the grand total.
+// State (jvBalanceCheckMode, jvBalanceCheckSelected) is declared up near jvDraft itself, since
+// resetJVDraft() runs once immediately at load and needs jvBalanceCheckSelected to already exist.
+function toggleJvBalanceCheck(){
+  jvBalanceCheckMode = !jvBalanceCheckMode;
+  jvBalanceCheckSelected = new Set(); // fresh start each time the lens is turned on
+  renderNewJV();
+}
+function toggleJvBalanceCheckLine(i){
+  if(jvBalanceCheckSelected.has(i)) jvBalanceCheckSelected.delete(i);
+  else jvBalanceCheckSelected.add(i);
+  renderNewJV();
+}
+function clearJvBalanceCheckSelection(){
+  jvBalanceCheckSelected = new Set();
+  renderNewJV();
+}
+function jvBalanceCheckSubtotal(){
+  let sum = 0, count = 0;
+  jvBalanceCheckSelected.forEach(i=>{
+    const l = jvDraft.lines[i];
+    if(!l) return; // defensive: a selected index can go stale if lines were removed since selecting
+    sum += Number(l.amt)||0;
+    count++;
+  });
+  return {sum: Math.round(sum*100)/100, count};
+}
+function renderJvBalanceCheckBar(){
+  const {sum, count} = jvBalanceCheckSubtotal();
+  const zero = Math.abs(sum)<0.005;
+  return `<div class="row" style="align-items:center;gap:14px;margin-bottom:10px;padding:10px 14px;background:var(--chip);border-radius:8px">
+    <div class="mut" style="font-size:12.5px">🔍 Balance Check — click lines below to select them</div>
+    <div style="margin-left:auto;text-align:right">
+      <span class="mut" id="jvBcCount" style="font-size:11.5px">${count} line${count===1?'':'s'} selected · Subtotal:</span>
+      <b class="mono" id="jvBcSum" style="font-size:15px;margin-left:6px;color:${count? (zero?'var(--green)':'var(--red)') : 'inherit'}">${money(sum)}</b>
+    </div>
+    <button class="btn ghost sm" onclick="clearJvBalanceCheckSelection()">Clear selection</button>
+  </div>`;
 }
 function jvLineRow(l,i){
-  return `<tr>
+  const bcOn = jvBalanceCheckMode;
+  const bcSelected = jvBalanceCheckSelected.has(i);
+  return `<tr style="${bcOn && !bcSelected? 'opacity:.4' : ''}">
+    ${bcOn? `<td style="text-align:center"><input type="checkbox" ${bcSelected?'checked':''} onchange="toggleJvBalanceCheckLine(${i})"></td>` : ''}
     <td class="autoc"><div style="display:flex;gap:4px;align-items:center">
       <input id="jvAcc_${i}" style="flex:1" placeholder="Search account…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${l.acc? esc(accName(l.acc)) : (l._q||'')}"
         oninput="jvAccInput(${i},this.value)" onfocus="jvAccInput(${i},this.value)"
@@ -3971,7 +4260,7 @@ function jvLineRow(l,i){
     </div></td>
     <td><div style="display:flex;gap:4px;align-items:center">
       <input id="jvAmt_${i}" class="num" style="flex:1" type="text" inputmode="decimal" autocomplete="off" value="${l.amt===''?'':fmt2(l.amt)}"
-        oninput="jvDraft.lines[${i}].amt=this.value; updateJVTotals()"
+        oninput="jvDraft.lines[${i}].amt=this.value"
         onfocus="this.value = (jvDraft.lines[${i}].amt===''?'':jvDraft.lines[${i}].amt)"
         onblur="jvAmtBlur(${i})"
         onkeydown="jvAmtKey(event,${i})" placeholder="0.00 or 1+5-2">
@@ -4118,7 +4407,20 @@ function jvAmtKey(ev,i){
 // account, or balancing an allocation) — those set the line directly rather than going through
 // here, so picking a target from a list and having its amount filled in still works.
 function addJVLine(){ jvDraft.lines.push(freshLine()); renderNewJV(); }
-function removeJVLine(i){ jvDraft.lines.splice(i,1); renderNewJV(); }
+function removeJVLine(i){
+  jvDraft.lines.splice(i,1);
+  // Removing a line shifts every later index down by one — without remapping, a selected index
+  // past the removed line would silently point at the wrong row from then on.
+  if(jvBalanceCheckSelected.size){
+    const remapped = new Set();
+    jvBalanceCheckSelected.forEach(j=>{
+      if(j===i) return; // the removed line itself drops out of the selection
+      remapped.add(j>i? j-1 : j);
+    });
+    jvBalanceCheckSelected = remapped;
+  }
+  renderNewJV();
+}
 function jvAccInput(i,val){
   jvDraft.lines[i]._q = val;
   if(!val){ jvDraft.lines[i].acc=''; }
@@ -4247,31 +4549,52 @@ function computeAccrualJV(){
   const [mFrom, mTo] = monthRange(accrualMonth);
   const lines = [];
   const explanation = [];
-  mappings.forEach(map=>{
-    const catAccs = D.accounts.filter(a=>a.category===map.category && firstDigit(a.id)===6).map(a=>a.id);
-    if(!catAccs.length){ return; }
-    const budget = D.budget.filter(b=>catAccs.includes(b.acc) && b.date>=mFrom && b.date<=mTo).reduce((s,b)=>s+Number(b.amt),0);
-    const actual = D.ledger.filter(l=>catAccs.includes(l.acc) && l.date>=mFrom && l.date<=mTo).reduce((s,l)=>s+Number(l.amt),0);
-    const variance = budget - actual; // positive = under budget (surplus to accrue)
-    if(Math.abs(variance)<0.005){ explanation.push({category:map.category, budget, actual, variance:0, action:'On budget — no accrual needed'}); return; }
-    const tag = monthTag(accrualMonth);
-    if(variance>0){
-      // under budget: accrue the surplus — Dr the 99-account, Cr the liability
-      lines.push({key:Math.random().toString(36).slice(2), acc:map.expenseAcc, descr:map.category+' Accrual - '+tag, amt: Math.round(variance*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
-      lines.push({key:Math.random().toString(36).slice(2), acc:map.liabilityAcc, descr:map.category+' Accrual - '+tag, amt: -Math.round(variance*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
-      explanation.push({category:map.category, budget, actual, variance, action:'Under budget — accrued '+money(variance)+' to liability'});
-    } else {
-      const overage = -variance;
-      const liabBalance = accountBalance(map.liabilityAcc); // negative number
-      const available = Math.abs(Math.min(liabBalance,0));
-      const draw = Math.min(overage, available);
-      if(draw<0.005){ explanation.push({category:map.category, budget, actual, variance, action:'Over budget by '+money(overage)+' but no liability balance available to draw from'}); return; }
-      lines.push({key:Math.random().toString(36).slice(2), acc:map.liabilityAcc, descr:map.category+' Accrual Drawdown - '+tag, amt: Math.round(draw*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
-      lines.push({key:Math.random().toString(36).slice(2), acc:map.expenseAcc, descr:map.category+' Accrual Drawdown - '+tag, amt: -Math.round(draw*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
-      const note = draw<overage-0.005? ' (capped — only '+money(available)+' was available)' : '';
-      explanation.push({category:map.category, budget, actual, variance, action:'Over budget — drew '+money(draw)+' from liability'+note});
-    }
-  });
+  // beginForecastFastPath/endForecastFastPath: computeForecastCell can be expensive per account
+  // without it — see the earlier Closing Balance Watch fix for the same reasoning.
+  try{
+    beginForecastFastPath();
+    mappings.forEach(map=>{
+      const catAccObjs = D.accounts.filter(a=>a.category===map.category && firstDigit(a.id)===6);
+      if(!catAccObjs.length){ return; }
+      const catAccs = catAccObjs.map(a=>a.id);
+      // "Budget" here MUST match the Forecast Plan figures shown on the Forecast Grid and the
+      // Budget vs Actual report — not the separate, legacy D.budget table. That table goes stale
+      // for any account whose plan is driven by a Smart Rule or a pinned recurring value (the "P"
+      // badge on the Forecast Grid) rather than a manually-typed D.budget row, which is exactly
+      // what made Bills show 818 here against 7,068.50 on the report: both rent accounts use
+      // pinned recurring plans that were never written into D.budget at all.
+      // Pass accrualMonth as BOTH the target month and "current month" — computeForecastCell
+      // treats any month before "current" as closed history and collapses its plan into actual
+      // (correct for the Forecast Grid, which has no reason to show variance for the past), but
+      // that's exactly wrong here: the accrual JV needs the ORIGINAL plan even for a month
+      // that's now over, since running it at month-end against an already-past month is the
+      // whole point. Passing accrualMonth as currentMonth too means it's never treated as
+      // "before today," so Provisions/Smart Rules/manual entries are read as actually planned,
+      // not silently overwritten with the actual figure — which is exactly the bug reported:
+      // every category showed Budget === Actual once the calendar rolled past the accrual month.
+      const budget = catAccObjs.reduce((s,a)=> s + (computeForecastCell(a, accrualMonth, accrualMonth).plan||0), 0);
+      const actual = D.ledger.filter(l=>catAccs.includes(l.acc) && l.date>=mFrom && l.date<=mTo).reduce((s,l)=>s+Number(l.amt),0);
+      const variance = budget - actual; // positive = under budget (surplus to accrue)
+      if(Math.abs(variance)<0.005){ explanation.push({category:map.category, budget, actual, variance:0, action:'On budget — no accrual needed'}); return; }
+      const tag = monthTag(accrualMonth);
+      if(variance>0){
+        // under budget: accrue the surplus — Dr the 99-account, Cr the liability
+        lines.push({key:Math.random().toString(36).slice(2), acc:map.expenseAcc, descr:map.category+' Accrual - '+tag, amt: Math.round(variance*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
+        lines.push({key:Math.random().toString(36).slice(2), acc:map.liabilityAcc, descr:map.category+' Accrual - '+tag, amt: -Math.round(variance*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
+        explanation.push({category:map.category, budget, actual, variance, action:'Under budget — accrued '+money(variance)+' to liability'});
+      } else {
+        const overage = -variance;
+        const liabBalance = accountBalance(map.liabilityAcc); // negative number
+        const available = Math.abs(Math.min(liabBalance,0));
+        const draw = Math.min(overage, available);
+        if(draw<0.005){ explanation.push({category:map.category, budget, actual, variance, action:'Over budget by '+money(overage)+' but no liability balance available to draw from'}); return; }
+        lines.push({key:Math.random().toString(36).slice(2), acc:map.liabilityAcc, descr:map.category+' Accrual Drawdown - '+tag, amt: Math.round(draw*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
+        lines.push({key:Math.random().toString(36).slice(2), acc:map.expenseAcc, descr:map.category+' Accrual Drawdown - '+tag, amt: -Math.round(draw*100)/100, _matches:[], _hi:-1, _descrMatches:[], _descrHi:-1});
+        const note = draw<overage-0.005? ' (capped — only '+money(available)+' was available)' : '';
+        explanation.push({category:map.category, budget, actual, variance, action:'Over budget — drew '+money(draw)+' from liability'+note});
+      }
+    });
+  } finally { endForecastFastPath(); }
   accrualExplanation = explanation;
   if(!lines.length){ toast('Nothing to accrue for '+monthLabel(accrualMonth)+' — every mapped category is on budget', true); renderNewJV(); return; }
   jvDraft.date = mTo;
@@ -5239,6 +5562,10 @@ function startReconcile(accId){
   resetJVDraft();
   jvDraft.lines[0].acc = accId;
   go('newjv');
+  // The account on line 1 is already filled in — the next thing to type is almost always the
+  // description, so land the cursor there instead of leaving it nowhere in particular.
+  const el = document.getElementById('jvDescr_0');
+  if(el){ el.focus(); el.select(); }
 }
 
 function openAccountModal(id){
@@ -5362,6 +5689,20 @@ function toggleStatementSort(){
   safeSetItem('statementSortDesc', String(statementSortDesc));
   renderStatement();
 }
+function exportStatementCSV(){
+  const a = ACC_BY_ID[statementAcc];
+  if(!a) return;
+  const linesAsc = D.ledger.filter(l=>l.acc===statementAcc).sort((x,y)=> (x.jv||0)-(y.jv||0) || x.id-y.id);
+  let running = 0;
+  const withRunning = linesAsc.map(l=>{ running += Number(l.amt)||0; return {l, running}; });
+  const displayRows = statementSortDesc ? withRunning.slice().reverse() : withRunning;
+  const header = ['Date','JV#','Description','Amount','Running Balance'];
+  const lines = [header.map(csvEscape).join(',')];
+  displayRows.forEach(({l,running})=> lines.push([l.date, l.jv, l.descr, l.amt, running].map(csvEscape).join(',')));
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = a.id+' - '+accShort(a.id)+' statement - '+todayStr()+'.csv'; dl.click();
+  toast('Exported '+displayRows.length+' line(s) to CSV');
+}
 function renderStatement(){
   const a = ACC_BY_ID[statementAcc];
   if(!a){ go('accounts'); return; }
@@ -5381,7 +5722,10 @@ function renderStatement(){
       </div>
       <div class="row noprint" style="margin-bottom:10px;justify-content:space-between">
         <button class="btn ghost sm" onclick="toggleStatementSort()">↕ JV# ${statementSortDesc?'Descending':'Ascending'}</button>
-        <button class="btn ghost sm" onclick="window.print()">🖨 Print statement</button>
+        <div class="row" style="gap:6px">
+          <button class="btn ghost sm" onclick="exportStatementCSV()">⬇ CSV</button>
+          <button class="btn ghost sm" onclick="window.print()">🖨 Print statement</button>
+        </div>
       </div>
       <table><thead><tr><th>Date</th><th>JV#</th><th>Description</th><th class="num">Amount</th><th class="num">Running Balance</th></tr></thead>
       <tbody>${rowsHtml || '<tr><td colspan="5" class="empty">No transactions on this account yet</td></tr>'}</tbody></table>
@@ -7070,7 +7414,96 @@ function invAssetRollup(){
   }
   return Object.values(map).sort((a,b)=>b.marketSar-a.marketSar);
 }
-// Totals per owner across the whole portfolio. Self and family are reported separately by the UI.
+/* ---- Investments: "what adds up to this figure" breakdowns for the top KPI widgets ----
+   Grouped by platform (not position) — click a platform row to drill into the positions that
+   make it up. The total always matches the widget's own displayed figure exactly, the same
+   traceability principle used for Forecast Snapshots and the JV Balance Check earlier in this app. */
+function invPlatformBreakdownRows(selfOnly){
+  const rows = [];
+  for(const p of (D.invPlatforms||[])){
+    if(p.isRobo){
+      if(!selfOnly) continue; // Robo platforms are always self-owned — never split to family
+      const stats = invRoboPlatformStats(p);
+      const cost = Math.abs(stats.costBasis);
+      const market = stats.hasValue? stats.value : cost;
+      const invested = p.outAcc? Math.abs(accountBalance(p.outAcc)) : 0;
+      rows.push({platformId:p.id, name:p.name+' (Robo-Investment)', isRobo:true, cost, market, unrealized:market-cost, invested});
+      continue;
+    }
+    let cost=0, market=0;
+    for(const pos of invPositionsForPlatform(p.id)){
+      for(const o of (D.invOwners||[])){
+        if(selfOnly? !o.isSelf : o.isSelf) continue;
+        const slice = ownerSliceOfPosition(pos, o.id);
+        if(!slice) continue;
+        cost += slice.costSar; market += slice.marketSar;
+      }
+    }
+    // "Invested" (money actually paid out of the bank into this platform, per its own Out
+    // account) is a platform-level concept — it doesn't split by owner the way positions do, so
+    // it's only meaningful in the self view, matching the same convention Robo platforms use.
+    const invested = selfOnly && p.outAcc? Math.abs(accountBalance(p.outAcc)) : 0;
+    if(Math.abs(cost)<0.005 && Math.abs(market)<0.005 && Math.abs(invested)<0.005) continue;
+    rows.push({platformId:p.id, name:p.name, isRobo:false, cost, market, unrealized:market-cost, invested});
+  }
+  return rows;
+}
+function invPlatformPositionBreakdownRows(platformId, selfOnly){
+  const rows = [];
+  for(const pos of invPositionsForPlatform(platformId)){
+    for(const o of (D.invOwners||[])){
+      if(selfOnly? !o.isSelf : o.isSelf) continue;
+      const slice = ownerSliceOfPosition(pos, o.id);
+      if(!slice) continue;
+      rows.push({name: pos.name+(pos.ticker?' ('+pos.ticker+')':''), cost:slice.costSar, market:slice.marketSar, unrealized:slice.unrealizedSar});
+    }
+  }
+  return rows;
+}
+const INV_BREAKDOWN_TITLES = {cost:'Your Cost Basis', value:'Your Current Value', unrealized:'Your Unrealised P/L', family:'Held for Family', invested:'Invested Amount', pl:'P/L'};
+const INV_BREAKDOWN_COL = {cost:'cost', value:'market', unrealized:'unrealized', family:'market', invested:'invested', pl:'pl'};
+function openInvKpiBreakdown(kind){
+  const selfOnly = kind!=='family';
+  let rows = invPlatformBreakdownRows(selfOnly);
+  if(kind==='pl') rows = rows.map(r=>({...r, pl: r.market - r.invested}));
+  const col = INV_BREAKDOWN_COL[kind]||'market';
+  const total = rows.reduce((s,r)=>s+(r[col]||0), 0);
+  const fx = getInvFxRate();
+  const drillable = kind!=='invested' && kind!=='pl'; // Invested/P&L are platform-level cash figures with no per-position split to drill into
+  showModal(`
+    <h3 style="margin-top:0">${esc(INV_BREAKDOWN_TITLES[kind]||'Breakdown')}</h3>
+    <div class="mut" style="font-size:11.5px;margin-bottom:10px">Every platform contributing to this figure — the total below should match the widget exactly.${drillable? ' Click a platform to see the positions behind it.' : ''}</div>
+    <div style="overflow-x:auto;max-height:50vh;overflow-y:auto"><table style="min-width:420px"><thead><tr>
+      <th>Platform</th><th class="num">${esc(INV_BREAKDOWN_TITLES[kind]||'Value')}</th>
+    </tr></thead>
+    <tbody>${rows.length? rows.map(r=>`<tr ${drillable && !r.isRobo? `class="click" style="cursor:pointer" onclick="openInvPlatformPositionBreakdown(${r.platformId}, '${kind}', ${selfOnly})"` : ''}>
+        <td>${esc(r.name)}${drillable && !r.isRobo? ' <span class="mut" style="font-size:11px">▸</span>' : ''}</td>
+        <td class="num mono ${(col==='unrealized'||col==='pl')?moneyClass(r[col]):''}">${money(r[col]||0)}</td>
+      </tr>`).join('') : '<tr><td colspan="2" class="empty">Nothing contributing to this figure</td></tr>'}</tbody>
+    <tfoot><tr style="font-weight:700"><td>Total</td><td class="num mono ${(col==='unrealized'||col==='pl')?moneyClass(total):''}">${money(total)}</td></tr></tfoot>
+    </table></div>
+    <div class="mut" style="font-size:11px;margin-top:10px">$${fmt2(total/fx)} USD at ${fx} SAR/USD.</div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
+}
+function openInvPlatformPositionBreakdown(platformId, kind, selfOnly){
+  const plat = invPlatformById(platformId);
+  const rows = invPlatformPositionBreakdownRows(platformId, selfOnly);
+  const col = INV_BREAKDOWN_COL[kind]||'market';
+  const total = rows.reduce((s,r)=>s+(r[col]||0), 0);
+  showModal(`
+    <h3 style="margin-top:0">${esc(plat?plat.name:'Platform')} — ${esc(INV_BREAKDOWN_TITLES[kind]||'Breakdown')}</h3>
+    <div style="overflow-x:auto;max-height:50vh;overflow-y:auto"><table style="min-width:380px"><thead><tr>
+      <th>Position</th><th class="num">${esc(INV_BREAKDOWN_TITLES[kind]||'Value')}</th>
+    </tr></thead>
+    <tbody>${rows.length? rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="num mono ${col==='unrealized'?moneyClass(r[col]):''}">${money(r[col]||0)}</td></tr>`).join('') : '<tr><td colspan="2" class="empty">No positions</td></tr>'}</tbody>
+    <tfoot><tr style="font-weight:700"><td>Total</td><td class="num mono ${col==='unrealized'?moneyClass(total):''}">${money(total)}</td></tr></tfoot>
+    </table></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px">
+      <button class="btn ghost" onclick="openInvKpiBreakdown('${kind}')">◂ Back</button>
+      <button class="btn ghost" onclick="closeModal()">Close</button>
+    </div>`, true);
+}
+
 function invOwnerTotals(){
   const out = [];
   for(const o of (D.invOwners||[])){
@@ -7310,7 +7743,7 @@ async function persistInvOwner(o){
 }
 async function persistInvPlatform(p){
   const base = p.updated_at||null; p.updated_at = nowISO();
-  await syncWrite('pd_inv_platforms','upsert',{id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null}, base);
+  await syncWrite('pd_inv_platforms','upsert',{id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null, is_robo:!!p.isRobo, robo_value:(p.roboValue===''||p.roboValue===undefined)?null:p.roboValue, robo_value_date:p.roboValueDate||null}, base);
   persistLocal();
 }
 async function persistInvPosition(p){
@@ -7367,8 +7800,17 @@ function invPriceAsOf(posId, asOfDate){
   return vals.length? Number(vals[vals.length-1].price)||0 : 0;
 }
 // Portfolio value and cost at every date a price was logged — the series behind the chart.
+// Same cost-basis logic as invRoboPlatformStats, but as of a historical date rather than live —
+// needed so the Portfolio History chart can show what a Robo platform's cost basis actually was
+// on each past date, not today's figure repeated backward.
+function invRoboCostBasisAsOf(p, date){
+  const outBal = p.outAcc? Math.abs(sumAcc(l=>l.acc===p.outAcc, null, date)) : 0;
+  const inBal = p.inAcc? Math.abs(sumAcc(l=>l.acc===p.inAcc, null, date)) : 0;
+  return outBal - inBal;
+}
 function invPortfolioHistory(selfOnly){
-  const dates = Array.from(new Set((D.invValuations||[]).map(v=>v.date))).sort();
+  const roboLogDates = (D.invRoboValueLog||[]).map(r=>r.date);
+  const dates = Array.from(new Set([...(D.invValuations||[]).map(v=>v.date), ...roboLogDates])).sort();
   return dates.map(d=>{
     let value=0, cost=0;
     for(const pos of (D.invPositions||[])){
@@ -7377,49 +7819,17 @@ function invPortfolioHistory(selfOnly){
       value += st.units * invPriceAsOf(pos.id, d) * invFxFor(pos.currency);
       cost += st.costSar;
     }
+    // Robo contribution only from whenever logging actually started for that platform — a date
+    // before its first log entry gets nothing added, which is the honest "we don't know" answer
+    // rather than a flat-lined guess.
+    (D.invPlatforms||[]).filter(p=>p.isRobo).forEach(p=>{
+      const v = invRoboValueAsOf(p.id, d);
+      if(v===null) return;
+      value += v;
+      cost += invRoboCostBasisAsOf(p, d);
+    });
     return {date:d, value, cost};
   });
-}
-// Money-weighted annual return (XIRR). Simple percentage return ignores WHEN money went in,
-// which matters a lot here because the person back-fills purchases across years.
-function invXirr(flows){
-  // flows: [{date:'YYYY-MM-DD', amount}] — negative = money in, positive = money out/value.
-  if(flows.length<2) return null;
-  const hasNeg = flows.some(f=>f.amount<0), hasPos = flows.some(f=>f.amount>0);
-  if(!hasNeg || !hasPos) return null;
-  const t0 = new Date(flows[0].date).getTime();
-  const yrs = f => (new Date(f.date).getTime()-t0)/(365.25*24*3600*1000);
-  const npv = r => flows.reduce((s,f)=> s + f.amount/Math.pow(1+r, yrs(f)), 0);
-  let lo=-0.9999, hi=10;
-  if(npv(lo)*npv(hi) > 0) return null;
-  for(let i=0;i<200;i++){
-    const mid=(lo+hi)/2;
-    if(npv(lo)*npv(mid) <= 0) hi=mid; else lo=mid;
-  }
-  const r=(lo+hi)/2;
-  return isFinite(r)? r*100 : null;
-}
-function invPortfolioXirr(selfOnly){
-  const selfIds = new Set((D.invOwners||[]).filter(o=>o.isSelf).map(o=>o.id));
-  const flows = [];
-  for(const t of (D.invTransactions||[]).slice().sort((a,b)=>a.date<b.date?-1:1)){
-    const at = invTxAttribution(t);
-    if(!at.valid) continue;
-    // Money in/out per the fee-adjusted attribution — the fee is not a cash flow of the
-    // investment itself, so the self owner's XIRR is not inflated by fees earned.
-    let amt = 0;
-    for(const oid in at.moneySar){ if(!selfOnly || selfIds.has(Number(oid))) amt += at.moneySar[oid]||0; }
-    if(!(Math.abs(amt)>0)) continue;
-    flows.push({date:t.date, amount: t.kind==='sell'? amt : -amt});
-  }
-  if(!flows.length) return null;
-  let currentValue = 0;
-  for(const pos of (D.invPositions||[])){
-    const st = invPositionStateAsOf(pos.id, todayStr(), selfOnly);
-    currentValue += st.units * invPriceAsOf(pos.id, todayStr()) * invFxFor(pos.currency);
-  }
-  if(currentValue>0) flows.push({date: todayStr(), amount: currentValue});
-  return invXirr(flows);
 }
 function invDaysSince(dateStr){
   if(!dateStr) return null;
@@ -7438,7 +7848,12 @@ function invStalePositions(dayThreshold){
     return {pos:p, days, never:!lv};
   }).filter(Boolean);
 }
-function invAllocationBy(keyFn, selfOnly){
+// roboKeyFn (optional) lets a caller decide how a Robo-Investment platform's value should be
+// labelled in THIS particular breakdown — 'Stocks' for the by-asset-class view, the platform's
+// own name for the by-platform view — since a Robo platform has no position to run through
+// keyFn itself. Always included when supplied: Robo value is always self-owned money, so it
+// belongs in the total regardless of selfOnly (which only ever excludes FAMILY-owned money).
+function invAllocationBy(keyFn, selfOnly, roboKeyFn){
   const map = {};
   for(const pos of (D.invPositions||[])){
     const st = invPositionStateAsOf(pos.id, todayStr(), selfOnly);
@@ -7447,6 +7862,16 @@ function invAllocationBy(keyFn, selfOnly){
     if(val<=0) continue;
     const k = keyFn(pos) || '—';
     map[k] = (map[k]||0) + val;
+  }
+  if(roboKeyFn){
+    for(const p of (D.invPlatforms||[])){
+      if(!p.isRobo) continue;
+      const stats = invRoboPlatformStats(p);
+      const val = stats.hasValue? stats.value : Math.abs(stats.costBasis);
+      if(val<=0) continue;
+      const k = roboKeyFn(p) || '—';
+      map[k] = (map[k]||0) + val;
+    }
   }
   return Object.entries(map).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);
 }
@@ -7633,14 +8058,14 @@ function showInvCsvErrors(errors){
 }
 
 /* ---- Investments page ---- */
-function invKpiCard(label, value, cls){
-  return `<div class="kpi"><div class="kpi-label">${esc(label)}</div><div class="kpi-value ${cls||''}">${value}</div></div>`;
+function invKpiCard(label, value, cls, onClick){
+  return `<div class="kpi${onClick?' click':''}" ${onClick?`style="cursor:pointer" onclick="${onClick}"`:''}><div class="kpi-label">${esc(label)}</div><div class="kpi-value ${cls||''}">${value}</div></div>`;
 }
 // USD leads (bold, the primary figure), SAR follows underneath in a smaller, unstyled line — the
 // consistent order the person asked for everywhere a SAR figure has a USD counterpart.
-function invKpiCardDual(label, sarValue, cls){
+function invKpiCardDual(label, sarValue, cls, onClick){
   const usdValue = sarValue / getInvFxRate();
-  return `<div class="kpi"><div class="kpi-label">${esc(label)}</div>
+  return `<div class="kpi${onClick?' click':''}" ${onClick?`style="cursor:pointer" onclick="${onClick}"`:''}><div class="kpi-label">${esc(label)}</div>
     <div class="kpi-value ${cls||''}">$${fmt2(usdValue)}</div>
     <div class="mut mono" style="font-size:11.5px;margin-top:2px">${money(sarValue)} SAR</div>
   </div>`;
@@ -7659,20 +8084,29 @@ function renderInvestmentsPage(){
       </div>
     </div>`;
   if(invTab==='recon'){ renderInvReconPage(tabs); return; }
-  const platforms = D.invPlatforms||[];
+  const platforms = invPlatformsSorted();
+  const actionablePlatforms = platforms.filter(p=>!p.isRobo);
   const totals = invOwnerTotals();
   const self = totals.filter(t=>t.owner.isSelf);
   const family = totals.filter(t=>!t.owner.isSelf);
   const selfTotal = self.reduce((a,t)=>({cost:a.cost+t.costSar, market:a.market+t.marketSar}), {cost:0,market:0});
   const famTotal = family.reduce((a,t)=>({cost:a.cost+t.costSar, market:a.market+t.marketSar}), {cost:0,market:0});
+  // Robo-Investment platforms carry no position/owner-split machinery — attributed entirely to
+  // the self owner (the typical personal-brokerage-robo-advisor case), so their cost basis and
+  // current value still show up in "Your" totals rather than silently vanishing from them.
+  platforms.filter(p=>p.isRobo).forEach(p=>{
+    const stats = invRoboPlatformStats(p);
+    selfTotal.cost += Math.abs(stats.costBasis);
+    selfTotal.market += stats.hasValue? stats.value : Math.abs(stats.costBasis);
+  });
   const recon = invOwnerReconciliation().filter(r=>r.linked && !r.ok);
-  const xirr = invPortfolioXirr(true);
+  const investedAmount = platforms.reduce((s,p)=> s + (p.outAcc? Math.abs(accountBalance(p.outAcc)) : 0), 0);
   const history = invPortfolioHistory(true);
-  const allocClass = invAllocationBy(p=>p.assetClass, true);
-  const allocPlat = invAllocationBy(p=>{ const pl = invPlatformById(p.platformId); return pl? pl.name : '—'; }, true);
+  const allocClass = invAllocationBy(p=>p.assetClass, true, ()=>'Stocks');
+  const allocPlat = invAllocationBy(p=>{ const pl = invPlatformById(p.platformId); return pl? pl.name : '—'; }, true, (p)=>p.name);
   document.getElementById('app').innerHTML = tabs + `
     <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <div class="mut" style="font-size:12.5px;max-width:540px">Cost basis is what actually left your bank (in SAR). Prices are logged in each asset's own currency and converted at your USD rate. Ownership shares are derived from units, so they update themselves whenever anyone buys more.</div>
+      <div class="mut" style="font-size:12.5px;flex:1;min-width:280px">Cost basis is what actually left your bank (in SAR). Prices are logged in each asset's own currency and converted at your USD rate. Ownership shares are derived from units, so they update themselves whenever anyone buys more.</div>
       <div class="row" style="gap:6px;flex-wrap:wrap;align-items:flex-end">
         <div style="width:140px"><label class="fl">USD → SAR</label><input type="number" step="0.0001" value="${getInvFxRate()}" onchange="setInvFxRate(this.value).then(function(){ renderInvestmentsPage(); toast('Rate saved — synced to all devices ✓'); })"></div>
         <div style="width:160px"><label class="fl">Management fee %</label><input type="number" step="0.01" min="0" max="100" value="${getInvMgmtFeePct()}" title="Remembered default, applied to family owners on new transactions" onchange="setInvMgmtFeePct(this.value).then(function(){ renderInvestmentsPage(); toast('Default fee saved ✓'); })"></div>
@@ -7680,7 +8114,6 @@ function renderInvestmentsPage(){
         <button class="btn ghost sm" onclick="openInvOwners()">👥 Owners</button>
         <button class="btn ghost sm" onclick="openInvAddPlatform()">+ Platform</button>
         <button class="btn ghost sm" onclick="openInvCsvTools()">📁 CSV</button>
-        <button class="btn pri sm" onclick="openInvLogPrices()">💹 Log Prices</button>
       </div>
     </div>
     ${recon.length? `<div class="panel" style="border-left:3px solid var(--red)">
@@ -7692,11 +8125,22 @@ function renderInvestmentsPage(){
       <tbody>${recon.map(r=>`<tr><td>${esc(r.owner.name)}</td><td class="num mono">${money(r.trackerCost)}</td><td class="num mono">${money(r.openingCostSar)}</td><td class="num mono">${money(r.cashSar)}</td><td class="num mono">${money(r.retainedProfitSar)}</td><td class="num mono">${money(r.trackerCapital)}</td><td class="num mono">${money(r.ledgerNet)}</td><td class="num mono r">${money(r.diff)}</td></tr>`).join('')}</tbody></table></div>
     </div>` : ''}
     <div class="cards">
-      ${invKpiCardDual('Your Cost Basis', selfTotal.cost)}
-      ${invKpiCardDual('Your Current Value', selfTotal.market)}
-      ${invKpiCardDual('Your Unrealised P/L', selfTotal.market-selfTotal.cost, moneyClass(selfTotal.market-selfTotal.cost))}
-      ${family.length? invKpiCardDual('Held for Family', famTotal.market) : ''}
-      ${xirr!==null? invKpiCard('Annualised Return', xirr.toFixed(2)+'%', moneyClass(xirr)) : ''}
+      ${invKpiCardDual('Your Cost Basis', selfTotal.cost, '', "openInvKpiBreakdown('cost')")}
+      ${invKpiCardDual('Your Current Value', selfTotal.market, '', "openInvKpiBreakdown('value')")}
+      ${invKpiCardDual('Your Unrealised P/L', selfTotal.market-selfTotal.cost, moneyClass(selfTotal.market-selfTotal.cost), "openInvKpiBreakdown('unrealized')")}
+      ${family.length? invKpiCardDual('Held for Family', famTotal.market, '', "openInvKpiBreakdown('family')") : ''}
+    </div>
+    <div class="cards">
+      ${invKpiCardDual('Invested Amount', investedAmount, '', "openInvKpiBreakdown('invested')")}
+      ${invKpiCardDual('Current Value', selfTotal.market, '', "openInvKpiBreakdown('value')")}
+      ${invKpiCardDual('P/L', selfTotal.market-investedAmount, moneyClass(selfTotal.market-investedAmount), "openInvKpiBreakdown('pl')")}
+    </div>
+    <div class="panel noprint row" style="gap:6px;flex-wrap:wrap">
+      <button class="btn ghost sm" ${!actionablePlatforms.length?'disabled':''} onclick="invStartPlatformAction('position')">+ Position</button>
+      <button class="btn ghost sm" ${!actionablePlatforms.length?'disabled':''} onclick="invStartPlatformAction('deposit')" title="Money wired from your bank onto a platform">↓ Deposit</button>
+      <button class="btn ghost sm" ${!actionablePlatforms.length?'disabled':''} onclick="invStartPlatformAction('withdrawal')" title="Money taken off a platform back to your bank">↑ Withdraw</button>
+      <button class="btn ghost sm" ${!actionablePlatforms.length?'disabled':''} onclick="invStartPlatformAction('transfer')" title="Move cash between platforms">⇄ Transfer</button>
+      <button class="btn ghost sm" ${!actionablePlatforms.length?'disabled':''} onclick="invStartPlatformAction('cashlog')">Cash log</button>
     </div>
     ${platforms.length? platforms.map(p=>renderInvPlatformSection(p)).join('') : '<div class="panel empty">No platforms yet — click + Platform to add one.</div>'}
     ${renderInvAssetRollup()}
@@ -7723,36 +8167,37 @@ function renderInvestmentsPage(){
 // several positions reconciled last week and one touched yesterday should read as "yesterday",
 // not silently stay stuck on whichever field happens to be checked first.
 /* ---- Reconciliation: combined CSV export/import for batch updates ----
-   One file covers every platform in one pass — every position's statement units, plus each
-   platform's cash line — following the same convention as the price-log CSV: reference columns
-   plus a single writable "New statement value" column, so import behaviour stays predictable
-   across the app rather than each CSV tool inventing its own shape. A blank cell on import is
-   left untouched (not treated as "clear this entry"), same reasoning as the price CSV: the
-   export always contains current values, so a truly blank cell most likely means "I didn't
-   check this line today," not "erase what's there." */
+   One file covers every platform in one pass — every position's statement units AND its price,
+   plus each platform's cash line — following one convention across both: reference columns plus
+   writable "New Statement Value" / "New Price" columns, so import behaviour stays predictable.
+   A blank cell on import is left untouched (not treated as "clear this entry"): the export
+   always contains current values, so a truly blank cell most likely means "I didn't check this
+   one today," not "erase what's there." Cash lines have no price columns — cash isn't priced. */
 function invReconCSVRows(){
   const rows = [];
   (D.invPlatforms||[]).forEach(p=>{
     const r = invPlatformReconciliation(p.id);
     r.positions.forEach(x=>{
+      const val = invLatestValuation(x.pos.id);
       rows.push({platform:p.name, position:x.pos.name, ticker:x.pos.ticker||'', type:'Position',
         tracker:invFmtUnits(x.trackerUnits), lastStatement:x.stmtUnits===null?'':invFmtUnits(x.stmtUnits),
-        lastChecked:x.pos.stmtDate||''});
+        lastChecked:x.pos.stmtDate||'', lastPrice: val?Number(val.price):null, lastPriceDate: val?val.date:null});
     });
     rows.push({platform:p.name, position:'Cash (USD)', ticker:'', type:'Cash',
       tracker:fmt2(r.trackerCashUsd), lastStatement:r.stmtCashUsd===null?'':fmt2(r.stmtCashUsd),
-      lastChecked:p.stmtDate||''});
+      lastChecked:p.stmtDate||'', lastPrice:null, lastPriceDate:null});
   });
   return rows;
 }
 function downloadInvReconCSV(){
   const rows = invReconCSVRows();
-  const header = ['Platform','Position','Ticker','Type','Tracker Amount','Last Statement Value','Last Checked','New Statement Value'];
+  const header = ['Platform','Position','Ticker','Type','Tracker Amount','Last Statement Value','Last Checked','New Statement Value','Last Price','Last Price Date','New Price'];
   const lines = [header.map(csvEscape).join(',')];
-  rows.forEach(r=> lines.push([r.platform, r.position, r.ticker, r.type, r.tracker, r.lastStatement, r.lastChecked, ''].map(csvEscape).join(',')));
+  rows.forEach(r=> lines.push([r.platform, r.position, r.ticker, r.type, r.tracker, r.lastStatement, r.lastChecked, '',
+    r.lastPrice!==null?r.lastPrice:'', r.lastPriceDate||'', ''].map(csvEscape).join(',')));
   const blob = new Blob([lines.join('\n')], {type:'text/csv'});
   const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'LedgerOS reconciliation - '+todayStr()+'.csv'; dl.click();
-  toast('Exported '+rows.length+' line(s) to CSV — fill in "New Statement Value" and re-import');
+  toast('Exported '+rows.length+' line(s) to CSV — fill in "New Statement Value" and/or "New Price" and re-import');
 }
 async function handleInvReconImport(inputEl){
   const file = inputEl.files[0]; if(!file) return;
@@ -7761,29 +8206,40 @@ async function handleInvReconImport(inputEl){
     const rows = csvToObjects(reader.result);
     inputEl.value = '';
     if(!rows.length){ toast('No rows found in that CSV', true); return; }
-    let saved = 0, blank = 0, unmatched = 0;
+    const priceDate = window._invPriceImportDate || todayStr();
+    let saved = 0, priced = 0, blank = 0, unmatched = 0;
     for(const r of rows){
       const platformName = (r['platform']||'').trim();
       const ticker = (r['ticker']||'').trim();
       const posName = (r['position']||'').trim();
       const type = (r['type']||'').trim().toLowerCase();
-      const raw = r['new statement value'];
+      const rawStmt = r['new statement value'];
+      const rawPrice = r['new price'];
       const plat = (D.invPlatforms||[]).find(p=>p.name.trim().toLowerCase()===platformName.toLowerCase());
       if(!plat){ unmatched++; continue; }
-      if(String(raw||'').trim()===''){ blank++; continue; } // blank = leave untouched, not a clear
-      if(type==='cash'){
-        await saveInvPlatformStmtCash(plat.id, raw);
-      } else {
-        const pos = invPositionsForPlatform(plat.id).find(p=>
-          (ticker && (p.ticker||'').trim().toLowerCase()===ticker.toLowerCase()) ||
-          (!ticker && p.name.trim().toLowerCase()===posName.toLowerCase()));
-        if(!pos){ unmatched++; continue; }
-        await saveInvPositionStmtUnits(pos.id, raw);
+      const pos = type==='cash'? null : invPositionsForPlatform(plat.id).find(p=>
+        (ticker && (p.ticker||'').trim().toLowerCase()===ticker.toLowerCase()) ||
+        (!ticker && p.name.trim().toLowerCase()===posName.toLowerCase()));
+      if(type!=='cash' && !pos){ unmatched++; continue; }
+      let touchedThisRow = false;
+      if(String(rawStmt||'').trim()!==''){
+        if(type==='cash') await saveInvPlatformStmtCash(plat.id, rawStmt);
+        else await saveInvPositionStmtUnits(pos.id, rawStmt);
+        saved++; touchedThisRow = true;
       }
-      saved++;
+      if(type!=='cash' && String(rawPrice||'').trim()!==''){
+        const price = Number(rawPrice);
+        if(price>0){
+          const existing = (D.invValuations||[]).find(v=>v.positionId===pos.id && v.date===priceDate);
+          if(existing){ existing.price = price; await persistInvValuation(existing); }
+          else { const rec = {id: invNextId(D.invValuations), positionId:pos.id, date:priceDate, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
+          priced++; touchedThisRow = true;
+        }
+      }
+      if(!touchedThisRow) blank++;
     }
     renderInvestmentsPage();
-    toast(saved+' line(s) updated ✓'+(blank?' · '+blank+' left blank (untouched)':'')+(unmatched?' · '+unmatched+' row(s) didn\'t match':''));
+    toast((saved+priced)+' update(s) applied ✓'+(saved?' · '+saved+' statement value(s)':'')+(priced?' · '+priced+' price(s)':'')+(blank?' · '+blank+' row(s) left blank (untouched)':'')+(unmatched?' · '+unmatched+' row(s) didn\'t match':''));
   };
   reader.readAsText(file);
 }
@@ -7808,7 +8264,9 @@ function invReconEnterNext(el, ev){
   else if(idx===inputs.length-1) el.blur();
 }
 function renderInvReconPage(tabs){
-  const platforms = D.invPlatforms||[];
+  // Robo-Investment platforms have no per-holding breakdown and no platform-cash tracking to
+  // reconcile against — there's nothing here for them to do.
+  const platforms = invPlatformsSorted().filter(p=>!p.isRobo);
   // A shared column layout across every platform's table, so the Tracker/Statement/Variance
   // columns line up whether a platform holds "BTC" or "Marathon Digital Holdings Inc" — without
   // this, each table auto-sizes to its own longest position name and the columns drift out of
@@ -7855,13 +8313,21 @@ function renderInvReconPage(tabs){
   }).join('');
   document.getElementById('app').innerHTML = tabs + `
     <div class="panel noprint row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <div class="mut" style="font-size:12.5px;max-width:520px">Enter what each platform's own statement shows — the unit count for every position and the USD cash balance — and anything that disagrees with the tracker is flagged. Entries are saved and synced as you type them, so you can come back to a half-finished check. Press Enter to jump straight to the next field.</div>
-      <div class="row" style="gap:6px">
+      <div class="mut" style="font-size:12.5px;flex:1;min-width:280px">Enter what each platform's own statement shows — the unit count for every position, the USD cash balance, and current prices — and anything that disagrees with the tracker is flagged. Entries are saved and synced as you type them. Press Enter to jump straight to the next field.</div>
+      <div class="row" style="gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div style="width:150px"><label class="fl">Price date (for CSV)</label><input type="date" value="${esc(window._invPriceImportDate||todayStr())}" onchange="window._invPriceImportDate=this.value"></div>
         <button class="btn ghost sm" onclick="downloadInvReconCSV()">⬇ Export CSV</button>
         <label class="btn ghost sm" style="cursor:pointer">⬆ Import CSV<input type="file" accept=".csv" style="display:none" onchange="handleInvReconImport(this)"></label>
       </div>
     </div>
-    ${body || '<div class="panel empty">No platforms yet — add one from the Portfolio tab.</div>'}`;
+    ${body || '<div class="panel empty">No platforms yet — add one from the Portfolio tab.</div>'}
+    <div class="panel">
+      <h3 style="margin-top:0">💹 Prices</h3>
+      <div class="mut" style="font-size:12px;margin-bottom:12px">Set a price directly below for a quick check-in, or use the CSV export/import above for a full batch. Rows in red haven't been updated in over ${INV_PRICE_STALE_DAYS} days.</div>
+      <div style="overflow-x:auto;max-height:320px;overflow-y:auto"><table style="min-width:460px"><thead><tr><th>Position</th><th>Last updated</th><th>Date</th><th class="num">New price</th></tr></thead>
+      <tbody id="invManualPriceTable"></tbody></table></div>
+    </div>`;
+  renderInvManualPriceTable();
 }
 async function saveInvPositionStmtUnits(posId, val){
   const pos = invPositionById(posId); if(!pos) return;
@@ -7941,6 +8407,101 @@ function toggleInvPlatformExpanded(id){
 }
 // Market value held on one platform, split into "you" and "family" — shown on the collapsed
 // header so collapsing a platform never hides the numbers that matter day to day.
+// Alphabetical, case-insensitive, everywhere platforms are listed — Portfolio tab, Reconciliation
+// tab, and the action picker (item 5) — so the order is the same no matter where you're looking.
+function invPlatformsSorted(){
+  return (D.invPlatforms||[]).slice().sort((a,b)=> a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+}
+// Item 5: the per-platform action buttons (+ Position, Deposit, Withdraw, Transfer, Cash log)
+// moved up to page level to cut clutter — each opens a platform picker first (skipped when
+// there's only one platform to pick from), then the same underlying opener as before.
+const INV_PLATFORM_ACTIONS = {
+  position:  {label:'+ Position',  open: platformId => openInvAddPosition(platformId)},
+  deposit:   {label:'↓ Deposit',   open: platformId => openInvCashModal(platformId,'deposit')},
+  withdrawal:{label:'↑ Withdraw',  open: platformId => openInvCashModal(platformId,'withdrawal')},
+  transfer:  {label:'⇄ Transfer',  open: platformId => openInvCashModal(platformId,'transfer')},
+  cashlog:   {label:'Cash log',    open: platformId => openInvCashLog(platformId)},
+};
+// Deposit/Withdraw/Transfer/+Position/Cash log all revolve around per-holding positions and
+// platform cash — neither of which exists for a Robo-Investment platform, so it's left out of
+// the picker entirely rather than offering an action that can't actually do anything there.
+function invActionablePlatformsSorted(){
+  return invPlatformsSorted().filter(p=>!p.isRobo);
+}
+function invStartPlatformAction(action){
+  const platforms = invActionablePlatformsSorted();
+  if(!platforms.length) return; // buttons are disabled in this state; nothing to do
+  if(platforms.length===1){ INV_PLATFORM_ACTIONS[action].open(platforms[0].id); return; }
+  openInvPlatformPicker(action);
+}
+function openInvPlatformPicker(action){
+  const platforms = invActionablePlatformsSorted();
+  const def = INV_PLATFORM_ACTIONS[action];
+  showModal(`
+    <h3 style="margin-top:0">${esc(def.label)} — which platform?</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${platforms.map(p=>`<button class="btn ghost" style="justify-content:flex-start;text-align:left" onclick="invPlatformPickerChoose('${action}', ${p.id})">🏦 ${esc(p.name)}</button>`).join('')}
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" onclick="closeModal()">Cancel</button></div>`, true);
+}
+function invPlatformPickerChoose(action, platformId){
+  closeModal();
+  INV_PLATFORM_ACTIONS[action].open(platformId);
+}
+
+// Robo-Investment platforms carry no positions — cost basis is simply the net of the platform's
+// own Out/In account balances (however much has actually left the bank into this platform, minus
+// whatever's come back), matching the same "money still invested" convention used everywhere
+// else in the app (e.g. the owner reconciliation bridge). Current value is whatever was last
+// manually logged.
+function invRoboPlatformStats(p){
+  const outBal = p.outAcc? Math.abs(accountBalance(p.outAcc)) : 0;
+  const inBal = p.inAcc? Math.abs(accountBalance(p.inAcc)) : 0;
+  const costBasis = outBal - inBal;
+  const value = (p.roboValue===null||p.roboValue===undefined)? null : Number(p.roboValue);
+  // "Cost basis" is a magnitude — how much has actually gone into the platform — so it should
+  // never be negative in the Gain/Loss math even though Out−In can legitimately come out
+  // negative (usually because the Out/In accounts are assigned to the wrong roles for this
+  // platform, or activity unrelated to it landed on one of them). Subtracting a NEGATIVE cost
+  // basis from the current value ADDS it instead of subtracting it — that was the bug: a
+  // platform showing Invested 0.00 / Withdrawn 5,600.00 computed Gain as value − (−5600) =
+  // value + 5600, wildly inflating it, instead of the value − 5600 the person actually invested.
+  // costBasisFlagged marks the case so the UI can surface it as worth checking, rather than
+  // silently normalizing away what might be a genuine account-assignment mistake.
+  const costBasisFlagged = costBasis<0;
+  const gain = value!==null? value-Math.abs(costBasis) : null;
+  return {costBasis, costBasisFlagged, value, gain, hasValue: value!==null};
+}
+async function saveInvRoboValue(platformId, val){
+  const price = Number(val);
+  if(!(price>0)) return;
+  const p = invPlatformById(platformId); if(!p) return;
+  const date = todayStr();
+  // One log entry per date, same convention as position price logging — re-saving the same day
+  // corrects that entry rather than stacking a second one for it.
+  const existing = (D.invRoboValueLog||[]).find(r=>r.platformId===platformId && r.date===date);
+  if(existing){ existing.value = price; await persistInvRoboValueLog(existing); }
+  else { const rec = {id: invNextId(D.invRoboValueLog), platformId, date, value:price, updated_at:null}; D.invRoboValueLog.push(rec); await persistInvRoboValueLog(rec); }
+  p.roboValue = price;
+  p.roboValueDate = date;
+  await persistInvPlatform(p);
+  renderInvestmentsPage();
+  toast('Portfolio value saved ✓');
+}
+async function persistInvRoboValueLog(r){
+  const base = r.updated_at||null; r.updated_at = nowISO();
+  await syncWrite('pd_inv_robo_value_log','upsert',{id:r.id, platform_id:r.platformId, entry_date:r.date, value:r.value}, base);
+  persistLocal();
+}
+// The most recently logged value for this Robo platform at or before `date`, or null if nothing
+// was logged yet by then — the same "point in time" pattern used for position price lookups, so
+// the history chart can only ever show a real trend, never an invented one before logging began.
+function invRoboValueAsOf(platformId, date){
+  const rows = (D.invRoboValueLog||[]).filter(r=>r.platformId===platformId && r.date<=date);
+  if(!rows.length) return null;
+  return rows.reduce((latest,r)=> (!latest || r.date>latest.date)? r : latest, null).value;
+}
+
 function invPlatformOwnerTotals(platformId){
   const selfId = invSelfOwnerId();
   let selfMarket=0, famMarket=0;
@@ -7956,9 +8517,11 @@ function invPlatformOwnerTotals(platformId){
   return {selfMarket, famMarket};
 }
 function renderInvPlatformSection(p){
+  if(p.isRobo) return renderInvRoboPlatformSection(p);
   const positions = invPositionsForPlatform(p.id);
   const cash = invPlatformCash(p.id);
   const expanded = invExpandedPlatforms.has(p.id);
+  const fx = getInvFxRate();
   const rows = positions.map(pos=>{
     const v = computePositionValuation(pos);
     const ownerTxt = Object.keys(v.byOwner).filter(k=>v.byOwner[k].units>0).map(k=>{
@@ -7972,6 +8535,7 @@ function renderInvPlatformSection(p){
       <td class="num mono">${money(v.totalCostSar)}</td>
       <td class="num mono">${v.hasValuation? money(v.price)+' '+esc(pos.currency) : '—'}</td>
       <td class="num mono">${v.hasValuation? money(v.marketSar) : '—'}</td>
+      <td class="num mono">${v.hasValuation? '$'+fmt2(v.marketSar/fx) : '—'}</td>
       <td class="num mono ${v.hasValuation?moneyClass(v.unrealizedSar):''}">${v.hasValuation? money(v.unrealizedSar) : '—'}</td>
       <td class="num mono ${v.hasValuation?moneyClass(v.unrealizedSar):''}">${invPctText(v.totalCostSar, v.marketSar, v.hasValuation)}</td>
       <td class="num mono ${moneyClass(v.totalRealizedSar)}">${Math.abs(v.totalRealizedSar)>0.005? money(v.totalRealizedSar) : '—'}</td>
@@ -7979,6 +8543,8 @@ function renderInvPlatformSection(p){
   }).join('');
   const tot = positions.reduce((a,pos)=>{ const v=computePositionValuation(pos); return {c:a.c+v.totalCostSar, m:a.m+v.marketSar, r:a.r+v.totalRealizedSar}; }, {c:0,m:0,r:0});
   const owners = invPlatformOwnerTotals(p.id);
+  const portfolioUsd = tot.m/fx;
+  const acctBalTxt = (accId) => accId? money(accountBalance(accId))+' SAR' : '{un-assigned}';
   return `<div class="panel">
     <div class="row" style="justify-content:space-between;align-items:center">
       <div class="row click" style="cursor:pointer;flex-wrap:wrap;gap:10px" onclick="toggleInvPlatformExpanded(${p.id})">
@@ -7986,32 +8552,71 @@ function renderInvPlatformSection(p){
         <span class="mut" style="font-size:12px">${expanded?'▾ Collapse':'▸ Expand'}</span>
         ${!expanded? `<span class="mono" style="font-size:12.5px">
             <span class="${cash.totalUsd<-0.005?'r':''}">$${fmt2(cash.totalUsd)} cash</span>
-            <span class="mut"> · Yours: </span>$${fmt2(owners.selfMarket/getInvFxRate())}
-            ${owners.famMarket>0.005? `<span class="mut"> · Family: </span>$${fmt2(owners.famMarket/getInvFxRate())}` : ''}
+            <span class="mut"> · Portfolio: </span>$${fmt2(portfolioUsd)}
+            <span class="mut"> · Yours: </span>$${fmt2(owners.selfMarket/fx)}
+            ${owners.famMarket>0.005? `<span class="mut"> · Family: </span>$${fmt2(owners.famMarket/fx)}` : ''}
           </span>` : ''}
       </div>
       <div class="row noprint" style="gap:6px">
-        <button class="btn ghost sm" onclick="openInvAddPosition(${p.id})">+ Position</button>
-        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'deposit')" title="Money wired from your bank onto this platform">↓ Deposit</button>
-        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'withdrawal')" title="Money taken off this platform back to your bank">↑ Withdraw</button>
-        <button class="btn ghost sm" onclick="openInvCashModal(${p.id},'transfer')" title="Move cash to another platform">⇄ Transfer</button>
-        <button class="btn ghost sm" onclick="openInvCashLog(${p.id})">Cash log</button>
         <button class="btn ghost sm" onclick="openInvEditPlatform(${p.id})">✎</button>
       </div>
     </div>
-    ${expanded? `<div class="row" style="justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:6px">
+    ${expanded? `<div class="row" style="justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:6px;flex-wrap:wrap;gap:6px">
       <div style="font-size:12.5px">💵 Cash balance
         <b class="mono ${cash.totalUsd<-0.005?'r':''}" style="margin-left:6px">$${fmt2(cash.totalUsd)}</b>
-        <span class="mut">· ${money(cash.totalUsd*getInvFxRate())} SAR</span>
+        <span class="mut">· ${money(cash.totalUsd*fx)} SAR</span>
         ${Math.abs(cash.profitUsd)>0.005? `<span class="mut" title="Realised gain still sitting on the platform. It has never passed through your bank, so it is excluded from the reconciliation against the Invested/Withdrawn accounts."> · of which $${fmt2(cash.profitUsd)} is realised profit</span>`:''}
       </div>
+      <div style="font-size:12.5px">📈 Portfolio value <b class="mono" style="margin-left:6px">$${fmt2(portfolioUsd)}</b><span class="mut">· ${money(tot.m)} SAR</span></div>
     </div>
-    <div style="overflow-x:auto"><table style="min-width:860px"><thead><tr>
-      <th>Position</th><th class="num">Units</th><th class="num">Cost (SAR)</th><th class="num">Price</th><th class="num">Value (SAR)</th><th class="num">Unrealised</th><th class="num">%</th><th class="num">Realised</th>
+    <div class="mut" style="font-size:11.5px;margin-bottom:10px">
+      Invested (Out): <b class="mono">${acctBalTxt(p.outAcc)}</b>
+      &nbsp;·&nbsp; Withdrawn (In): <b class="mono">${acctBalTxt(p.inAcc)}</b>
+      &nbsp;·&nbsp; Profit: <b class="mono">${acctBalTxt(p.profitAcc)}</b>
+    </div>
+    <div style="overflow-x:auto"><table style="min-width:980px"><thead><tr>
+      <th>Position</th><th class="num">Units</th><th class="num">Cost (SAR)</th><th class="num">Price</th><th class="num">Value (SAR)</th><th class="num">Value (USD)</th><th class="num">Unrealised</th><th class="num">%</th><th class="num">Realised</th>
     </tr></thead>
-    <tbody>${rows || '<tr><td colspan="8" class="empty">No positions yet</td></tr>'}</tbody>
-    ${positions.length? `<tfoot><tr style="font-weight:700"><td>Total</td><td></td><td class="num mono">${money(tot.c)}</td><td></td><td class="num mono">${money(tot.m)}</td><td class="num mono ${moneyClass(tot.m-tot.c)}">${money(tot.m-tot.c)}</td><td class="num mono">${invPctText(tot.c,tot.m,true)}</td><td class="num mono ${moneyClass(tot.r)}">${Math.abs(tot.r)>0.005?money(tot.r):'—'}</td></tr></tfoot>`:''}
+    <tbody>${rows || '<tr><td colspan="9" class="empty">No positions yet</td></tr>'}</tbody>
+    ${positions.length? `<tfoot><tr style="font-weight:700"><td>Total</td><td></td><td class="num mono">${money(tot.c)}</td><td></td><td class="num mono">${money(tot.m)}</td><td class="num mono">$${fmt2(portfolioUsd)}</td><td class="num mono ${moneyClass(tot.m-tot.c)}">${money(tot.m-tot.c)}</td><td class="num mono">${invPctText(tot.c,tot.m,true)}</td><td class="num mono ${moneyClass(tot.r)}">${Math.abs(tot.r)>0.005?money(tot.r):'—'}</td></tr></tfoot>`:''}
     </table></div>` : ''}
+  </div>`;
+}
+function renderInvRoboPlatformSection(p){
+  const expanded = invExpandedPlatforms.has(p.id);
+  const fx = getInvFxRate();
+  const stats = invRoboPlatformStats(p);
+  const gainClass = stats.gain!==null? moneyClass(stats.gain) : '';
+  const acctBalTxt = (accId) => accId? money(accountBalance(accId))+' SAR' : '{un-assigned}';
+  const stale = p.roboValueDate && daysBetweenDates(p.roboValueDate, todayStr())>INV_PRICE_STALE_DAYS;
+  return `<div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="row click" style="cursor:pointer;flex-wrap:wrap;gap:10px" onclick="toggleInvPlatformExpanded(${p.id})">
+        <h3 style="margin:0">🤖 ${esc(p.name)} <span class="badge">Robo-Investment</span></h3>
+        <span class="mut" style="font-size:12px">${expanded?'▾ Collapse':'▸ Expand'}</span>
+        ${!expanded? `<span class="mono" style="font-size:12.5px">
+            <span class="mut">Portfolio: </span>$${fmt2((stats.value||0)/fx)}
+          </span>` : ''}
+      </div>
+      <div class="row noprint" style="gap:6px">
+        <button class="btn ghost sm" onclick="openInvEditPlatform(${p.id})">✎</button>
+      </div>
+    </div>
+    ${expanded? `<div class="mut" style="font-size:11.5px;margin:10px 0">
+      Invested (Out): <b class="mono">${acctBalTxt(p.outAcc)}</b>
+      &nbsp;·&nbsp; Withdrawn (In): <b class="mono">${acctBalTxt(p.inAcc)}</b>
+      &nbsp;·&nbsp; Profit: <b class="mono">${acctBalTxt(p.profitAcc)}</b>
+    </div>
+    <table><tbody>
+      <tr><td>Cost basis (Out − In)</td><td class="num mono ${stats.costBasisFlagged?'r':''}">${money(stats.costBasis)}</td></tr>
+      ${stats.costBasisFlagged? `<tr><td colspan="2" class="mut" style="font-size:10.5px;color:var(--red)">⚠ Withdrawn is larger than Invested — this usually means the Invested/Withdrawn accounts are assigned the wrong way round for this platform. Gain/Loss below uses ${money(Math.abs(stats.costBasis))} (the absolute amount) as the basis until that's corrected.</td></tr>` : ''}
+      <tr><td>Current value
+          <div class="mut" style="font-size:10.5px;${stale?'color:var(--red)':''}">${p.roboValueDate? 'as of '+esc(p.roboValueDate) : 'never updated'}</div>
+        </td>
+        <td class="num" style="width:160px"><input type="number" step="0.01" style="width:100%;text-align:right" placeholder="${stats.hasValue?money(stats.value):'enter value'}" onblur="saveInvRoboValue(${p.id}, this.value)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }"></td>
+      </tr>
+      <tr style="background:var(--chip)"><td style="font-weight:700">Gain / Loss</td><td class="num mono ${gainClass}" style="font-weight:700">${stats.hasValue? money(stats.gain) : '—'}</td></tr>
+    </tbody></table>` : ''}
   </div>`;
 }
 function renderInvAssetRollup(){
@@ -8061,7 +8666,7 @@ function invAccountPickerField(pid, label, currentAcc, field, draftVar){
 function openInvAddPlatform(){ openInvPlatformModal(null); }
 function openInvEditPlatform(id){ openInvPlatformModal(invPlatformById(id)); }
 function openInvPlatformModal(p){
-  window._invPlatDraft = p? {...p} : {id:null, name:'', outAcc:null, inAcc:null, profitAcc:null};
+  window._invPlatDraft = p? {...p} : {id:null, name:'', outAcc:null, inAcc:null, profitAcc:null, isRobo:false, roboValue:null, roboValueDate:null};
   const d = window._invPlatDraft;
   showModal(`
     <h3 style="margin-top:0">${d.id?'Edit':'New'} Platform</h3>
@@ -8069,12 +8674,17 @@ function openInvPlatformModal(p){
     ${invAccountPickerField('platOut','Invested (Out) account', d.outAcc, 'outAcc', '_invPlatDraft')}
     ${invAccountPickerField('platIn','Withdrawn (In) account', d.inAcc, 'inAcc', '_invPlatDraft')}
     ${invAccountPickerField('platProfit','Profit account', d.profitAcc, 'profitAcc', '_invPlatDraft')}
+    <label style="display:flex;align-items:center;gap:8px;margin:14px 0;font-size:13px;cursor:pointer">
+      <input type="checkbox" class="chk" ${d.isRobo?'checked':''} onchange="window._invPlatDraft.isRobo=this.checked; renderInvPlatformModal()"> Robo-Investment platform
+    </label>
+    <div class="mut" style="font-size:11.5px;margin-top:-8px;margin-bottom:14px">No per-holding breakdown — just a total portfolio value you update yourself. Cost basis is worked out automatically from the Invested/Withdrawn accounts above, so no separate deposit/buy tracking is needed. Excluded from Reconciliation and the +Position/Deposit/Withdraw/Transfer/Cash log actions, since none of those apply here.</div>
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
       ${d.id? `<button class="btn del sm" style="margin-right:auto" onclick="deleteInvPlatform(${d.id})">Delete</button>`:''}
       <button class="btn ghost" onclick="closeModal()">Cancel</button>
       <button class="btn pri" onclick="saveInvPlatform()">Save</button>
     </div>`);
 }
+function renderInvPlatformModal(){ openInvPlatformModal(window._invPlatDraft); }
 async function saveInvPlatform(){
   const d = window._invPlatDraft;
   if(!String(d.name||'').trim()){ toast('Name is required', true); return; }
@@ -8893,61 +9503,6 @@ async function saveInvPositionTransfer(){
   toast('Transferred '+invFmtUnits(arriving)+' units'+(fee>0?' ('+invFmtUnits(fee)+' fee)':'')+' ✓');
 }
 
-/* ---- Investments: CSV-based price logging ----
-   Manual per-position price entry didn't scale once there were more than a handful of
-   positions, so this generates a CSV instead: export the current state (including today's
-   prices, if any are already logged), edit only the price column in a spreadsheet, re-import.
-   Positions left blank on import keep their last known price — a blank is "I didn't check this
-   one today," not "clear the price." */
-function invPriceLogCSVRows(){
-  return invActivePositions().map(p=>{
-    const st = computePositionState(p.id);
-    const val = invLatestValuation(p.id);
-    return {pos:p, units:st.totalUnits, lastPrice: val?Number(val.price):null, lastDate: val?val.date:null};
-  });
-}
-function downloadInvPriceLogCSV(){
-  const rows = invPriceLogCSVRows();
-  const header = ['Position','Ticker','Platform','Units Held','Last Price','Last Price Date','Amount Total','New Price'];
-  const lines = [header.map(csvEscape).join(',')];
-  rows.forEach(r=>{
-    const plat = invPlatformById(r.pos.platformId);
-    const total = r.lastPrice!==null? r.units*r.lastPrice : '';
-    lines.push([r.pos.name, r.pos.ticker||'', plat?plat.name:'', r.units, r.lastPrice!==null?r.lastPrice:'', r.lastDate||'', total, ''].map(csvEscape).join(','));
-  });
-  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
-  const dl = document.createElement('a'); dl.href = URL.createObjectURL(blob); dl.download = 'LedgerOS prices - '+todayStr()+'.csv'; dl.click();
-  toast('Exported '+rows.length+' position(s) to CSV — fill in "New Price" and re-import');
-}
-async function handleInvPriceLogImport(inputEl){
-  const file = inputEl.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const rows = csvToObjects(reader.result);
-    inputEl.value = '';
-    if(!rows.length){ toast('No rows found in that CSV', true); return; }
-    const date = window._invPriceImportDate || todayStr();
-    let saved = 0, blank = 0, unmatched = 0;
-    for(const r of rows){
-      const name = (r['position']||'').trim();
-      const ticker = (r['ticker']||'').trim();
-      const priceRaw = r['new price'];
-      const pos = (D.invPositions||[]).find(p=>
-        (ticker && (p.ticker||'').trim().toLowerCase()===ticker.toLowerCase()) ||
-        (!ticker && p.name.trim().toLowerCase()===name.toLowerCase()));
-      if(!pos){ unmatched++; continue; }
-      const price = Number(priceRaw);
-      if(!priceRaw || !(price>0)){ blank++; continue; } // blank = keep last known price, not a clear
-      const existing = (D.invValuations||[]).find(v=>v.positionId===pos.id && v.date===date);
-      if(existing){ existing.price = price; await persistInvValuation(existing); }
-      else { const rec = {id: invNextId(D.invValuations), positionId:pos.id, date, price, updated_at:null}; D.invValuations.push(rec); await persistInvValuation(rec); }
-      saved++;
-    }
-    renderInvestmentsPage();
-    toast(saved+' price(s) saved ✓'+(blank?' · '+blank+' left blank (kept last known price)':'')+(unmatched?' · '+unmatched+' row(s) didn\'t match a position':''));
-  };
-  reader.readAsText(file);
-}
 // Whole days between two 'YYYY-MM-DD' strings. Used purely for the "is this price stale"
 // check, so it deliberately ignores time-of-day — a price logged this morning and checked this
 // evening is 0 days old, not a fraction.
@@ -8991,26 +9546,6 @@ function renderInvManualPriceTable(){
     </tr>`;
   }).join('') || '<tr><td colspan="4" class="empty">No active positions</td></tr>';
 }
-function openInvLogPrices(){
-  window._invPriceImportDate = todayStr();
-  const rows = invPriceLogCSVRows();
-  showModal(`
-    <h3 style="margin-top:0">💹 Log Prices</h3>
-    <div class="mut" style="font-size:12px;margin-bottom:12px">Set a price directly below for a quick check-in, or use the CSV export/import for logging many at once. Rows highlighted in red haven't been updated in over ${INV_PRICE_STALE_DAYS} days.</div>
-    <div style="overflow-x:auto;max-height:280px;overflow-y:auto"><table style="min-width:460px"><thead><tr><th>Position</th><th>Last updated</th><th>Date</th><th class="num">New price</th></tr></thead>
-    <tbody id="invManualPriceTable"></tbody></table></div>
-    <h3 style="font-size:13.5px;margin:18px 0 6px">CSV — for logging many at once</h3>
-    <label class="fl">As of date (applied to every price in the import)</label>
-    <input type="date" value="${esc(window._invPriceImportDate)}" onchange="window._invPriceImportDate=this.value" style="margin-bottom:14px">
-    <div class="row" style="gap:8px;margin-bottom:14px">
-      <button class="btn pri sm" onclick="downloadInvPriceLogCSV()">⬇ Export CSV (${rows.length} position${rows.length===1?'':'s'})</button>
-      <label class="btn ghost sm" style="cursor:pointer">⬆ Import CSV<input type="file" accept=".csv" style="display:none" onchange="handleInvPriceLogImport(this)"></label>
-    </div>
-    <div class="mut" style="font-size:11.5px">Columns: Position, Ticker, Platform, Units Held, Last Price, Last Price Date, Amount Total, New Price. Only Position/Ticker (to match the row) and New Price are read on import — the rest is reference.</div>
-    <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" onclick="closeModal()">Close</button></div>`, true);
-  renderInvManualPriceTable();
-}
-
 
 /* ---- Investments: per-owner Arabic statement ---- */
 function openInvOwnerStatement(ownerId){
@@ -10064,7 +10599,176 @@ function renderForecastSettingsPage(){
       ${anyForecastSignFlipActive()? `<div class="mut" style="font-size:11px;margin-bottom:10px;color:var(--red)">⚠ One or more flips are currently active — the Cash Position panel's Closing Balance may not match your real bank balance because of this.</div>` : ''}
       ${renderForecastSignFlipList()}
     </div>
+    <div class="panel">
+      <h3 style="margin:0 0 4px">📸 Forecast Snapshots</h3>
+      <div class="mut" style="font-size:11.5px;margin-bottom:10px">Every time you open the app in a new calendar month, it automatically saves the full projected chain for the horizon below — so months later you can compare what you're seeing now against what was actually planned back then, not just remember it. Take an extra one anytime with the button below.</div>
+      <div class="row" style="align-items:center;gap:10px;margin-bottom:14px">
+        <div><label class="fl">Horizon (months forward)</label><input id="snapHorizonInput" type="number" min="1" step="1" style="width:100px" value="${getForecastSnapshotHorizon()}"></div>
+        <div><label class="fl">&nbsp;</label><button class="btn ghost sm" onclick="saveForecastSnapshotHorizon()">Save</button></div>
+        <div style="margin-left:auto"><label class="fl">&nbsp;</label><button class="btn pri sm" onclick="takeForecastSnapshot('manual').then(()=>renderForecastSettingsPage())">📸 Take Snapshot Now</button></div>
+      </div>
+      ${renderForecastSnapshotList()}
+    </div>
+    <div class="panel">
+      <h3 style="margin:0 0 4px">🔍 Compare a Snapshot</h3>
+      <div class="mut" style="font-size:11.5px;margin-bottom:10px">Pick a snapshot and a month to see what was projected back then next to what's projected now.</div>
+      ${renderForecastSnapshotComparison()}
+    </div>
   `;
+}
+function saveForecastSnapshotHorizon(){
+  const el = document.getElementById('snapHorizonInput');
+  const saved = setForecastSnapshotHorizon(el? el.value : 12);
+  if(el) el.value = saved;
+  toast('Snapshot horizon set to '+saved+' month'+(saved===1?'':'s')+' ✓');
+}
+function renderForecastSnapshotList(){
+  const snaps = (D.forecastSnapshots||[]).slice().sort((a,b)=> b.takenAt<a.takenAt?-1:(b.takenAt>a.takenAt?1:0));
+  if(!snaps.length) return '<div class="mut" style="font-size:12px">No snapshots yet.</div>';
+  return `<table><thead><tr><th>Taken</th><th>Anchor month</th><th>Type</th><th class="num">Months captured</th><th></th></tr></thead>
+    <tbody>${snaps.map(s=>`<tr>
+      <td class="mono">${esc(s.takenAt)}</td>
+      <td>${esc(monthLabel(s.anchorMonth))}</td>
+      <td>${s.kind==='auto'? '<span class="badge">auto</span>' : '<span class="badge pos">manual</span>'}</td>
+      <td class="num mono">${(s.months||[]).length}</td>
+      <td><button class="btn del sm" onclick="deleteForecastSnapshot(${s.id})">🗑</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+let forecastSnapCompareId = null;
+let forecastSnapCompareMonth = null;
+let forecastSnapCompareAgainst = 'now'; // 'now' or 'snapshot'
+let forecastSnapCompareOtherId = null;  // the second snapshot, when comparing snapshot-vs-snapshot
+function setForecastSnapCompare(id, month, against, otherId){
+  if(id!==undefined) forecastSnapCompareId = id? Number(id) : null;
+  if(month!==undefined) forecastSnapCompareMonth = month||null;
+  if(against!==undefined) forecastSnapCompareAgainst = against;
+  if(otherId!==undefined) forecastSnapCompareOtherId = otherId? Number(otherId) : null;
+  renderForecastSettingsPage();
+}
+// One row per Forecast category, "then" vs "now" (or "then" vs "then2" for snapshot-vs-snapshot),
+// mirroring the exact rows the real Cash Position grid shows — this is what actually answers
+// "where does this number come from" and "what caused the change", rather than a single
+// collapsed Closing Balance figure with nothing to check it against.
+function forecastCompareCategoryRows(thenSubrows, nowSubrows){
+  const cats = [...FORECAST_INFLOW_CATS, ...FORECAST_OUTFLOW_CATS];
+  return cats.map(c=>{
+    const then = thenSubrows[c]||0, now = nowSubrows[c]||0;
+    return {catKey:c, label:FORECAST_CATEGORIES[c].label, then, now, diff: now-then};
+  }).filter(r=>Math.abs(r.then)>0.005 || Math.abs(r.now)>0.005);
+}
+function forecastCompareSignFlipWarning(thenFlips, nowFlips){
+  const changed = [];
+  const allKeys = new Set([...Object.keys(thenFlips||{}), ...Object.keys(nowFlips||{})]);
+  allKeys.forEach(k=>{
+    const was = !!(thenFlips||{})[k], is = !!(nowFlips||{})[k];
+    if(was!==is) changed.push(FORECAST_CATEGORIES[k]? FORECAST_CATEGORIES[k].label : k);
+  });
+  if(!changed.length) return '';
+  // An entirely empty "then" object is genuinely ambiguous, not just an edge case: a snapshot
+  // taken before sign-flip tracking existed got backfilled with an empty default the moment the
+  // column was added — indistinguishable, at the database level, from "confirmed nothing was
+  // flipped at that time." There's no way to recover which one it actually was. Claiming a
+  // convention change definitely happened would be asserting something this data can't support —
+  // this only downgrades to the hedged wording in that specific ambiguous case; a "then" snapshot
+  // that DID capture real flip data (even if all false) still gets the confident warning, since
+  // that comparison is trustworthy.
+  const thenIsEmpty = !thenFlips || Object.keys(thenFlips).length===0;
+  if(thenIsEmpty){
+    return `<div class="mut" style="font-size:11.5px;margin:8px 0;color:var(--amber,#b58900)">⚠ This snapshot predates sign-convention tracking, so it isn't possible to confirm whether ${changed.map(esc).join(', ')} were already flipped back then — some of the difference below may or may not be caused by a convention change. If you haven't touched the sign-flip settings (Forecast Settings → Cash Position) since this snapshot was taken, this can be safely ignored.</div>`;
+  }
+  return `<div class="mut" style="font-size:11.5px;margin:8px 0;color:var(--red)">⚠ The sign convention for ${changed.map(esc).join(', ')} has changed since the earlier point being compared — part of the difference below may be caused by that alone, not by any real change to your data.</div>`;
+}
+function renderForecastSnapshotComparison(){
+  const snaps = (D.forecastSnapshots||[]).slice().sort((a,b)=> b.takenAt<a.takenAt?-1:(b.takenAt>a.takenAt?1:0));
+  if(!snaps.length) return '<div class="mut" style="font-size:12px">Take a snapshot first — there\'s nothing to compare yet.</div>';
+  const snap = forecastSnapCompareId? snaps.find(s=>s.id===forecastSnapCompareId) : null;
+  const monthOptions = snap? (snap.months||[]).map(m=>m.month) : [];
+  const targetMonth = forecastSnapCompareMonth && monthOptions.includes(forecastSnapCompareMonth)? forecastSnapCompareMonth : (monthOptions[0]||null);
+  const otherSnaps = snaps.filter(s=>s.id!==(snap&&snap.id));
+  const otherSnap = forecastSnapCompareAgainst==='snapshot' && forecastSnapCompareOtherId? snaps.find(s=>s.id===forecastSnapCompareOtherId) : null;
+
+  let body = '';
+  if(snap && targetMonth){
+    const thenRow = (snap.months||[]).find(m=>m.month===targetMonth) || {closing:0, subrows:{}};
+    const then = thenRow.closing;
+    let nowLabel, now, nowSubrows, nowSignFlips, nowStarting, sourceLabel;
+    if(forecastSnapCompareAgainst==='snapshot' && otherSnap){
+      const otherRow = (otherSnap.months||[]).find(m=>m.month===targetMonth);
+      if(!otherRow){
+        body = `<div class="mut" style="font-size:12px;margin-top:10px">${esc(otherSnap.takenAt)}'s snapshot didn't capture ${esc(monthLabel(targetMonth))} — its horizon didn't reach that far.</div>`;
+      } else {
+        now = otherRow.closing; nowSubrows = otherRow.subrows||{}; nowSignFlips = otherSnap.signFlips||{}; nowStarting = otherRow.starting;
+        nowLabel = 'Projected on '+esc(otherSnap.takenAt);
+      }
+    } else {
+      try{ beginForecastFastPath(); const r = computeMonthlyCashFlow([targetMonth], todayStr().slice(0,7))[0]; now = r.closing; nowSubrows = r.subrows; nowStarting = r.starting; }
+      finally{ endForecastFastPath(); }
+      nowSignFlips = getForecastSignFlips();
+      nowLabel = 'Projected now';
+    }
+    if(now!==undefined){
+      const diff = now - then;
+      const catRows = forecastCompareCategoryRows(thenRow.subrows||{}, nowSubrows||{});
+      const startingDiff = (nowStarting||0) - (thenRow.starting||0);
+      body = `<div class="mut" style="font-size:11px;margin-top:10px">Source: 💰 Bank Accounts — Projected Cash Position, Closing Balance row.</div>
+      ${forecastCompareSignFlipWarning(snap.signFlips||{}, nowSignFlips)}
+      <div style="overflow-x:auto"><table style="margin-top:6px;min-width:420px"><thead><tr><th>Category</th><th class="num">Projected on ${esc(snap.takenAt)}</th><th class="num">${nowLabel}</th><th class="num">Diff</th></tr></thead>
+      <tbody>
+      <tr style="background:var(--chip)"><td>Month Cash Starting Balance</td><td class="num mono">${money0(thenRow.starting||0)}</td><td class="num mono">${money0(nowStarting||0)}</td><td class="num mono ${Math.abs(startingDiff)>0.5?moneyClass(startingDiff):'mut'}">${Math.abs(startingDiff)>0.005?money0(startingDiff):'—'}</td></tr>
+      ${catRows.map(r=>`<tr><td>${esc(r.label)}</td><td class="num mono">${money0(r.then)}</td><td class="num mono">${money0(r.now)}</td><td class="num mono ${Math.abs(r.diff)>0.5?moneyClass(-r.diff):'mut'}">${Math.abs(r.diff)>0.005?money0(r.diff):'—'}</td></tr>`).join('') || ''}</tbody>
+      <tfoot>
+        <tr style="font-weight:700"><td>Closing Balance</td><td class="num mono">${money(then)}</td><td class="num mono">${money(now)}</td><td class="num mono ${moneyClass(diff)}">${money(diff)}</td></tr>
+      </tfoot></table></div>
+      ${renderForecastSnapshotTrendChart(targetMonth)}`;
+    }
+  }
+  return `<div class="row" style="gap:10px;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px"><label class="fl">Snapshot</label><select onchange="setForecastSnapCompare(this.value, undefined, undefined, undefined)">
+      <option value="">Choose…</option>
+      ${snaps.map(s=>`<option value="${s.id}" ${snap&&snap.id===s.id?'selected':''}>${esc(s.takenAt)} — ${esc(monthLabel(s.anchorMonth))} (${s.kind})</option>`).join('')}
+    </select></div>
+    <div style="flex:1;min-width:180px"><label class="fl">Month to compare</label><select ${!snap?'disabled':''} onchange="setForecastSnapCompare(undefined, this.value, undefined, undefined)">
+      ${monthOptions.map(m=>`<option value="${m}" ${targetMonth===m?'selected':''}>${esc(monthLabel(m))}</option>`).join('')}
+    </select></div>
+    <div style="flex:1;min-width:180px"><label class="fl">Compare against</label><select ${!snap?'disabled':''} onchange="setForecastSnapCompare(undefined, undefined, this.value, null)">
+      <option value="now" ${forecastSnapCompareAgainst==='now'?'selected':''}>Current forecast</option>
+      <option value="snapshot" ${forecastSnapCompareAgainst==='snapshot'?'selected':''}>Another snapshot</option>
+    </select></div>
+    ${forecastSnapCompareAgainst==='snapshot'? `<div style="flex:1;min-width:200px"><label class="fl">Other snapshot</label><select onchange="setForecastSnapCompare(undefined, undefined, undefined, this.value)">
+      <option value="">Choose…</option>
+      ${otherSnaps.map(s=>`<option value="${s.id}" ${otherSnap&&otherSnap.id===s.id?'selected':''}>${esc(s.takenAt)} — ${esc(monthLabel(s.anchorMonth))} (${s.kind})</option>`).join('')}
+    </select></div>` : ''}
+  </div>
+  ${body}`;
+}
+// Trend chart: for one target month, how its projected Closing Balance moved across every
+// snapshot that captured it, ending with the live current figure — a plain inline SVG line
+// chart rather than a separate charting dependency, consistent with the rest of the app.
+// Value labels are drawn directly on the chart (not just hover tooltips), since a number you can
+// only see by hovering isn't a number you can actually read on a touch device or at a glance.
+function renderForecastSnapshotTrendChart(targetMonth){
+  const series = forecastSnapshotsCovering(targetMonth).map(s=>({label:s.takenAt, value:forecastSnapshotClosingFor(s, targetMonth)}));
+  let nowClosing;
+  try{ beginForecastFastPath(); nowClosing = computeMonthlyCashFlow([targetMonth], todayStr().slice(0,7))[0].closing; }
+  finally{ endForecastFastPath(); }
+  series.push({label:'Now', value: nowClosing});
+  if(series.length<2) return '';
+  const w=560, h=210, pad=40;
+  const vals = series.map(p=>p.value);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = (max-min)||1;
+  const x = i => pad + i*((w-2*pad)/(series.length-1));
+  const y = v => h-pad - ((v-min)/range)*(h-2*pad-20) - 20; // extra headroom at top for the value labels
+  const points = series.map((p,i)=>`${x(i)},${y(p.value)}`).join(' ');
+  return `<div style="margin-top:14px">
+    <div class="mut" style="font-size:11.5px;margin-bottom:6px">How the projected Closing Balance for ${esc(monthLabel(targetMonth))} has moved across every snapshot that captured it:</div>
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto">
+      <polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      ${series.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.value)}" r="3.5" fill="var(--accent)"><title>${esc(p.label)}: ${money(p.value)}</title></circle>`).join('')}
+      ${series.map((p,i)=>`<text x="${x(i)}" y="${y(p.value)-8}" font-size="10" font-weight="600" text-anchor="middle" fill="var(--fg,#333)">${money0(p.value)}</text>`).join('')}
+      ${series.map((p,i)=>`<text x="${x(i)}" y="${h-10}" font-size="9" text-anchor="middle" fill="var(--muted)">${esc(p.label.slice(5))}</text>`).join('')}
+    </svg>
+  </div>`;
 }
 function renderForecastStatSettingsList(){
   const settings = getForecastStatSettings();
@@ -10288,6 +10992,96 @@ function earliestLedgerMonth(){
 // every column including historical/current, and if your categorization has any gaps, Closing
 // Balance can differ slightly from your real bank balance even with no flips active — see the
 // month-by-month discrepancy row on the panel itself).
+/* ============================= FORECAST SNAPSHOTS =============================
+   Captures the FULL projected chain (not just one figure) for a configurable horizon forward
+   from whenever it's taken, so a later comparison can answer "what did the whole curve look
+   like back then," not only "what did that one month's number used to be."
+
+   Automatic snapshots: since a browser app has no real background process, "automated" here
+   means "the next time you open the app after a new calendar month has started, it silently
+   takes one for you" — at most one automatic snapshot per calendar month, keyed by anchor
+   month. Manual snapshots have no such limit — take as many as you want, whenever you want.
+
+   Size: ~500 bytes per captured month (5 numbers + one subrow per category), so even the
+   default 12-month horizon, kept forever, is a few KB/year — not something that needs pruning. */
+function getForecastSnapshotHorizon(){
+  const v = Number(localStorage.getItem('forecastSnapshotHorizon'));
+  return (v>0 && isFinite(v))? Math.round(v) : 12;
+}
+function setForecastSnapshotHorizon(months){
+  const v = Math.max(1, Math.round(Number(months)||12));
+  localStorage.setItem('forecastSnapshotHorizon', String(v));
+  return v;
+}
+// Builds the {month, starting, inflow, outflow, change, closing, subrows} chain for `horizon`
+// months starting at `anchorMonth`, reusing the exact same engine the Cash Position panel
+// itself uses — so a snapshot can never disagree with what the panel showed at the time.
+function buildForecastSnapshotMonths(anchorMonth, horizon){
+  const months = [];
+  let mk = anchorMonth;
+  for(let i=0;i<horizon;i++){ months.push(mk); mk = nextMonthKeyPlain(mk); }
+  // Same fix as the Closing Balance Watch widget: use the anchored chain (what the grid actually
+  // shows), and wrap in the fast path so a snapshot doesn't re-scan the whole ledger per month.
+  try{ beginForecastFastPath(); return computeMonthlyCashFlow(months, todayStr().slice(0,7)); }
+  finally{ endForecastFastPath(); }
+}
+async function takeForecastSnapshot(kind){
+  const anchorMonth = todayStr().slice(0,7);
+  const horizon = getForecastSnapshotHorizon();
+  const rec = {id: invNextId(D.forecastSnapshots), anchorMonth, takenAt: todayStr(),
+    kind: kind||'manual', months: buildForecastSnapshotMonths(anchorMonth, horizon),
+    signFlips: getForecastSignFlips(), updated_at:null};
+  D.forecastSnapshots.push(rec);
+  await syncWrite('pd_forecast_snapshots','upsert',{id:rec.id, anchor_month:rec.anchorMonth, taken_at:rec.takenAt, kind:rec.kind, months:rec.months, sign_flips:rec.signFlips}, null);
+  persistLocal();
+  return rec;
+}
+async function deleteForecastSnapshot(id){
+  const rec = D.forecastSnapshots.find(s=>s.id===id); if(!rec) return;
+  if(!confirm('Delete the '+esc(rec.kind)+' snapshot from '+esc(rec.takenAt)+'? This cannot be undone.')) return;
+  D.forecastSnapshots = D.forecastSnapshots.filter(s=>s.id!==id);
+  await syncWrite('pd_forecast_snapshots','delete',{id}, rec.updated_at||null);
+  persistLocal();
+  renderForecastSettingsPage();
+}
+// Called once after data finishes loading (see boot()). Takes the automatic monthly snapshot if
+// this calendar month doesn't have one yet, and arms the one-time banner. Deliberately does NOT
+// take a snapshot on a completely fresh install with no ledger history yet — nothing meaningful
+// to compare against, and it would just be noise before the person has done anything.
+let forecastSnapshotBannerMonth = null; // set when a snapshot was just auto-taken THIS load, cleared once shown
+async function checkAutoForecastSnapshot(){
+  if(!D.ledger || !D.ledger.length) return;
+  const anchorMonth = todayStr().slice(0,7);
+  const already = (D.forecastSnapshots||[]).some(s=>s.kind==='auto' && s.anchorMonth===anchorMonth);
+  if(already) return;
+  await takeForecastSnapshot('auto');
+  forecastSnapshotBannerMonth = anchorMonth;
+}
+function forecastSnapshotBannerHTML(){
+  if(!forecastSnapshotBannerMonth) return '';
+  return `<div class="panel noprint" style="background:var(--chip);border-color:var(--accent)">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div>📸 <b>Forecast snapshot taken</b> for ${esc(monthLabel(forecastSnapshotBannerMonth))} — Forecast Settings → Snapshots to view or compare.</div>
+      <button class="x noprint" onclick="dismissForecastSnapshotBanner()" title="Dismiss">✕</button>
+    </div>
+  </div>`;
+}
+function dismissForecastSnapshotBanner(){
+  forecastSnapshotBannerMonth = null;
+  if(screen==='dashboard') renderDashboard();
+}
+// The projected Closing Balance for `targetMonth` as recorded in a given snapshot, or null if
+// that month fell outside the snapshot's captured horizon.
+function forecastSnapshotClosingFor(snapshot, targetMonth){
+  const row = (snapshot.months||[]).find(m=>m.month===targetMonth);
+  return row? row.closing : null;
+}
+// Every snapshot that actually captured `targetMonth`, oldest first — the series a trend chart
+// needs to show how the prediction for one specific month moved over time.
+function forecastSnapshotsCovering(targetMonth){
+  return (D.forecastSnapshots||[]).filter(s=>(s.months||[]).some(m=>m.month===targetMonth))
+    .slice().sort((a,b)=> a.anchorMonth<b.anchorMonth? -1 : (a.anchorMonth>b.anchorMonth?1:(a.takenAt<b.takenAt?-1:1)));
+}
 function computeMonthlyCashFlowPure(months, currentMonth){
   const anchorMonth = earliestLedgerMonth();
   const trueAnchorBalance = 0; // nothing predates the earliest-ever ledger entry, by definition
@@ -11055,6 +11849,16 @@ function renderSettings(){
           <label class="btn ghost sm" style="cursor:pointer">⬆ Restore from backup (JSON)<input type="file" accept=".json" style="display:none" onchange="handleRestoreFile(this)"></label>
         </div>
         <div class="mut" style="font-size:11.5px;margin-top:6px">Restoring replaces everything currently shown in this browser (and in your cloud project, if connected) with the contents of the backup file.</div>
+      </div>
+      <div class="panel">
+        <h3>Idle Session Lock</h3>
+        <div class="mut" style="font-size:12.5px;margin-bottom:14px">If this tab sits unused for this long, it closes itself and stops sending anything, so a forgotten tab can't overwrite newer changes made on another device. You'll get a 60-second warning first, and it will never lock while you have unsaved or unsynced work. Relaunching loads the current version.</div>
+        <div class="row" style="align-items:center">
+          <input id="idleLockMinutesInput" type="number" min="0" step="1" style="width:100px" value="${getIdleLockMinutes()}">
+          <span class="mut" style="font-size:12.5px">minutes (0 = never)</span>
+          <button class="btn pri sm" onclick="saveIdleLockMinutesFromSettings()">Save</button>
+        </div>
+        <div class="mut" style="font-size:11px;margin-top:10px">This setting applies to this device only.</div>
       </div>`},
     coa: {label:'🗂 Chart of Accounts', html: `
       <div class="panel">
@@ -11202,7 +12006,17 @@ async function restoreFromBackup(parsed){
         categories: parsed.categories||(SEED.categories||[]).map(c=>({...c})), subcategories: parsed.subcategories||(SEED.subcategories||[]).map(s=>({...s})),
         provisionGroups: parsed.provisionGroups||[], accrualMappings: parsed.accrualMappings||[], jamiahs: parsed.jamiahs||[],
         forecastPlans: parsed.forecastPlans||{},
-        nameTranslations: parsed.nameTranslations||{}, descrTranslations: parsed.descrTranslations||{} };
+        nameTranslations: parsed.nameTranslations||{}, descrTranslations: parsed.descrTranslations||{},
+        realEstateBuildings: parsed.realEstateBuildings||[], forecastAccountRules: parsed.forecastAccountRules||[],
+        customForecastCategories: parsed.customForecastCategories||[],
+        invOwners: parsed.invOwners||[], invPlatforms: parsed.invPlatforms||[], invPositions: parsed.invPositions||[],
+        invTransactions: parsed.invTransactions||[], invValuations: parsed.invValuations||[], invCashMovements: parsed.invCashMovements||[],
+        invSettings: parsed.invSettings||{}, uiPrefs: parsed.uiPrefs||{}, forecastSnapshots: parsed.forecastSnapshots||[], invRoboValueLog: parsed.invRoboValueLog||[] };
+  // Backfills anything still missing (an older backup file predating a module, for instance) with
+  // the same defaults the app boots with, rather than leaving it undefined — this is exactly the
+  // normalization step that was missing here before, which crashed the cloud-restore path below
+  // the moment a backup lacked one of the newer fields (Real Estate, Smart Rules, Investments, ...).
+  normalizeDataShape(D);
   jvDrafts = parsed.drafts||[];
   saveJVDraftsList();
   rebuildIndex(); persistLocal();
@@ -11213,7 +12027,7 @@ async function restoreFromBackup(parsed){
   }
   const ledgerChunks = Math.ceil(D.ledger.length/250) || 0;
   const budgetChunks = Math.ceil(D.budget.length/250) || 0;
-  const totalSteps = 15 /*deletes*/ + 11 /*small table inserts*/ + ledgerChunks + budgetChunks + 1 /*verify*/;
+  const totalSteps = 17 /*deletes*/ + 12 /*small table inserts*/ + ledgerChunks + budgetChunks + 1 /*verify*/;
   let step = 0;
   const bump = (label) => { step++; updateImportProgress(step, totalSteps, label); };
   showImportProgress('Restoring backup to the cloud…');
@@ -11241,6 +12055,8 @@ async function restoreFromBackup(parsed){
   await SB.from('pd_inv_owners').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_inv_settings').delete().neq('id',-1); bump('Clearing old data');
   await SB.from('pd_ui_prefs').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_forecast_snapshots').delete().neq('id',-1); bump('Clearing old data');
+  await SB.from('pd_inv_robo_value_log').delete().neq('id',-1); bump('Clearing old data');
   if(D.accounts.length) await insertWithRetry('pd_accounts', D.accounts.map(a=>({id:a.id,descr:a.descr,balance:a.balance,direction:a.direction,acc_type:a.acc_type,name:a.name,cf_type:a.cf_type,category:a.category,status:a.status,is_savings:!!a.is_savings,is_allocatable:!!a.is_allocatable,is_credit_card:!!a.is_credit_card,credit_limit:a.credit_limit,stmt_balance:a.stmt_balance,stmt_available:a.stmt_available,stmt_date:a.stmt_date,forecast_category:a.forecast_category||null})));
   bump('Restoring accounts');
   if(D.templates.length) await insertWithRetry('pd_templates', D.templates.map(t=>({id:t.id,name:t.name,lines:t.lines})));
@@ -11263,13 +12079,15 @@ async function restoreFromBackup(parsed){
   bump('Restoring Smart Rules');
   if(D.customForecastCategories.length) await insertWithRetry('pd_custom_forecast_categories', D.customForecastCategories.map(c=>({id:c.id, key:c.key, label:c.label, direction:c.direction, behavior:c.behavior})));
   if((D.invOwners||[]).length) await insertWithRetry('pd_inv_owners', D.invOwners.map(o=>({id:o.id, name:o.name, name_ar:o.nameAr||'', is_self:!!o.isSelf, out_acc:o.outAcc, in_acc:o.inAcc, profit_acc:o.profitAcc})));
-  if((D.invPlatforms||[]).length) await insertWithRetry('pd_inv_platforms', D.invPlatforms.map(p=>({id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null})));
+  if((D.invPlatforms||[]).length) await insertWithRetry('pd_inv_platforms', D.invPlatforms.map(p=>({id:p.id, name:p.name, out_acc:p.outAcc, in_acc:p.inAcc, profit_acc:p.profitAcc, stmt_cash_usd:(p.stmtCashUsd===''||p.stmtCashUsd===undefined)?null:p.stmtCashUsd, stmt_date:p.stmtDate||null, is_robo:!!p.isRobo, robo_value:(p.roboValue===''||p.roboValue===undefined)?null:p.roboValue, robo_value_date:p.roboValueDate||null})));
   if((D.invPositions||[]).length) await insertWithRetry('pd_inv_positions', D.invPositions.map(p=>({id:p.id, platform_id:p.platformId, name:p.name, ticker:p.ticker||'', asset_class:p.assetClass, currency:p.currency, status:p.status, stmt_units:(p.stmtUnits===''||p.stmtUnits===undefined)?null:p.stmtUnits, stmt_date:p.stmtDate||null})));
   if((D.invTransactions||[]).length) await insertWithRetry('pd_inv_transactions', D.invTransactions.map(t=>({id:t.id, position_id:t.positionId, entry_date:t.date, kind:t.kind, units:t.units, total_sar:t.totalSar, owners:t.owners, note:t.note||'', cash_side:t.cashSide||'bank', usd_amount:Number(t.usdAmount)||0, fee_pct:Number(t.feePct)||0, link_id:t.linkId||null, fee_units:Number(t.feeUnits)||0})));
   if((D.invValuations||[]).length) await insertWithRetry('pd_inv_valuations', D.invValuations.map(v=>({id:v.id, position_id:v.positionId, entry_date:v.date, price:v.price})));
   if((D.invCashMovements||[]).length) await insertWithRetry('pd_inv_cash_movements', D.invCashMovements.map(m=>({id:m.id, platform_id:m.platformId, entry_date:m.date, kind:m.kind, usd_amount:Number(m.usdAmount)||0, to_platform_id:m.toPlatformId||null, fee_usd:Number(m.feeUsd)||0, capital_usd:Number(m.capitalUsd)||0, profit_usd:Number(m.profitUsd)||0, owners:m.owners||[], note:m.note||''})));
   if(D.invSettings && D.invSettings.fxUsdSar) await insertWithRetry('pd_inv_settings', [{id:1, fx_usd_sar:D.invSettings.fxUsdSar, mgmt_fee_pct:getInvMgmtFeePct(), recon_start_date:(D.invSettings||{}).reconStartDate||null}]);
   if(D.uiPrefs && D.uiPrefs.pageOrder) await insertWithRetry('pd_ui_prefs', [{id:1, page_order:D.uiPrefs.pageOrder}]);
+  if((D.forecastSnapshots||[]).length) await insertWithRetry('pd_forecast_snapshots', D.forecastSnapshots.map(s=>({id:s.id, anchor_month:s.anchorMonth, taken_at:s.takenAt, kind:s.kind||'auto', months:s.months||[], sign_flips:s.signFlips||{}})));
+  if((D.invRoboValueLog||[]).length) await insertWithRetry('pd_inv_robo_value_log', D.invRoboValueLog.map(r=>({id:r.id, platform_id:r.platformId, entry_date:r.date, value:Number(r.value)||0})));
   bump('Restoring Investments');
   bump('Restoring Custom Categories');
   if(Object.keys(D.forecastPlans).length) await insertWithRetry('pd_forecast_plans', [{id:1, plans:D.forecastPlans}]);
@@ -11882,6 +12700,8 @@ async function clearEverything(){
     await SB.from('pd_inv_owners').delete().neq('id',-1);
     await SB.from('pd_inv_settings').delete().neq('id',-1);
     await SB.from('pd_ui_prefs').delete().neq('id',-1);
+    await SB.from('pd_forecast_snapshots').delete().neq('id',-1);
+    await SB.from('pd_inv_robo_value_log').delete().neq('id',-1);
   }
   go('dashboard');
 }
@@ -12024,6 +12844,135 @@ function applyTheme(t){
   if(screen==='budget' && typeof renderBudgetCharts==='function') renderBudgetCharts();
 }
 function toggleTheme(){ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); }
+
+/* ============================= INACTIVITY LOCK =============================
+   Guards against the classic multi-device staleness trap: the app is left open on Device A,
+   you move to Device B and make changes there, then come back to Device A's forgotten tab and
+   unknowingly act on data that's no longer current. After the configured idle time with no
+   click, keypress, or touch, the app shows a 60-second warning, then — if you still haven't
+   touched it — locks behind a full-screen overlay that only a manual "Relaunch" (a page reload,
+   which re-fetches everything fresh) can clear.
+
+   The lock deliberately WAITS rather than fires on schedule if either of two things is true:
+     - anything is still sitting unsynced in the queue — reloading at that moment would discard
+       those writes outright, and a late lock screen is a far smaller cost than silently losing
+       data;
+     - a modal is currently open — the app's own in-progress editing (a transaction, a cash
+       movement, a platform edit, and most other forms) lives in a modal, and locking out from
+       under someone mid-edit would either discard what they'd typed or, worse, tempt them to
+       relaunch without noticing the loss. This guard is a heuristic, not a guarantee: the New
+       JV page is a full page rather than a modal, so idle time spent mid-typing a JV there is
+       NOT shielded by it. It keeps checking every tick and locks as soon as both conditions
+       clear (or immediately, if you're still idle once they do).
+
+   Applies regardless of whether this session is connected to Supabase or running local-only —
+   the risk is the same either way: acting on a view of the data that time has moved past.
+
+   The timeout itself is a PER-DEVICE preference (Settings → Idle Session Lock), stored in
+   localStorage rather than synced — how long you personally want to sit before a lock makes
+   sense is not something that should follow you to a different device. 0 disables it entirely. */
+const IDLE_WARNING_MS = 60000; // fixed — the warning window itself isn't user-configurable, only the threshold before it
+const IDLE_CHECK_INTERVAL_MS = 5000;
+const IDLE_LOCK_MINUTES_DEFAULT = 30;
+let lastActivityTime = Date.now();
+let appIsLocked = false;
+let idleWarningShownAt = null; // timestamp the warning overlay appeared, or null if not showing
+function getIdleLockMinutes(){
+  // localStorage.getItem returns null for a key that was never set, and Number(null) is 0 —
+  // not NaN — so without this explicit check, "never configured" would silently read as
+  // "explicitly set to 0 minutes" (disabled) instead of falling back to the real default.
+  const raw = localStorage.getItem('idleLockMinutes');
+  if(raw===null) return IDLE_LOCK_MINUTES_DEFAULT;
+  const v = Number(raw);
+  return (v>=0 && isFinite(v))? v : IDLE_LOCK_MINUTES_DEFAULT;
+}
+function setIdleLockMinutes(minutes){
+  const v = Math.max(0, Math.round(Number(minutes)||0));
+  localStorage.setItem('idleLockMinutes', String(v));
+  return v;
+}
+function markUserActivity(){
+  if(appIsLocked) return; // once locked, only Relaunch clears it — no amount of clicking the overlay revives the session
+  lastActivityTime = Date.now();
+  if(idleWarningShownAt!==null) dismissIdleWarning();
+}
+// Anything that would make locking right now actively harmful rather than just untimely.
+function idleLockShouldHoldOff(){
+  if(syncQueue.length>0) return true;
+  const modalRoot = document.getElementById('modalRoot');
+  if(modalRoot && modalRoot.innerHTML.trim()!=='') return true;
+  return false;
+}
+function checkIdleLock(){
+  if(appIsLocked) return;
+  const minutes = getIdleLockMinutes();
+  if(minutes<=0) return; // 0 = never
+  const lockMs = minutes*60000;
+  const idleMs = Date.now()-lastActivityTime;
+  if(idleWarningShownAt!==null){
+    // Already warning — lock once the warning window itself has elapsed, subject to the same
+    // hold-off checks (something could have started syncing or a modal could have opened during
+    // the warning itself).
+    if(Date.now()-idleWarningShownAt >= IDLE_WARNING_MS && !idleLockShouldHoldOff()) lockAppForInactivity();
+    return;
+  }
+  if(idleMs < lockMs) return;
+  if(idleLockShouldHoldOff()) return; // hold off — see file-level note above
+  showIdleWarning();
+}
+function showIdleWarning(){
+  if(appIsLocked || idleWarningShownAt!==null) return;
+  idleWarningShownAt = Date.now();
+  const el = document.createElement('div');
+  el.id = 'idleWarningToast';
+  el.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9998;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-width:300px;box-shadow:0 10px 30px rgba(0,0,0,.25)';
+  el.innerHTML = `<div style="font-weight:700;margin-bottom:4px">⏳ Locking soon</div>
+    <div class="mut" style="font-size:12.5px;line-height:1.5">No activity for a while — this tab will lock in 60 seconds unless you move the mouse or press a key.</div>`;
+  document.body.appendChild(el);
+}
+function dismissIdleWarning(){
+  idleWarningShownAt = null;
+  const el = document.getElementById('idleWarningToast');
+  if(el) el.remove();
+}
+function lockAppForInactivity(){
+  if(appIsLocked) return;
+  appIsLocked = true;
+  dismissIdleWarning();
+  const overlay = document.createElement('div');
+  overlay.id = 'idleLockOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:var(--head, #0b1220);display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.innerHTML = `
+    <div style="max-width:420px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+      <div style="font-size:40px;margin-bottom:10px">🔒</div>
+      <h2 style="margin:0 0 10px">Session locked</h2>
+      <p class="mut" style="font-size:13.5px;line-height:1.6;margin:0 0 22px">LedgerOS locked itself after ${getIdleLockMinutes()} minutes with no activity, so this tab can't act on data that may be out of date if you've used it on another device since. Click Relaunch to load everything fresh.</p>
+      <button class="btn pri" onclick="relaunchApp()" style="width:100%">🔄 Relaunch</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+function saveIdleLockMinutesFromSettings(){
+  const el = document.getElementById('idleLockMinutesInput');
+  const saved = setIdleLockMinutes(el? el.value : 0);
+  if(el) el.value = saved;
+  toast(saved===0? 'Idle lock disabled ✓' : 'Idle lock set to '+saved+' minute'+(saved===1?'':'s')+' ✓');
+}
+function relaunchApp(){ location.reload(); }
+function initIdleLock(){
+  ['click','keydown','touchstart'].forEach(ev=> document.addEventListener(ev, markUserActivity, {passive:true}));
+  setInterval(checkIdleLock, IDLE_CHECK_INTERVAL_MS);
+  // A backgrounded tab or a locked device can pause JS execution outright rather than merely
+  // throttling it, so the interval above may not fire again until something wakes the page up —
+  // and the very act of the person tapping back into the tab is itself a click/touchstart, which
+  // would reset lastActivityTime via markUserActivity BEFORE the next interval tick ever gets a
+  // chance to see how much time had actually passed, erasing the evidence the lock exists to act
+  // on. visibilitychange fires as soon as the tab becomes visible again — before the browser
+  // delivers any click/touch on the page's own content — so checking here, using whatever
+  // lastActivityTime still holds from before backgrounding, is what actually catches this case.
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState==='visible') checkIdleLock();
+  });
+}
 
 boot();
 
