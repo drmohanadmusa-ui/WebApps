@@ -1955,7 +1955,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.36.0';
+const APP_VERSION = '4.38.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1963,6 +1963,25 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.38.0', changes: [
+    'No SQL migration needed \u2014 front-end only. Nothing to run in Supabase, and no change to which tables are backed up.',
+    'Closes the last gap left by 4.37.0. Areas that had unsent changes were still pushed without any comparison; if the area in question was TASKS or LISTS, a device carrying an older copy could still overwrite the newer one. Those two areas have always had a difference check \u2014 the one that shows the "this device vs online" prompt \u2014 but it only ever ran on a clean start. It now runs here too: the app pulls first for those areas, and where the two copies disagree it ASKS instead of silently choosing.',
+    'Areas without that check (training, recipes, hydration, health, ratings, metric definitions, settings) still push first, because a pull replaces them wholesale and would destroy anything unsent. The two kinds are now handled separately rather than lumped together.',
+    'The difference check now compares every field that actually gets saved. One-time tasks previously compared only status, completion date, due date and name \u2014 so an edited location, category, priority or note would have been overwritten with no prompt. Recurring tasks compared only their completion history, not name, schedule, dates or notes. Both now cover the full set. Due-date history is deliberately left out, being an append-only trail rather than a decision worth making.',
+    'While the prompt is open, this device keeps its own copy on disk rather than the online one. If the tab is closed or discarded before answering \u2014 easy to do on a phone \u2014 the next launch comes back with the local version intact and asks again, instead of the online copy having quietly become the survivor.',
+    'Answering "keep online" for everything now saves that result properly and marks the area settled. Answering "keep this device" pushes only tasks and lists, not the entire app state \u2014 sending everything was how an unrelated stale area could ride along with the answer to a question about tasks.',
+  ]},
+  { v:'4.37.0', changes: [
+    'No SQL migration needed \u2014 front-end only. Nothing to run in Supabase, and no change to which tables are backed up.',
+    'FIXED (cross-device data loss): opening the app on one device could silently revert work done on another. On startup the app either pushed or pulled, and it pushed whenever a single global "unsaved changes" flag was set \u2014 sending this device\'s ENTIRE local state up, with no pull first and no comparison. Because tasks are written by id including their done state, a phone carrying a day-old copy of the task list would quietly set a task completed on the desktop back to not-done. Deleted tasks came back the same way.',
+    'Root cause was that the flag was global. Every save of any kind set the same one, so a training sync that failed at the gym caused the NEXT launch to re-push tasks, lists and settings too \u2014 data that had not changed locally and where the server copy was newer. The flag is now tracked per area (tasks, lists, health, ratings, metric definitions, settings, training, recipes, hydration), so a failure in one can no longer drag the others up with it.',
+    'FIXED (second, related): a successful sync used to clear the flag no matter what had just succeeded. So a failed task push followed by a successful training push left the app believing everything was confirmed \u2014 and the next launch pulled and overwrote the local task changes that never reached the server. Each area now clears only itself.',
+    'FIXED (third): the full push never included training resources, although the normal training save did. A resource added on a device whose sync then failed never made it up on the retry.',
+    'A startup that has outstanding changes now pushes them and THEN pulls, instead of pushing and stopping. Previously such a launch never pulled at all, so the device showed stale data for the whole session. The pull is skipped entirely if any area failed to push \u2014 pulling over unconfirmed local work is the exact failure this path exists to prevent, so a partial success leaves local data alone.',
+    'Pushing still happens BEFORE pulling, deliberately. A pull replaces local data wholesale, so pulling first would destroy the unsynced work that made the device dirty in the first place.',
+    'Areas now push independently instead of aborting one another. A tasks failure previously stopped lists from being pushed at all, despite being unrelated tables.',
+    'Upgrade is safe in both directions. An older saved flag carries no information about WHICH data is outstanding, so it is read as "all of it" \u2014 exactly the previous behaviour \u2014 for one cycle. The old flag is also still written alongside the new detail, so a device still running a cached older build reads it correctly rather than concluding everything is confirmed and pulling over unsynced work.',
+  ]},
   { v:'4.36.0', changes: [
     'No SQL migration needed \u2014 front-end only. Nothing to run in Supabase, and no change to which tables are backed up.',
     'FIXED (unsaved data loss on iPhone): training entry typed but not yet saved now survives the page being reloaded or the tab being discarded. Everything typed into a training log lived only in memory, which is fine on a desktop where the tab stays open, but iOS Safari throws away background tabs aggressively \u2014 lock the screen or switch apps for a few minutes mid-workout and coming back reloads the page, silently losing every set, rep and weight entered since the last Save. Drafts are now written to this device as you type (debounced, and again the moment the tab is backgrounded), and restored on the next load with a message saying so.',
@@ -2554,7 +2573,7 @@ const state = {
   splashActive: false, // true from app start until the splash screen hands off to the real app — see init()
   healthMetricDefs: [], // [{id, name, type:'number'|'yesno'|'text', unit, sortOrder}]
   // status: 'off' | 'syncing' | 'synced' | 'pending' | 'error'
-  syncMeta: { status: 'off', dirty: false, lastSyncedAt: null, lastError: null, progress: null },
+  syncMeta: { status: 'off', dirty: false, dirtyDomains: [], lastSyncedAt: null, lastError: null, progress: null },
   // Training: exercises are a reusable library; sessions reference exercises via blocks;
   // calendar maps a specific date -> sessionId (this is what gets re-mapped monthly);
   // logs are session-level (completed/difficulty/notes) keyed by date.
@@ -3040,6 +3059,12 @@ async function loadAll(){
     const syncMetaRes = await safeGet(STORAGE_KEYS.SYNC_META);
     if(syncMetaRes){
       const saved = JSON.parse(syncMetaRes.value);
+      // Normalized BEFORE the merge, not after. The default state already
+      // carries `dirtyDomains: []`, so merging first would make an absent
+      // array indistinguishable from a genuinely empty one — and a legacy
+      // `{dirty:true}` would be read as "nothing outstanding", throwing away
+      // the record of a push that never landed. Caught by the migration test.
+      normalizeSyncMetaShape(saved);
       state.syncMeta = Object.assign(state.syncMeta, saved, { status: 'off' });
     }
   } catch(e){
@@ -3065,12 +3090,59 @@ async function runBackgroundSync(){
   const onProgress = (cur, total)=> setSyncBlockText(`${verb}… ${Math.round((cur/total)*100)}%`);
   const startedAt = performance.now();
   try{
-    if(state.syncMeta.dirty){
-      await pushFullStateToSupabase(onProgress);
+    const outstanding = dirtyDomains();
+    if(outstanding.length){
+      // Two kinds of outstanding domain, handled differently.
+      //
+      // GUARDED (tasks, lists) have divergence detection: a pull snapshots
+      // local, applies remote, compares the two and asks which copy to keep.
+      // For these, pulling FIRST is the safe move — that comparison is exactly
+      // the protection a blind push lacks, and nothing is lost, because the
+      // snapshot can restore the local copy.
+      //
+      // UNGUARDED (training, recipes, hydration, health, ratings, metric
+      // definitions, settings) have no such machinery. A pull replaces them
+      // wholesale, so for these the push MUST land first or the unsynced work
+      // is simply destroyed.
+      //
+      // So: push the unguarded ones, then pull. The pull brings this device up
+      // to date and, where the guarded domains disagree with the server,
+      // raises the prompt instead of silently picking a winner.
+      const guarded = outstanding.filter(d => DIVERGENCE_GUARDED_DOMAINS.includes(d));
+      const unguarded = outstanding.filter(d => !DIVERGENCE_GUARDED_DOMAINS.includes(d));
+      diagLogEvent('startup-sync', 'Outstanding domains', { pushedFirst: unguarded, reconciled: guarded });
+      const failed = unguarded.length ? await pushDomainsToSupabase(unguarded, onProgress) : [];
+      if(failed.length){
+        // Something is still unconfirmed on the server. A pull now would
+        // overwrite it with a remote copy that never received it — exactly the
+        // failure this whole path exists to avoid. Leave local alone.
+        diagLogEvent('startup-sync', 'Skipping the pull — some domains are still unsynced', { failed });
+      } else {
+        // The unguarded work is on the server, so a pull can no longer lose
+        // it — and the pull is what brings this device up to date with what
+        // the others did. Previously a dirty launch pushed and never pulled,
+        // leaving the phone showing stale data for the whole session.
+        setSyncBlockText('Pulling latest from Supabase…');
+        await pullFromSupabase(onProgress);
+        if(guarded.length && pendingDivergence){
+          // The person has to choose. applyDivergenceChoices() finishes the
+          // job: it restores whatever they keep locally and pushes it. These
+          // domains stay dirty until then ON PURPOSE, so a session interrupted
+          // before the prompt is answered retries rather than forgetting.
+          diagLogEvent('startup-sync', 'Differences found — asking before pushing', { domains: guarded });
+        } else if(guarded.length){
+          // No meaningful difference between the two copies, so there is
+          // nothing to ask about and nothing a push would change. Marking them
+          // clean beats rewriting identical rows.
+          for(const d of guarded) await markSyncSuccess(d);
+        } else {
+          await markSyncSuccess();
+        }
+      }
     } else {
       await pullFromSupabase(onProgress);
+      await markSyncSuccess();
     }
-    await markSyncSuccess();
     diagLogEvent('startup-sync', 'Completed OK', { ms: Math.round(performance.now()-startedAt) });
   } catch(e){
     console.error('Background sync failed', e);
@@ -3099,30 +3171,122 @@ async function runBackgroundSync(){
   }
 }
 
-async function markSyncDirty(){
+/* ---------- Per-domain dirty tracking ----------
+
+   `dirty` used to be a single global boolean. Two problems followed from that,
+   and both are data-loss shaped:
+
+   1. AMPLIFICATION. Every save of any kind set the same flag, so a training
+      push that failed at the gym made the NEXT launch blind-push tasks, lists
+      and settings too — domains where nothing had changed locally and the
+      server copy was newer. Since pushFullStateToSupabase() upserts
+      one_time_tasks on `id` including `done`, that quietly reverted tasks
+      completed on another device.
+
+   2. CROSS-CLEARING. markSyncSuccess() cleared the one flag regardless of what
+      had just succeeded. So a failed tasks push followed by a successful
+      training push left dirty=false — the failure was forgotten, and the next
+      launch pulled and overwrote the local changes that never reached the
+      server.
+
+   Tracking which domains are actually outstanding fixes both. `dirty` is kept
+   alongside as a DERIVED boolean, never removed: GitHub Pages caches hard, so
+   an older build may well still be running on another device, and it reads
+   `dirty` directly. If that key vanished, the old build would read undefined,
+   conclude everything was clean, and pull over genuinely unsynced work. */
+const SYNC_DOMAINS = ['tasks','lists','health','ratings','metricDefs','settings','training','recipes','hydration'];
+
+/* Domains whose failure is fatal to the whole push, versus those that are
+   fault-isolated. Unchanged in meaning from the original coreSteps /
+   trainingSteps split — a missing training/recipe/hydration migration must
+   never be able to fail the core task push. */
+const CORE_SYNC_DOMAINS = ['tasks','lists','health','ratings','metricDefs','settings'];
+
+/* The domains detectDivergence() actually covers. These are the only ones
+   where a pull can safely run against unsynced local changes, because the
+   comparison catches the disagreement and offers a choice rather than picking
+   a winner. Anything not on this list is replaced wholesale by a pull, so its
+   push has to land first. If divergence detection is ever extended to another
+   domain, adding it here is what moves it onto the safer path. */
+const DIVERGENCE_GUARDED_DOMAINS = ['tasks','lists'];
+
+function dirtyDomains(){
+  const d = state.syncMeta.dirtyDomains;
+  return Array.isArray(d) ? d : [];
+}
+function setDirtyDomains(list){
+  const clean = SYNC_DOMAINS.filter(d => list.includes(d));
+  state.syncMeta.dirtyDomains = clean;
+  state.syncMeta.dirty = clean.length > 0; // derived, kept for older cached builds
+}
+function addDirtyDomain(domain){
+  // No domain named = caller could not say what changed, so assume everything.
+  // That is exactly the old behaviour, which is the safe direction to guess in.
+  const next = domain ? dirtyDomains().concat([domain]) : SYNC_DOMAINS.slice();
+  setDirtyDomains(next);
+}
+function clearDirtyDomain(domain){
+  setDirtyDomains(domain ? dirtyDomains().filter(d => d !== domain) : []);
+}
+
+/* Reads whatever shape was persisted and produces the new one.
+
+   A stored `{dirty:true}` from before this change carries no information about
+   WHICH data is outstanding, so it has to be read as "all of it" — i.e. the
+   old behaviour — for exactly one cycle, after which real per-domain state
+   takes over. Guessing narrower here would silently drop a real pending push. */
+function normalizeSyncMetaShape(meta){
+  if(!meta || typeof meta !== 'object') return;
+  if(Array.isArray(meta.dirtyDomains)){
+    meta.dirtyDomains = SYNC_DOMAINS.filter(d => meta.dirtyDomains.includes(d));
+  } else {
+    meta.dirtyDomains = meta.dirty ? SYNC_DOMAINS.slice() : [];
+    if(meta.dirty){
+      diagLogEvent('sync', 'Migrated a legacy global dirty flag — treating every domain as outstanding');
+    }
+  }
+  meta.dirty = meta.dirtyDomains.length > 0;
+}
+
+async function markSyncDirty(domain){
   // Persisted IMMEDIATELY, before any of the actual network calls run. If the
-  // tab closes or reloads mid-sync, the next load MUST still see dirty=true
-  // — otherwise it wrongly assumes everything's already confirmed on the
-  // server, pulls fresh data, and overwrites correct local changes with a
+  // tab closes or reloads mid-sync, the next load MUST still see this domain
+  // as dirty — otherwise it wrongly assumes everything's already confirmed on
+  // the server, pulls fresh data, and overwrites correct local changes with a
   // stale remote copy that never actually received this update. This was a
-  // real, reproducible bug — this write closes that window.
-  state.syncMeta.dirty = true;
+  // real, reproducible bug — this write closes that window. Do NOT be tempted
+  // to move it after the network call to narrow the window; the window IS the
+  // protection.
+  addDirtyDomain(domain);
   state.syncMeta.status = 'syncing';
   await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta), 'sync meta', {silent:true});
 }
-async function markSyncSuccess(){
-  state.syncMeta.dirty = false;
-  state.syncMeta.status = 'synced';
+async function markSyncSuccess(domain){
+  // Clears ONLY what actually succeeded. Clearing everything here is what
+  // previously let a successful training push erase the record of a failed
+  // task push.
+  clearDirtyDomain(domain);
+  state.syncMeta.status = state.syncMeta.dirty ? 'error' : 'synced';
   state.syncMeta.lastSyncedAt = new Date().toISOString();
-  state.syncMeta.lastError = null;
+  if(!state.syncMeta.dirty) state.syncMeta.lastError = null;
   await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta));
 }
-async function markSyncError(message){
+async function markSyncError(message, domain){
   state.syncMeta.status = 'error';
   state.syncMeta.lastError = message;
-  // dirty stays true — we know local hasn't been confirmed on the server
+  // The named domain stays dirty — we know local hasn't been confirmed on the
+  // server. Re-asserted rather than assumed, so an error path that somehow ran
+  // without a preceding markSyncDirty still leaves a correct record.
+  //
+  // With NO domain named, the set is left exactly as it is rather than widened
+  // to everything. Widening would undo the whole point of this change: an
+  // outer catch around a training failure would re-mark tasks and lists dirty,
+  // and the next launch would blind-push them again. It is also unnecessary —
+  // runSyncSteps() always calls markSyncDirty() before doing any work, so
+  // whatever was at risk is already recorded by the time we get here.
+  if(domain) addDirtyDomain(domain);
   await safeStorageSet(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta));
-  await recordSyncErrorHistory('core', message);
+  await recordSyncErrorHistory(domain || 'core', message);
 }
 
 /* ---------- Supabase sync (optional, cross-device) ----------
@@ -3572,80 +3736,121 @@ async function flushPendingMetricDefDeletes(){
 }
 
 /* ---- full push / pull ---- */
-async function pushFullStateToSupabase(onProgress){
-  const coreSteps = [
-    ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
-    ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
-    ()=> flushPendingCompletionDeletes(),
-    ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
-    ()=> supaUpsert('lists', state.lists.map((l,i)=>listToRow(l,i)), 'id'),
-    ()=> {
-      const itemRows = [];
-      state.lists.forEach(l=> l.items.forEach((it,i)=> itemRows.push(listItemToRow(it, l.id, i))));
-      return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
-    },
-    ()=> { const rows = state.health.map(healthToRow); return rows.length ? supaUpsert('health_logs', rows, 'pin,log_date') : null; },
-    ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
-    ()=> flushPendingMetricDefDeletes(),
-    ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
-    ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
-  ];
-  // Training runs AFTER the core steps and is deliberately fault-isolated
-  // from them: if the training-tables SQL migration hasn't been run yet in
-  // this Supabase project (or any other training-specific failure happens),
-  // that must NEVER abort or fail the core task/list/health push. Before
-  // this isolation, a single throw anywhere in this array failed the whole
-  // function — meaning a training-table issue alone marked the entire push
-  // "failed" (dirty stays true forever, retried and failing identically on
-  // every subsequent load) even though the real task data already made it
-  // to Supabase. That's the same failure shape as the v2.7.3 dirty-flag bug,
-  // just from a different cause — closing it the same way: isolate blast radius.
-  const trainingSteps = [
-    ()=> flushPendingTrainingDeletes(),
-    ()=> supaUpsert('training_exercises', state.training.exercises.map(trainingExerciseToRow), 'pin,id'),
-    ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
-    ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
-    ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
-  ];
-  const total = coreSteps.length + trainingSteps.length;
-  for(let i=0;i<coreSteps.length;i++){
-    await coreSteps[i](); // core failures still throw and correctly fail the whole sync — unchanged
-    if(onProgress) onProgress(i+1, total);
+/* Steps to push, grouped by the domain that owns them. Previously this was one
+   flat array of "core" steps plus fault-isolated training/recipe/hydration
+   blocks; the grouping is the same work, just addressable, so a startup push
+   can send ONLY what is actually outstanding instead of the whole world.
+
+   That distinction is the entire point of the per-domain dirty flag: a
+   training sync that failed at the gym must not cause the next launch to
+   re-push a stale copy of your tasks over a server row the desktop updated
+   in the meantime. */
+function syncStepsForDomain(domain){
+  const s = state.settings.sync;
+  switch(domain){
+    case 'tasks': return [
+      ()=> supaUpsert('one_time_tasks', state.tasks.oneTime.map(oneTimeToRow), 'id'),
+      ()=> supaUpsert('recurring_tasks', state.tasks.recurring.map(recurringToRow), 'id'),
+      ()=> flushPendingCompletionDeletes(),
+      ()=> { const rows = buildCompletionRows(); return rows.length ? supaUpsert('task_completions', rows, 'pin,task_id,completed_date') : null; },
+    ];
+    case 'lists': return [
+      ()=> supaUpsert('lists', state.lists.map((l,i)=>listToRow(l,i)), 'id'),
+      ()=> {
+        const itemRows = [];
+        state.lists.forEach(l=> l.items.forEach((it,i)=> itemRows.push(listItemToRow(it, l.id, i))));
+        return itemRows.length ? supaUpsert('list_items', itemRows, 'id') : null;
+      },
+    ];
+    case 'health': return [
+      ()=> { const rows = state.health.map(healthToRow); return rows.length ? supaUpsert('health_logs', rows, 'pin,log_date') : null; },
+    ];
+    case 'ratings': return [
+      ()=> { const rows = state.dailyRatings.map(ratingToRow); return rows.length ? supaUpsert('daily_ratings', rows, 'pin,rating_date') : null; },
+    ];
+    case 'metricDefs': return [
+      ()=> flushPendingMetricDefDeletes(),
+      ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
+    ];
+    case 'settings': return [
+      ()=> supaUpsert('app_settings', [{ pin: s.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
+    ];
+    case 'training': return [
+      ()=> flushPendingTrainingDeletes(),
+      ()=> supaUpsert('training_exercises', state.training.exercises.map(trainingExerciseToRow), 'pin,id'),
+      ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
+      ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
+      ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+      // training_resources was missing from the old full push (saveTraining()
+      // sent it, this path did not), so a resource created on a device whose
+      // sync then failed never reached Supabase on the retry. Same guard as
+      // saveTraining(): skipped entirely when empty, so a project that has not
+      // run the v4.28.0 migration is unaffected.
+      ()=> { const rows = (state.training.resources||[]).map(trainingResourceToRow); return rows.length ? supaUpsert('training_resources', rows, 'pin,id') : null; },
+    ];
+    case 'recipes': return [
+      ()=> flushPendingRecipeDeletes(),
+      ()=> supaUpsert('recipes', state.recipes.items.map(recipeToRow), 'pin,id'),
+      ()=> {
+        const ingredientRows = [];
+        state.recipes.items.forEach(r=> (r.ingredients||[]).forEach((ing,idx)=> ingredientRows.push(recipeIngredientToRow(ing, r.id, idx))));
+        return ingredientRows.length ? supaUpsert('recipe_ingredients', ingredientRows, 'pin,id') : null;
+      },
+    ];
+    case 'hydration': return [
+      ()=> flushPendingHydrationDeletes(),
+      ()=> state.hydrationLogs.length ? supaUpsert('hydration_logs', state.hydrationLogs.map(hydrationLogToRow), 'pin,id') : null,
+    ];
+    default: return [];
   }
-  try{
-    for(let i=0;i<trainingSteps.length;i++){
-      await trainingSteps[i]();
-      if(onProgress) onProgress(coreSteps.length+i+1, total);
+}
+
+/* Pushes the named domains, each independently.
+
+   Fault isolation is unchanged in meaning from the previous coreSteps /
+   trainingSteps split: a training, recipe or hydration failure is recorded and
+   swallowed so it can never fail the core task push. What HAS changed is that
+   core domains no longer abort one another either — a tasks failure used to
+   stop lists from being pushed at all, even though they are unrelated tables.
+   Each domain now succeeds or fails on its own, and only the ones that failed
+   stay dirty.
+
+   Returns the list of domains that failed. */
+async function pushDomainsToSupabase(domains, onProgress){
+  const list = SYNC_DOMAINS.filter(d => domains.includes(d));
+  const failed = [];
+  const total = list.reduce((n,d)=> n + syncStepsForDomain(d).length, 0);
+  let done = 0;
+  for(const domain of list){
+    try{
+      for(const step of syncStepsForDomain(domain)){
+        await step();
+        done++;
+        if(onProgress) onProgress(done, total);
+      }
+      await markSyncSuccess(domain);
+    } catch(e){
+      failed.push(domain);
+      done += syncStepsForDomain(domain).length; // keep the progress bar honest
+      if(onProgress) onProgress(Math.min(done, total), total);
+      const isCore = CORE_SYNC_DOMAINS.includes(domain);
+      diagLogEvent('sync', `${domain} push failed — other domains unaffected`, { error: e.message||String(e), core: isCore });
+      await markSyncError(e.message||String(e), domain);
+      console.error(`${domain} push failed (other domains still synced):`, e);
     }
-  } catch(e){
-    // Swallowed deliberately. Logged so it's visible in Settings > Activity
-    // & Error Log, but this must never propagate and fail the core sync.
-    diagLogEvent('sync', 'Training push failed — core sync still succeeded', { error: e.message||String(e) });
-    recordSyncErrorHistory('training-push', e.message||String(e));
-    console.error('Training push failed (core task/list/health data still synced fine):', e);
   }
-  // Recipes: same fault-isolation treatment as Training, for the same
-  // reason — a missing/failed recipe-table migration must never be able to
-  // fail the core task/list/health push.
-  try{
-    await flushPendingRecipeDeletes();
-    await supaUpsert('recipes', state.recipes.items.map(recipeToRow), 'pin,id');
-    const ingredientRows = [];
-    state.recipes.items.forEach(r=> (r.ingredients||[]).forEach((ing,idx)=> ingredientRows.push(recipeIngredientToRow(ing, r.id, idx))));
-    if(ingredientRows.length) await supaUpsert('recipe_ingredients', ingredientRows, 'pin,id');
-  } catch(e){
-    diagLogEvent('sync', 'Recipes push failed — core sync still succeeded', { error: e.message||String(e) });
-    recordSyncErrorHistory('recipes-push', e.message||String(e));
-    console.error('Recipes push failed (core task/list/health data still synced fine):', e);
-  }
-  // Hydration: same fault-isolation treatment as Training/Recipes.
-  try{
-    await flushPendingHydrationDeletes();
-    if(state.hydrationLogs.length) await supaUpsert('hydration_logs', state.hydrationLogs.map(hydrationLogToRow), 'pin,id');
-  } catch(e){
-    diagLogEvent('sync', 'Hydration push failed — core sync still succeeded', { error: e.message||String(e) });
-    recordSyncErrorHistory('hydration-push', e.message||String(e));
-    console.error('Hydration push failed (core task/list/health data still synced fine):', e);
+  return failed;
+}
+
+/* Kept as a thin wrapper so anything still calling it keeps working — and,
+   importantly, keeps THROWING on failure. retrySync() and the divergence
+   resolver both distinguish success from failure by catching, so a version
+   that quietly returned a list of failed domains would have them reporting
+   "Synced" over a push that did not land. */
+async function pushFullStateToSupabase(onProgress){
+  const failed = await pushDomainsToSupabase(SYNC_DOMAINS, onProgress);
+  if(failed.length){
+    throw new Error(`push failed for: ${failed.join(', ')}`);
   }
 }
 
@@ -3874,9 +4079,21 @@ async function pullFromSupabase(onProgress){
     // called in that case), so only the small, bounded task/list structure
     // gets cached locally — completion/health/ratings history stays in
     // memory and in Supabase only, never written to local storage here.
-    await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks');
-    await safeStorageSet(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), 'completions safety buffer');
-    await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
+    // While a divergence prompt is pending, the remote copy is in memory for
+    // the prompt to describe, but it is NOT written to disk yet. What is on
+    // disk stays the pre-pull local copy, which is the recovery point: if the
+    // tab is discarded before the question is answered — very easy on iOS —
+    // the next launch reloads the local version and, since these domains are
+    // still marked dirty, asks again. Persisting here instead would make the
+    // remote copy the survivor and quietly lose unsynced local work.
+    // applyDivergenceChoices() performs these writes once the choice is made.
+    if(!pendingDivergence){
+      await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks');
+      await safeStorageSet(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), 'completions safety buffer');
+      await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
+    } else {
+      diagLogEvent('sync', 'Divergence pending — local copy kept on disk until the choice is made');
+    }
     try{ await window.storage.delete(STORAGE_KEYS.HEALTH, false); } catch(e){}
     try{ await window.storage.delete(STORAGE_KEYS.RATINGS, false); } catch(e){}
     try{ await window.storage.set(STORAGE_KEYS.HEALTH_METRIC_DEFS, JSON.stringify(state.healthMetricDefs), false); } catch(e){ console.error('local cache write failed (metric defs)', e); }
@@ -4221,9 +4438,9 @@ function enqueueSync(taskFn){
   return syncChain;
 }
 
-async function runSyncSteps(steps){
+async function runSyncSteps(steps, domain){
   const startedAt = performance.now();
-  await markSyncDirty();
+  await markSyncDirty(domain);
   state.syncMeta.progress = { current: 0, total: steps.length };
   updateSyncBadge();
   try{
@@ -4232,12 +4449,12 @@ async function runSyncSteps(steps){
       state.syncMeta.progress = { current: i+1, total: steps.length };
       updateSyncBadge();
     }
-    await markSyncSuccess();
-    diagLogEvent('sync', `runSyncSteps OK (${steps.length} steps)`, { ms: Math.round(performance.now()-startedAt) });
+    await markSyncSuccess(domain);
+    diagLogEvent('sync', `runSyncSteps OK (${steps.length} steps${domain?', '+domain:''})`, { ms: Math.round(performance.now()-startedAt) });
   } catch(e){
     console.error('sync step failed', e);
-    diagLogEvent('sync', `runSyncSteps FAILED`, { error: e.message||String(e), ms: Math.round(performance.now()-startedAt) });
-    await markSyncError(e.message||String(e));
+    diagLogEvent('sync', `runSyncSteps FAILED${domain?' ('+domain+')':''}`, { error: e.message||String(e), ms: Math.round(performance.now()-startedAt) });
+    await markSyncError(e.message||String(e), domain);
   }
   updateSyncBadge();
 }
@@ -4282,19 +4499,19 @@ function scheduleSync(key, buildSteps){
       // The result was a category of failure with no data reaching the server
       // and no error anywhere. Now it is caught, recorded, and the flag is
       // always cleared.
-      await runSyncSteps(buildSteps());
+      await runSyncSteps(buildSteps(), key);
       // anything that arrived while that run was in flight gets exactly one
       // guaranteed follow-up pass (reading fresh state), instead of being lost
       if(syncDirtyDuringRun[key]){
         syncDirtyDuringRun[key] = false;
         diagLogEvent('sync-queue', `${key}: running guaranteed follow-up pass`);
-        await runSyncSteps(buildSteps());
+        await runSyncSteps(buildSteps(), key);
       }
     } catch(e){
       const msg = `${key} sync job failed before it could run: ${e.message||String(e)}`;
       console.error(msg, e);
       diagLogEvent('sync-queue', `${key}: job threw outside runSyncSteps`, { error: e.message||String(e) });
-      await markSyncError(msg);
+      await markSyncError(msg, key);
     } finally {
       // ALWAYS clears, on every path. This is the invariant that was missing.
       syncScheduled[key] = false;
@@ -5997,7 +6214,7 @@ async function deleteTask(kind, taskId){
     await enqueueSync(()=> runSyncSteps([
       ()=> supaDeleteMatch(kind === 'oneTime' ? 'one_time_tasks' : 'recurring_tasks', `id=eq.${encodeURIComponent(taskId)}`),
       ()=> kind === 'recurring' ? supaDeleteMatch('task_completions', `task_id=eq.${encodeURIComponent(taskId)}`) : null,
-    ]));
+    ], 'tasks'));
   }
   renderMain();
   showToast('Task deleted');
@@ -6915,7 +7132,7 @@ async function clearAllListItems(listId){
   if(syncConfigured()){
     enqueueSync(()=> runSyncSteps(
       removedIds.map(id => ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(id)}`))
-    )).catch(e=> console.error('clear all items sync failed', e));
+    , 'lists')).catch(e=> console.error('clear all items sync failed', e));
   }
   showToast('All items removed');
 }
@@ -6933,7 +7150,7 @@ async function clearCompletedListItems(listId){
   if(syncConfigured()){
     enqueueSync(()=> runSyncSteps(
       removedIds.map(id => ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(id)}`))
-    )).catch(e=> console.error('clear completed items sync failed', e));
+    , 'lists')).catch(e=> console.error('clear completed items sync failed', e));
   }
   showToast(`${removedIds.length} completed item${removedIds.length===1?'':'s'} removed`);
 }
@@ -6957,7 +7174,7 @@ async function deleteListItem(listId, itemId){
   if(syncConfigured()){
     enqueueSync(()=> runSyncSteps([
       ()=> supaDeleteMatch('list_items', `id=eq.${encodeURIComponent(itemId)}`),
-    ])).catch(e=> console.error('list item delete sync failed', e));
+    ], 'lists')).catch(e=> console.error('list item delete sync failed', e));
   }
 }
 async function addListItem(listId, text){
@@ -7080,7 +7297,7 @@ async function deleteList(listId){
     await enqueueSync(()=> runSyncSteps([
       ()=> supaDeleteMatch('lists', `id=eq.${encodeURIComponent(listId)}`),
       ()=> supaDeleteMatch('list_items', `list_id=eq.${encodeURIComponent(listId)}`),
-    ]));
+    ], 'lists'));
   }
   renderMain();
 }
@@ -11707,7 +11924,7 @@ async function disconnectSync(){
   if(!confirm('Disconnect sync? This device will keep its local copy of your data, but will stop mirroring to Supabase.')) return;
   state.settings.sync = null;
   await saveSettings();
-  state.syncMeta = { status: 'off', dirty: false, lastSyncedAt: null, lastError: null };
+  state.syncMeta = { status: 'off', dirty: false, dirtyDomains: [], lastSyncedAt: null, lastError: null };
   try{ await window.storage.set(STORAGE_KEYS.SYNC_META, JSON.stringify(state.syncMeta), false); } catch(e){}
   renderMain();
   showToast('Sync disconnected');
@@ -12116,11 +12333,23 @@ function detectDivergence(local, remote, snapshot){
   const remoteOTById = {}; (remote.oneTime||[]).forEach(t=>{ remoteOTById[t.id]=t; });
   new Set([...Object.keys(localOTById), ...Object.keys(remoteOTById)]).forEach(id=>{
     const l = localOTById[id], r = remoteOTById[id];
+    // Every field that oneTimeToRow() actually writes is compared here, not
+    // just the headline four. That used to be enough because divergence only
+    // ran on a clean pull, where local had nothing unsynced to lose. Now that
+    // a pull can run with local changes outstanding, any field left out of
+    // this list would be silently overwritten by the remote copy with no
+    // prompt — a local edit to notes or priority would just vanish.
+    // dueHistory is deliberately excluded: it is an append-only audit trail,
+    // and diffing it would produce noise rather than a decision worth making.
     const diffs = (l && r) ? fieldDiffs(l, r, [
       ['done', 'Status', v=> v ? 'Done' : 'Not done'],
       ['doneDate', 'Completed on', v=> humanDate(v)],
       ['due', 'Due', v=> humanDate(v)],
       ['name', 'Name'],
+      ['location', 'Location'],
+      ['silo', 'Silo'],
+      ['priority', 'Priority'],
+      ['notes', 'Notes'],
     ]) : [];
     // Only a missing side, or a REAL field difference, is worth asking about.
     const differs = !l || !r || diffs.length > 0;
@@ -12142,7 +12371,21 @@ function detectDivergence(local, remote, snapshot){
     const l = localRecById[id], r = remoteRecById[id];
     const lComp = (local.completions&&local.completions[id]) || {};
     const rComp = (remote.completions&&remote.completions[id]) || {};
-    const differs = !l || !r || completionsSignature(lComp)!==completionsSignature(rComp);
+    // Same reasoning as one-time tasks: recurringToRow() writes all of these,
+    // so a pull running against unsynced local changes could otherwise
+    // overwrite an edited name, schedule or note without ever asking.
+    // Previously only the completion signature was compared.
+    const diffs = (l && r) ? fieldDiffs(l, r, [
+      ['name', 'Name'],
+      ['detail', 'Schedule'],
+      ['location', 'Location'],
+      ['silo', 'Silo'],
+      ['priority', 'Priority'],
+      ['start', 'Starts', v=> humanDate(v)],
+      ['end', 'Ends', v=> humanDate(v)],
+      ['notes', 'Notes'],
+    ]) : [];
+    const differs = !l || !r || diffs.length > 0 || completionsSignature(lComp)!==completionsSignature(rComp);
     if(!differs) return;
     const lCount = Object.keys(lComp).length, rCount = Object.keys(rComp).length;
     taskItems.push({
@@ -12150,6 +12393,7 @@ function detectDivergence(local, remote, snapshot){
       name: (r&&r.name) || (l&&l.name) || '(unnamed task)',
       localSummary: l ? `${lCount} completion record${lCount===1?'':'s'}` : 'Does not exist on this device',
       onlineSummary: r ? `${rCount} completion record${rCount===1?'':'s'}` : 'Does not exist online',
+      diffs,
       choice: 'online',
     });
   });
@@ -12302,12 +12546,21 @@ async function applyDivergenceChoices(){
   });
 
   if(touchedLocal){
+    // saveTasks()/saveLists() write to disk AND schedule a targeted sync, so
+    // this is also the point at which the pull's deferred local writes finally
+    // land. Until now the disk still held the pre-pull copy on purpose.
     await saveTasks();
     await saveLists();
     diagLogEvent('sync', `Divergence resolved per-item: kept LOCAL for ${localChoices.length} item(s)`, { items: localChoices });
     if(syncConfigured()){
       try{
-        await enqueueSync(()=> pushFullStateToSupabase());
+        // Only the two domains this resolver can actually modify. Pushing the
+        // full state here would re-introduce exactly the amplification this
+        // release removed: a training or settings copy that happened to be
+        // stale would be sent up as a side effect of answering a question
+        // about tasks.
+        const failed = await enqueueSync(()=> pushDomainsToSupabase(DIVERGENCE_GUARDED_DOMAINS));
+        if(failed && failed.length) throw new Error(`push failed for: ${failed.join(', ')}`);
         showToast(`${localChoices.length} local choice${localChoices.length===1?'':'s'} applied and pushed online`);
       } catch(e){
         showToast('⚠ Applied locally, but the push online failed — it will retry on the next sync');
@@ -12316,6 +12569,15 @@ async function applyDivergenceChoices(){
       showToast(`${localChoices.length} local choice${localChoices.length===1?'':'s'} applied`);
     }
   } else {
+    // Online won everything, so local now matches the server. The pull held
+    // these writes back while the prompt was open; they have to happen now, or
+    // the disk would keep serving the superseded local copy on the next load.
+    await safeStorageSet(STORAGE_KEYS.TASKS, JSON.stringify({ oneTime: state.tasks.oneTime, recurring: state.tasks.recurring }), 'tasks');
+    await safeStorageSet(STORAGE_KEYS.RECENT_COMPLETIONS, JSON.stringify(buildRecentCompletionsBuffer(state.tasks.completions)), 'completions safety buffer');
+    await safeStorageSet(STORAGE_KEYS.LISTS, JSON.stringify(state.lists), 'lists');
+    // Nothing left to send: the server copy is what we now hold. Clearing the
+    // flag here is what stops these domains being pushed on the next launch.
+    for(const d of DIVERGENCE_GUARDED_DOMAINS) await markSyncSuccess(d);
     diagLogEvent('sync', 'Divergence resolved: kept ONLINE for everything');
     showToast('Online copy kept for everything');
   }
