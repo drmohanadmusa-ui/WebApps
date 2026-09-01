@@ -648,6 +648,19 @@ select.filter-select, input.filter-date{
 }
 .radio-pill.active{background:var(--ink); color:#fff; border-color:var(--ink);}
 
+/* ============ TRAINING LOG INPUTS ============
+   These were styled inline. That put font-size out of reach of any media
+   query, because an inline style beats a stylesheet rule — which mattered:
+   iOS Safari auto-zooms the whole page whenever a focused input computes to
+   under 16px, so every tap on Sets / Reps / Weight zoomed in and had to be
+   pinched back out. Only the width stays inline now; everything else lives
+   here where the mobile block below can override it. */
+.train-input{
+  padding:6px 8px; border:1px solid var(--line); border-radius:6px;
+  font-size:12.5px; background:var(--paper); color:var(--ink);
+}
+.train-remove-btn{width:26px; height:26px; font-size:12px;}
+
 /* ============ CALENDAR ============ */
 .cal-header{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
 .cal-header h2{font-family:var(--font-display); font-size:20px; margin:0; min-width:190px;}
@@ -1375,6 +1388,36 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
   .stat-strip{gap:8px;}
 }
 
+/* ============ MOBILE INPUT + TOUCH TARGET SIZING ============
+   Two separate problems, both only visible on a phone.
+
+   1. iOS Safari zooms the page on focus for ANY input whose computed
+      font-size is below 16px. Every field in the app was 12.5–13.5px, so
+      logging one exercise meant three zoom-and-pinch-back cycles. 16px is
+      the threshold, not a preference — 15.9px still zooms. Applied to every
+      control rather than just the training page, because the same tap-zoom
+      happens in every modal.
+
+   2. Controls sized for a mouse. The difficulty pills were ~27px tall with
+      five of them side by side, and the remove-exercise button was 20px —
+      the smallest target on the row, and a destructive one. Enlarged toward
+      the ~44px touch guideline. Desktop is untouched: this block only
+      applies below 860px. */
+@media (max-width: 860px){
+  input, select, textarea, .train-input{font-size:16px;}
+  /* The per-field widths are still inline (56–100px, sized for 12.5px text).
+     min-width overrides a narrower width regardless of where the width came
+     from, which is what makes this reachable without !important. */
+  .train-input{padding:9px 10px; min-height:42px; min-width:72px;}
+  .field input, .field select, .field textarea{padding:11px 12px;}
+  .radio-pill{padding:11px 16px; font-size:14px; min-width:44px; min-height:44px;}
+  .radio-pills{gap:8px;}
+  .icon-btn{width:38px; height:38px; font-size:15px;}
+  .train-remove-btn{width:38px; height:38px; font-size:15px;}
+  .btn.sm{padding:9px 14px; font-size:13px;}
+  .btn.ghost{padding:9px 10px;}
+}
+
 /* ============================================================
    GLOBAL: colored task icons, tag chips, ticket completion states
    Previously scoped to .dash-v2 (Dashboard-only preview); now the
@@ -1912,7 +1955,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.35.0';
+const APP_VERSION = '4.36.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1920,6 +1963,16 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.36.0', changes: [
+    'No SQL migration needed \u2014 front-end only. Nothing to run in Supabase, and no change to which tables are backed up.',
+    'FIXED (unsaved data loss on iPhone): training entry typed but not yet saved now survives the page being reloaded or the tab being discarded. Everything typed into a training log lived only in memory, which is fine on a desktop where the tab stays open, but iOS Safari throws away background tabs aggressively \u2014 lock the screen or switch apps for a few minutes mid-workout and coming back reloads the page, silently losing every set, rep and weight entered since the last Save. Drafts are now written to this device as you type (debounced, and again the moment the tab is backgrounded), and restored on the next load with a message saying so.',
+    'Restored drafts are deliberately capped at 24 hours old. A draft displays ON TOP of the last saved log, so resuming a stale one would show old typed numbers over a log that has since been saved \u2014 and saving would then write the stale values back. Anything older is treated as abandoned and discarded.',
+    'The draft copy is local to this device and is never synced. Half-typed values are not data anyone else should receive; only a saved log goes to Supabase, exactly as before.',
+    'FIXED: cancelling the "Delete this log entry?" prompt still threw away whatever had been typed for that exercise. The draft was being discarded before the confirmation was even asked for. Each path now clears its own draft, and only once the removal is actually going ahead.',
+    'iPhone: tapping any input no longer zooms the page. iOS Safari zooms automatically whenever a focused field computes to under 16px, and every field in the app was 12.5\u201313.5px \u2014 so logging a single exercise meant three zoom-and-pinch-back cycles across Sets, Reps and Weight. All inputs are now 16px on phone-width screens. Desktop is unchanged.',
+    'Phone touch targets enlarged where they were sized for a mouse: the five difficulty pills (previously about 27px tall, side by side), the remove-exercise button (previously 20px \u2014 the smallest target on the row, and a destructive one), and the small buttons on the training day card. Desktop sizing is untouched.',
+    'Today\'s training card now stays open after you save, instead of collapsing to the summary. Saving after each machine is the habit that protects a gym session from a discarded tab, and collapsing on every save charged an extra "Edit Log" tap for it. A past day still collapses, since there you are correcting a log rather than building one up.',
+  ]},
   { v:'4.35.0', changes: [
     'No SQL migration needed \u2014 front-end only.',
     'New: Deletion History (Settings \u2192 Activity & Error Log). Every deletion of training data on this device is now recorded durably, surviving reloads, keeping the last 40. Deletions of training logs were previously invisible after the fact: they were not written to the activity log at all, and the session log is wiped on every reload \u2014 so by the time you notice something is missing, days later, there was no way to tell whether the app deleted it or it was lost some other way. If data goes missing and the deletion is NOT listed there, the app did not delete it, which narrows the search enormously.',
@@ -2475,6 +2528,7 @@ const STORAGE_KEYS = {
   HYDRATION: 'dispatch:hydration', // [ {id,date,containerId,ml,loggedAt} ]
   SYNC_ERROR_HISTORY: 'dispatch:syncerrorhistory', // durable, bounded, local-only — see recordSyncErrorHistory()
   DELETION_HISTORY: 'dispatch:deletionhistory', // durable, bounded, local-only — see recordDeletion()
+  TRAINING_DRAFTS: 'dispatch:trainingdrafts', // in-progress, UNSAVED training entry — local-only, never synced. See saveTrainingDrafts().
 };
 
 /* ---------- App State ---------- */
@@ -2877,7 +2931,7 @@ async function loadSettingsOnly(){
 
 async function loadAll(){
   try{
-    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, recipesRes, hydrationRes, syncErrHistRes, delHistRes] = await Promise.all([
+    const [tasksRes, listsRes, healthRes, ratingsRes, metricDefsRes, trainingRes, recipesRes, hydrationRes, syncErrHistRes, delHistRes, trainingDraftsRes] = await Promise.all([
       safeGet(STORAGE_KEYS.TASKS),
       safeGet(STORAGE_KEYS.LISTS),
       safeGet(STORAGE_KEYS.HEALTH),
@@ -2888,9 +2942,11 @@ async function loadAll(){
       safeGet(STORAGE_KEYS.HYDRATION),
       safeGet(STORAGE_KEYS.SYNC_ERROR_HISTORY),
       safeGet(STORAGE_KEYS.DELETION_HISTORY),
+      safeGet(STORAGE_KEYS.TRAINING_DRAFTS),
     ]);
     state.syncErrorHistory = syncErrHistRes ? JSON.parse(syncErrHistRes.value) : [];
     state.deletionHistory = delHistRes ? JSON.parse(delHistRes.value) : [];
+    restoreTrainingDrafts(trainingDraftsRes ? trainingDraftsRes.value : null);
 
     if(tasksRes){
       const parsed = JSON.parse(tasksRes.value);
@@ -3905,6 +3961,7 @@ const CRITICAL_STORAGE_KEYS = [
   'dispatch:lists',             // holds folder assignments
   'dispatch:tasks',
   'dispatch:settings',
+  'dispatch:trainingdrafts',    // the ONLY copy of typed-but-not-yet-saved training entry
 ];
 async function evictDisposableCaches(exceptKey){
   let evicted = [];
@@ -7888,11 +7945,110 @@ function setTrainingDraftField(date, exerciseId, field, value){
   const key = trainingDraftKey(date, exerciseId);
   if(!state.trainingDraftValues[key]) state.trainingDraftValues[key] = {};
   state.trainingDraftValues[key][field] = value;
+  scheduleTrainingDraftSave();
 }
 function clearTrainingDraftsForDate(date){
   Object.keys(state.trainingDraftValues).forEach(key=>{
     if(key.startsWith(`${date}::`)) delete state.trainingDraftValues[key];
   });
+  scheduleTrainingDraftSave();
+}
+
+/* ---------- Draft persistence (local-only, NEVER synced) ----------
+
+   Drafts used to live only in memory. That is fine on a desktop where the tab
+   stays open, but on iOS Safari a background tab is discarded aggressively —
+   lock the screen or switch apps for a few minutes and coming back reloads the
+   page. Everything typed since the last "Save Today's Log" was silently gone,
+   which for a gym session logged across several machines could be the whole
+   workout.
+
+   These writes are deliberately kept out of the sync path entirely. A draft is
+   by definition not-yet-committed data belonging to this one device; pushing it
+   anywhere would mean a half-typed row on the phone could reach Supabase and
+   from there another device.
+
+   Pending adds are stored alongside, because a staged-but-unsaved exercise is
+   the same kind of work: lose it and the typed values for it have nowhere to
+   go even if the values themselves survived. */
+const TRAINING_DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+let trainingDraftSaveTimer = null;
+let trainingDraftsRestored = 0;
+
+function scheduleTrainingDraftSave(){
+  // Debounced: typing a weight fires oninput per keystroke, and a storage
+  // write per keystroke is both wasteful and a good way to hit a quota error
+  // mid-set. 400ms is short enough that a tab discarded a second after you
+  // stop typing still keeps the value.
+  if(trainingDraftSaveTimer) clearTimeout(trainingDraftSaveTimer);
+  trainingDraftSaveTimer = setTimeout(()=>{ trainingDraftSaveTimer = null; persistTrainingDrafts(); }, 400);
+}
+
+async function persistTrainingDrafts(){
+  const drafts = state.trainingDraftValues || {};
+  const pending = state.trainingPendingAdds || {};
+  const hasDrafts = Object.keys(drafts).length > 0;
+  const hasPending = Object.keys(pending).some(d => (pending[d]||[]).length);
+  try{
+    if(!hasDrafts && !hasPending){
+      // Nothing outstanding — remove the key rather than leaving an empty
+      // object behind, so a later load can't "restore" a stale shell.
+      await window.storage.delete(STORAGE_KEYS.TRAINING_DRAFTS, false);
+      return;
+    }
+    const payload = JSON.stringify({ savedAt: new Date().toISOString(), drafts, pendingAdds: pending });
+    await safeStorageSet(STORAGE_KEYS.TRAINING_DRAFTS, payload, 'training drafts', { silent: true });
+  } catch(e){
+    // Never surface this as a blocking failure: the in-memory draft is still
+    // intact and the person is mid-entry. Recorded so it is diagnosable.
+    diagLogEvent('local-save', 'training draft persist failed', { error: e.message||String(e) });
+  }
+}
+
+/* Writes immediately rather than waiting out the debounce. Used on the events
+   that precede a tab going away, where 400ms is 400ms too long. */
+function flushTrainingDrafts(){
+  if(trainingDraftSaveTimer){ clearTimeout(trainingDraftSaveTimer); trainingDraftSaveTimer = null; }
+  persistTrainingDrafts();
+}
+
+function restoreTrainingDrafts(raw){
+  trainingDraftsRestored = 0;
+  if(!raw) return;
+  let parsed;
+  try{ parsed = JSON.parse(raw); } catch(e){ return; }
+  if(!parsed || typeof parsed !== 'object') return;
+
+  // Age cap. A draft displays ON TOP of the last saved log, so restoring a
+  // stale one would show old typed numbers over a log that has since been
+  // saved — and pressing Save would then write the stale values back. Anything
+  // older than a day is treated as abandoned rather than resumed.
+  const savedAt = Date.parse(parsed.savedAt || '');
+  if(!isFinite(savedAt) || (Date.now() - savedAt) > TRAINING_DRAFT_MAX_AGE_MS){
+    diagLogEvent('load', 'training drafts discarded — older than 24h', { savedAt: parsed.savedAt || null });
+    try{ window.storage.delete(STORAGE_KEYS.TRAINING_DRAFTS, false); } catch(e){}
+    return;
+  }
+
+  const drafts = (parsed.drafts && typeof parsed.drafts === 'object') ? parsed.drafts : {};
+  const pending = (parsed.pendingAdds && typeof parsed.pendingAdds === 'object') ? parsed.pendingAdds : {};
+  state.trainingDraftValues = drafts;
+  state.trainingPendingAdds = pending;
+  trainingDraftsRestored = Object.keys(drafts).length
+    + Object.keys(pending).reduce((n,d)=> n + ((pending[d]||[]).length), 0);
+  if(trainingDraftsRestored){
+    diagLogEvent('load', 'restored unsaved training entry', { entries: trainingDraftsRestored, savedAt: parsed.savedAt });
+  }
+}
+
+/* Announced, never silent. Restoring typed values without saying so would make
+   it impossible to tell a resumed draft from a saved log at a glance — which is
+   exactly the ambiguity that makes stale drafts dangerous. */
+function announceRestoredTrainingDrafts(){
+  if(!trainingDraftsRestored) return;
+  const n = trainingDraftsRestored;
+  trainingDraftsRestored = 0;
+  setTimeout(()=> showToast(`Restored unsaved training entry for ${n} exercise${n===1?'':'s'} — remember to Save`), 900);
 }
 function renderTrainingExerciseLogRow(date, block, index){
   const isSessionLevel = !!block.__sessionLevel;
@@ -7919,7 +8075,7 @@ function renderTrainingExerciseLogRow(date, block, index){
         <b>${title ? escapeHtml(title) : `⚠ missing exercise "${escapeHtml(block.exerciseId||'')}"`}</b>
         <span style="display:flex; align-items:center; gap:8px;">
           ${repsLine ? `<span class="page-sub">${escapeHtml(repsLine)}</span>` : ''}
-          ${!isSessionLevel ? `<button class="icon-btn" style="width:20px;height:20px;font-size:11px;" title="Remove from this day" onclick="removeExerciseFromDay('${date}','${escapeHtml(block.exerciseId)}')">✕</button>` : ''}
+          ${!isSessionLevel ? `<button class="icon-btn train-remove-btn" title="Remove from this day" onclick="removeExerciseFromDay('${date}','${escapeHtml(block.exerciseId)}')">✕</button>` : ''}
         </span>
       </div>
       ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
@@ -7944,37 +8100,37 @@ function renderTrainingExerciseLogRow(date, block, index){
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Distance (km)</span>
             <input type="number" min="0" step="0.1" id="${rowId}_distanceKm" value="${val('distanceKm','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','distanceKm', this.value===''?null:Number(this.value));"
-                   style="width:76px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:76px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Time (min)</span>
             <input type="number" min="0" step="1" id="${rowId}_durationMin" value="${val('durationMin','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','durationMin', this.value===''?null:Number(this.value));"
-                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:70px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Avg HR (bpm)</span>
             <input type="number" min="0" step="1" id="${rowId}_avgHeartRate" value="${val('avgHeartRate','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgHeartRate', this.value===''?null:Number(this.value));"
-                   style="width:76px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:76px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Avg Pace (min/km)</span>
             <input type="text" id="${rowId}_avgPace" value="${escapeHtml(String(val('avgPace','')))}" placeholder="e.g. 6:30"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgPace', this.value);"
-                   style="width:90px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:90px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Incline (%)</span>
             <input type="text" id="${rowId}_incline" value="${escapeHtml(String(val('incline','')))}" placeholder="e.g. 3"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','incline', this.value);"
-                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:70px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Calories</span>
             <input type="number" min="0" step="1" id="${rowId}_calories" value="${val('calories','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','calories', this.value===''?null:Number(this.value));"
-                   style="width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:70px;">
           </div>
         </div>
       ` : ''}
@@ -7984,19 +8140,19 @@ function renderTrainingExerciseLogRow(date, block, index){
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Sets</span>
             <input type="number" min="0" step="1" id="${rowId}_sets" value="${val('sets','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','sets', this.value===''?null:Number(this.value));"
-                   style="width:56px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:56px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Reps</span>
             <input type="text" id="${rowId}_reps" value="${escapeHtml(String(val('reps','')))}" placeholder="e.g. 10 or 8-10"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','reps', this.value);"
-                   style="width:100px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:100px;">
           </div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Weight (kg)</span>
             <input type="number" min="0" step="0.5" id="${rowId}_weight" value="${val('weight','')}" placeholder="—"
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','weight', this.value===''?null:Number(this.value));"
-                   style="width:80px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; background:var(--paper); color:var(--ink);">
+                   class="train-input" style="width:80px;">
           </div>
         </div>
       ` : ''}
@@ -8149,9 +8305,17 @@ async function saveTrainingDayLogs(date){
   });
   if(state.trainingPendingAdds[date]) delete state.trainingPendingAdds[date];
   clearTrainingDraftsForDate(date);
+  flushTrainingDrafts(); // the values are committed to logs now — drop the draft copy at once
   await saveTraining();
   diagLogEvent('activity', `Training log saved for ${date}`, { exercises: count });
-  if(state.trainingEditingDate === date) state.trainingEditingDate = null; // collapse back to the summary card if this completed the day
+  // Saving after each machine is the right habit at the gym — it is what keeps
+  // a discarded tab from costing you the session. Collapsing to the summary
+  // card on every save punished that: adding the next exercise then cost an
+  // extra "Edit Log" tap each time. Today's card therefore stays open once
+  // saved; a past day still collapses, since there you are correcting a log
+  // rather than building one up.
+  if(state.trainingEditingDate === date && date !== todayStr()) state.trainingEditingDate = null;
+  else if(date === todayStr()) state.trainingEditingDate = date;
   renderMain();
   showToast(`Saved log for ${count} exercise${count===1?'':'s'}`);
 }
@@ -8159,6 +8323,7 @@ function addExerciseToDay(date, exerciseId){
   if(!state.trainingPendingAdds[date]) state.trainingPendingAdds[date] = [];
   if(getTrainingDayExerciseIds(date).includes(exerciseId)) return;
   state.trainingPendingAdds[date].push(exerciseId);
+  flushTrainingDrafts(); // a staged exercise is unsaved work — survive a tab discard
   state.trainingEditingDate = date; // make sure we're not showing a stale collapsed summary
   // Explicitly land on Training → Today after adding, regardless of what
   // page/subpage you were on when this fired (e.g. after creating a brand
@@ -8170,10 +8335,16 @@ function addExerciseToDay(date, exerciseId){
   updateNavBadges();
 }
 async function removeExerciseFromDay(date, exerciseId){
-  delete state.trainingDraftValues[trainingDraftKey(date, exerciseId)];
+  // The draft used to be discarded HERE, before the saved-row path had even
+  // asked for confirmation — so cancelling the "Delete this log entry?" prompt
+  // still threw away whatever had been typed for that exercise. Each path now
+  // clears its own draft, and only once it has actually committed to removing
+  // the row.
   const pending = state.trainingPendingAdds[date] || [];
   if(pending.includes(exerciseId)){
     state.trainingPendingAdds[date] = pending.filter(id=>id!==exerciseId);
+    delete state.trainingDraftValues[trainingDraftKey(date, exerciseId)];
+    flushTrainingDrafts();
     renderMain();
     return;
   }
@@ -8420,6 +8591,8 @@ async function deleteTrainingExerciseLog(date, exerciseId){
   const log = getTrainingLogForExercise(date, exerciseId);
   if(!log) return;
   if(!confirm(`Delete this log entry? This can't be undone.`)) return;
+  delete state.trainingDraftValues[trainingDraftKey(date, exerciseId)];
+  flushTrainingDrafts();
   state.training.logs = state.training.logs.filter(l=> !(l.date===date && l.exerciseId===exerciseId));
   pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:exerciseId } });
   // Deleting training data is irreversible and is the one thing most worth
@@ -12504,6 +12677,7 @@ async function init(){
     if(!usingNativeAppStorage){
       setTimeout(()=> showToast('Running standalone — saving to this browser instead of Claude'), 700);
     }
+    announceRestoredTrainingDrafts();
   };
 
   if(syncConfigured()){
@@ -12898,6 +13072,14 @@ function submitTopmostModal(){
   btn.click();
   return true;
 }
+
+/* The last chance to write anything down. iOS Safari fires pagehide when it
+   backgrounds a tab and may then discard it without ever running another line
+   of this script, so waiting out the 400ms debounce is not an option here.
+   visibilitychange covers the app-switch case on the platforms that do not
+   fire pagehide until the tab is actually torn down. */
+window.addEventListener('pagehide', flushTrainingDrafts);
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) flushTrainingDrafts(); });
 
 document.addEventListener('keydown', (e)=>{
   if((e.metaKey||e.ctrlKey) && e.key === 'Enter'){
