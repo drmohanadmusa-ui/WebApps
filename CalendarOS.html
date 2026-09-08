@@ -706,6 +706,16 @@ select.filter-select, input.filter-date{
   border:1px solid var(--teal); border-radius:6px;
   padding:7px 10px; font-size:12px; margin-top:6px; color:var(--ink);
 }
+.target-badge{
+  display:flex; align-items:center; flex-wrap:wrap; gap:4px;
+  background:color-mix(in srgb, var(--brass) 10%, var(--paper));
+  border:1px solid var(--brass); border-radius:6px;
+  padding:6px 10px; font-size:12px; margin-top:6px; color:var(--ink);
+}
+.target-badge-met{
+  background:color-mix(in srgb, var(--teal) 10%, var(--paper));
+  border-color:var(--teal);
+}
 
 /* ============ REST TIMER ============ */
 #restTimerDisplay{ position:sticky; top:8px; z-index:10; margin-bottom:12px; }
@@ -1439,12 +1449,72 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
 }
 .gate-divider::before, .gate-divider::after{content:""; flex:1; height:1px; background:var(--line);}
 
+/* ============ MOBILE TOP BAR + SLIDE-OUT NAV ============
+   On desktop: .mobile-top-bar and .mobile-nav-drawer are hidden.
+   On mobile (≤860px): .sidebar is hidden, the top bar replaces it. */
+.mobile-top-bar{ display:none; }
+.mobile-nav-drawer{ display:none; }
+.mobile-nav-overlay{ display:none; }
+
 @media (max-width: 860px){
-  #app{flex-direction:column;}
-  .sidebar{width:100%; height:auto; position:relative; flex-direction:row; align-items:center; overflow-x:auto; padding:12px;}
-  .brand-sub, .sidebar-footer, .brand{display:none;}
-  .nav{flex-direction:row;}
-  .main{padding:18px;}
+  /* Hide the desktop sidebar entirely */
+  .sidebar{ display:none; }
+
+  /* Thin fixed top bar: brand mark + current page name + hamburger */
+  .mobile-top-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:300;
+    background:var(--paper-raised); border-bottom:1px solid var(--line);
+    padding:0 16px; gap:12px;
+  }
+  .mobile-menu-btn{
+    display:flex; align-items:center; gap:10px; flex:1;
+    background:none; border:none; padding:0; cursor:pointer;
+    color:var(--ink); text-align:left;
+  }
+  .mobile-page-label{
+    font-family:var(--font-display); font-size:16px; font-weight:600; flex:1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .mobile-menu-icon{ font-size:18px; color:var(--slate); flex-shrink:0; }
+  .mobile-dark-btn{ flex-shrink:0; }
+
+  /* Push the main content below the top bar */
+  #app{ padding-top:52px; }
+  .main{ padding:16px; }
+
+  /* Slide-out drawer */
+  .mobile-nav-drawer{
+    display:flex; flex-direction:column;
+    position:fixed; top:52px; left:0; bottom:0; width:min(280px, 85vw);
+    background:var(--paper-raised); border-right:1px solid var(--line);
+    z-index:299; overflow-y:auto;
+    animation: mobileNavSlideIn .18s ease;
+  }
+  @keyframes mobileNavSlideIn{ from{ transform:translateX(-100%); } to{ transform:translateX(0); } }
+  .mobile-nav-list{ display:flex; flex-direction:column; padding:8px 0; flex:1; }
+  .mobile-nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 20px; border:none; background:none; text-align:left;
+    color:var(--ink); font-size:15px; font-weight:500; cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  .mobile-nav-item:hover{ background:var(--paper-dim); }
+  .mobile-nav-item.active{
+    background:var(--paper-dim); color:var(--brass);
+    border-left-color:var(--brass); font-weight:700;
+  }
+  .mobile-nav-icon{ font-size:16px; width:22px; text-align:center; flex-shrink:0; }
+  .mobile-nav-label{ flex:1; }
+  .mobile-nav-badge{
+    background:var(--brass); color:#fff; font-size:11px; font-weight:700;
+    padding:2px 7px; border-radius:999px; flex-shrink:0;
+  }
+  .mobile-nav-footer{ padding:16px 20px; border-top:1px solid var(--line); }
+  .mobile-nav-overlay{
+    display:block; position:fixed; inset:0; top:52px; z-index:298;
+    background:rgba(0,0,0,0.35);
+  }
   .stat-strip{gap:8px;}
 }
 
@@ -2017,7 +2087,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.40.0';
+const APP_VERSION = '4.42.1';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -2025,6 +2095,39 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.42.1', changes: [
+    'No SQL migration needed \u2014 front-end only. Session blocks already have reps, sets and notes fields; this change reads them.',
+    'Session targets now appear on every exercise card while you are logging. When a session is assigned to the calendar date (e.g. from a weekly review import), each exercise shows a gold \u201c\ud83c\udfaf Target\u201d badge: sets \xd7 rep range \xd7 suggested weight. The badge turns teal when the set count is met, and a live counter shows how many sets you have logged vs the target.',
+    'The suggested starting weight is parsed automatically from the block notes field that the AI review prompt writes in. You do not need to enter it manually.',
+    'The completed session card now shows a line-by-line target vs actual breakdown for every exercise: sets logged, best weight, the target, and whether it was hit. The header shows how many targets were hit out of the total.',
+    'When no session is assigned to a date, nothing changes \u2014 the target badge simply does not appear.',
+  ]},
+  { v:'4.42.0', changes: [
+    'No SQL migration needed \u2014 front-end only. All training analytics are computed from existing data; nothing new is stored or synced.',
+    'Training section added to the Progress page (tap \u201c\u26ca Training\u201d at the top). Four panels:',
+    '1. Session adherence: how many sessions you actually completed vs how many were planned on the calendar, shown as a bar chart for the last 8 weeks. Bars turn amber when you fell short of plan.',
+    '2. Weekly volume: total hard sets completed per week for the last 8 weeks. A flat or rising trend is the signal that progressive overload is working; a sudden drop usually means a recovery week is due.',
+    '3. Estimated 1RM trend: a line chart of the Epley e1RM over every logged session for any exercise you pick from a dropdown. An upward trend over weeks is the clearest signal of strength progress. Sets above 10 reps are excluded (the formula is unreliable there) and the chart requires at least 2 sessions to draw.',
+    '4. Failure frequency: every exercise with at least 3 logged sets ranked by the percentage taken to failure, with a colour-coded bar. Consistently above 50% without progress is the signal to deload; occasionally is a useful reference point.',
+    'The original Tasks tab is unchanged \u2014 commitment rate, activity log, and insights remain exactly as before.',
+    'The chart helper functions (svgBarChart, svgLineChart) are self-contained inline SVG \u2014 no library, no canvas, no external assets. They inherit the active colour theme.',
+  ]},
+  { v:'4.41.0', changes: [
+    '\u{1F534} SQL migration required: run Settings \u2192 Cloud Sync \u2192 Copy SQL. Adds two columns to training_exercises (muscle_group, rest_sec) and one to app_settings (muscle_band). Additive and idempotent.',
+    'Muscle group field on every exercise: a dropdown in the Add and Edit exercise modals (Chest, Back, Shoulders, Biceps, Triceps, Quads, Hamstrings, Glutes, Calves, Abs, Forearms). Shown as a teal badge in the Exercise Library list. Drives the weekly volume calculation, the body map shading, and the rest-timer default (120s for compound muscle groups, 90s for isolation).',
+    'Custom rest interval per exercise: an optional override on the Add/Edit form. Takes precedence over the muscle-group default when set.',
+    'Weekly volume body map: shown below the day log on the Log Training page. Front and back SVG figure with each muscle region shaded by the previous 7 days of done, non-warm-up sets — amber when under the band, teal when in range, red when over. Tapping any region filters the Exercise Library to that muscle. Editable set band (default 10\u201320 per week), synced across devices.',
+    'Exercise Library now has a muscle-group filter row above the tag filter chips. Tapping a muscle on the body map switches to the library pre-filtered to that muscle.',
+    'Exercises without a muscle group show a warning count at the bottom of the volume table so you know which ones are missing from the calculation.',
+  ]},
+  { v:'4.40.1', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'MOBILE NAV: the horizontal scrolling nav bar that covered the top of the screen on iPhone is replaced by a clean fixed top bar showing only the brand mark, the current page name, and a hamburger icon. Tapping the hamburger opens a slide-out drawer listing all pages with the active one highlighted. This removes 10+ buttons from the visible screen and makes the page you are on clear at a glance.',
+    'REST TIMER: tips now rotate every 4.5 seconds instead of every 1 second. The timer countdown also no longer causes the tip to flicker on every tick \u2014 only the seconds counter updates each second; the tip text updates independently on the slower schedule.',
+    'LOGGING GUIDE: a collapsible \u201cℹ Logging guide\u201d section now appears at the top of every training day card, explaining RIR 0\u20134, the F (failure) button, the W (warm-up) button, and the rest timer intervals. It collapses once you know the terms and remembers your preference.',
+    'PLAN DAY: the Randomize button is replaced by a Plan Day button. When a session is assigned to the calendar date (e.g. from a review pack import), tapping it stages all the session\u2019s exercises as pending adds \u2014 so opening Training on a gym day shows exactly what the plan calls for, ready to log. If no session is assigned, it opens the exercise picker as before.',
+    'REVIEW PACK: the prompt now includes your full exercise library (with IDs), specifies the exact import JSON schema, and asks explicitly for a complete two-week calendar as the primary deliverable \u2014 not just a plan description. Import the returned JSON via Paste & Import and the exercises will appear on the calendar for each day.',
+  ]},
   { v:'4.40.0', changes: [
     '\u{1F534} SQL migration required: run Settings \u2192 Cloud Sync \u2192 Copy SQL in the Supabase SQL editor. Creates one new table (training_sets) and adds one column (training_suggestions on app_settings). Additive and idempotent \u2014 safe to re-run. Also adds training_sets to the row-level-security loop. Nothing existing is touched or deleted.',
     'TRAINING OVERHAUL: logging is now per set rather than one summary per exercise. Every exercise card shows individual set rows: tap the circle to mark a set done (starts the rest timer), enter reps and kg, and pick an RIR 0\u20134 or mark it with F (taken to failure). The summary numbers are derived from the set rows and kept for backward compatibility \u2014 old logs keep displaying exactly as before.',
@@ -2654,7 +2757,7 @@ const state = {
   selectedDate: todayStr(),
   dashboardFilter: 'Today', // Today | Next7 | Next30 | Custom
   locationFilter: 'All',
-  searchQuery: '',
+  mobileNavOpen: false,
   groupByLocation: true, // always defaults on each load, per user preference — not persisted
   selectedListId: null,
   calMonthCursor: null, // {year, month}
@@ -2677,6 +2780,8 @@ const state = {
   progressSelectedTaskId: null, // which task's individual history is open, if any
   progressRangeDays: 30, // 7 | 30 | 90 | null (all time) — for the overall Activity Log
   progressKindFilter: 'all', // 'all' | 'recurring' | 'oneTime'
+  progressTab: 'tasks', // 'tasks' | 'training' — which tab is active on the Progress page
+  progressE1RMExId: null, // which exercise's e1RM trend is shown on the Training progress tab
   // Week and Calendar each get their own independent filter — deliberately
   // NOT shared, since a person may want "hide daily" on Calendar by default
   // but a different filter (or none) on Week.
@@ -3772,19 +3877,19 @@ function rowToRating(row){
 }
 function trainingExerciseToRow(ex){
   const s = state.settings.sync;
-  // video_url is still written as the FIRST url so an older cached build (or
-  // any consumer expecting the single-video shape) keeps working unchanged.
-  // video_urls is the full list and is the source of truth going forward.
   const urls = exVideoUrls(ex);
-  return { pin:s.pin, id:ex.id, name:ex.name, video_url:urls[0]||null, video_urls:urls, notes:ex.notes||'', category:ex.category||'strength', tag_ids: ex.tagIds||[], updated_at:new Date().toISOString() };
+  return { pin:s.pin, id:ex.id, name:ex.name, video_url:urls[0]||null, video_urls:urls,
+           notes:ex.notes||'', category:ex.category||'strength', tag_ids: ex.tagIds||[],
+           muscle_group: ex.muscleGroup||null, rest_sec: ex.restSec||null,
+           updated_at:new Date().toISOString() };
 }
 function rowToTrainingExercise(r){
-  // Prefer video_urls when present; fall back to the legacy single video_url
-  // so rows written before the migration still surface their video.
   const list = Array.isArray(r.video_urls) && r.video_urls.length
     ? r.video_urls.filter(u=>typeof u==='string' && u.trim()).map(u=>u.trim())
     : (r.video_url ? [r.video_url] : []);
-  return { id:r.id, name:r.name, videoUrl:list[0]||'', videoUrls:list, notes:r.notes||'', category:r.category||'strength', tagIds: r.tag_ids||[] };
+  return { id:r.id, name:r.name, videoUrl:list[0]||'', videoUrls:list, notes:r.notes||'',
+           category:r.category||'strength', tagIds: r.tag_ids||[],
+           muscleGroup: r.muscle_group||null, restSec: r.rest_sec||null };
 }
 function trainingSessionToRow(sess){
   const s = state.settings.sync;
@@ -3976,7 +4081,7 @@ function syncStepsForDomain(domain){
       ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
     ];
     case 'settings': return [
-      ()=> supaUpsert('app_settings', [{ pin: s.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: s.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null, muscle_band: state.settings.muscleBand||null }], 'pin'),
     ];
     case 'training': return [
       ()=> flushPendingTrainingDeletes(),
@@ -4270,6 +4375,9 @@ async function pullFromSupabase(onProgress){
         state.settings.trainingSuggestions = Object.assign(
           state.settings.trainingSuggestions||{}, settingsRows[0].training_suggestions
         );
+      }
+      if(settingsRows[0].muscle_band && typeof settingsRows[0].muscle_band==='object'){
+        state.settings.muscleBand = settingsRows[0].muscle_band;
       }
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
@@ -4857,7 +4965,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null, muscle_band: state.settings.muscleBand||null }], 'pin'),
     ]);
   }
 }
@@ -5392,9 +5500,187 @@ function setProgressKindFilter(k){ state.progressKindFilter = k; renderMain(); }
 function openProgressTaskDetail(taskId){ state.progressSelectedTaskId = taskId; state.progressCalMonthCursor = null; renderMain(); }
 function closeProgressTaskDetail(){ state.progressSelectedTaskId = null; renderMain(); }
 
+/* ============================================================
+   TRAINING PROGRESS ANALYTICS
+   All pure computation over state.training.sets and state.training.logs.
+   Nothing stored, nothing to sync or back up.
+   ============================================================ */
+
+/* Returns an array of { date, e1rm } for an exercise, newest-first. */
+function e1RMHistory(exId){
+  const byDate = {};
+  (state.training.sets||[])
+    .filter(s=> s.exerciseId===exId && !s.isWarmup && !s.toFailure && s.done)
+    .forEach(s=>{ (byDate[s.date]||(byDate[s.date]=[])).push(s); });
+  return Object.entries(byDate)
+    .map(([date, sets])=>({ date, e1rm: epley1RM(sets) }))
+    .filter(x=> x.e1rm !== null)
+    .sort((a,b)=> a.date<b.date?1:-1);
+}
+
+/* Weekly hard sets per muscle, bucketed by ISO week (Mon–Sun). Returns the
+   last N complete weeks as [{week:'YYYY-Www', vol:{muscle:sets,...}}]. */
+function weeklyVolumeHistory(nWeeks){
+  const today = todayStr();
+  const weeks = [];
+  for(let i=0;i<nWeeks;i++){
+    // Walk back in 7-day buckets from today
+    const weekEnd   = addDays(today, -(i*7));
+    const weekStart = addDays(weekEnd, -6);
+    const label = weekStart; // ISO date of Monday
+    const vol = {};
+    (state.training.sets||[])
+      .filter(s=> s.date>=weekStart && s.date<=weekEnd && !s.isWarmup && s.done)
+      .forEach(s=>{
+        const ex = getTrainingExerciseById(s.exerciseId);
+        const mg = ex && ex.muscleGroup;
+        if(!mg) return;
+        vol[mg] = (vol[mg]||0)+1;
+      });
+    weeks.push({ label, weekStart, weekEnd, vol });
+  }
+  return weeks.reverse(); // oldest first for charts
+}
+
+/* Sessions planned vs actually logged, by week. */
+function sessionAdherenceHistory(nWeeks){
+  const today = todayStr();
+  const weeks = [];
+  const loggedDates = new Set((state.training.logs||[]).map(l=>l.date));
+  for(let i=nWeeks-1;i>=0;i--){
+    const weekEnd   = addDays(today, -(i*7));
+    const weekStart = addDays(weekEnd, -6);
+    const planned   = state.training.calendar.filter(c=> c.date>=weekStart && c.date<=weekEnd).length;
+    // Count days that had at least one completed log entry
+    const loggedDays = new Set(
+      (state.training.logs||[]).filter(l=> l.date>=weekStart && l.date<=weekEnd && l.completed).map(l=>l.date)
+    ).size;
+    weeks.push({ label:weekStart, weekStart, weekEnd, planned, logged:loggedDays,
+                 pct: planned ? Math.round((loggedDays/planned)*100) : null });
+  }
+  return weeks;
+}
+
+/* Per-exercise: failure frequency (sets marked toFailure / total working sets). */
+function failureRateByExercise(){
+  const byEx = {};
+  (state.training.sets||[]).filter(s=> !s.isWarmup && s.done).forEach(s=>{
+    if(!byEx[s.exerciseId]) byEx[s.exerciseId] = { total:0, failure:0 };
+    byEx[s.exerciseId].total++;
+    if(s.toFailure) byEx[s.exerciseId].failure++;
+  });
+  return Object.entries(byEx)
+    .map(([exId, d])=>{
+      const ex = getTrainingExerciseById(exId);
+      return { exId, name: ex?ex.name:exId, muscleGroup: ex?ex.muscleGroup:null,
+               total:d.total, failure:d.failure,
+               pct: d.total ? Math.round((d.failure/d.total)*100) : 0 };
+    })
+    .filter(x=> x.total >= 3)  // need at least 3 sets to be meaningful
+    .sort((a,b)=> b.pct - a.pct);
+}
+
+/* ---- Inline SVG bar charts (no library, no canvas) ---- */
+
+/* Renders a simple bar chart as an SVG string.
+   data = [{label, value, colour?}], maxVal optional. */
+function svgBarChart(data, opts={}){
+  const { width=300, height=120, maxVal, barColour='var(--teal)', labelFontSize=9,
+          valueSuffix='', showValue=true, title='' } = opts;
+  const padL=8, padR=8, padT=title?18:8, padB=28;
+  const chartW = width-padL-padR;
+  const chartH = height-padT-padB;
+  const n = data.length;
+  if(!n) return `<div class="page-sub" style="padding:16px 0;text-align:center;">No data yet</div>`;
+  const maxV = maxVal || Math.max(1, ...data.map(d=>d.value||0));
+  const barW = Math.max(6, (chartW / n) - 4);
+  const gap  = (chartW - barW*n) / (n+1);
+
+  const bars = data.map((d,i)=>{
+    const x = padL + gap*(i+1) + barW*i;
+    const barH = Math.round(((d.value||0)/maxV)*chartH);
+    const y = padT + chartH - barH;
+    const col = d.colour || barColour;
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="2" fill="${col}" fill-opacity="0.85"/>
+      ${showValue && d.value ? `<text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="${labelFontSize}" fill="var(--ink-soft)">${d.value}${valueSuffix}</text>` : ''}
+      <text x="${x+barW/2}" y="${padT+chartH+14}" text-anchor="middle" font-size="${labelFontSize}" fill="var(--ink-soft)" transform="rotate(-30 ${x+barW/2} ${padT+chartH+14})">${(d.label||'').slice(-5)}</text>
+    `;
+  }).join('');
+
+  const titleEl = title ? `<text x="${width/2}" y="12" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">${escapeHtml(title)}</text>` : '';
+
+  return `<svg viewBox="0 0 ${width} ${height}" width="100%" xmlns="http://www.w3.org/2000/svg">
+    ${titleEl}
+    <line x1="${padL}" y1="${padT+chartH}" x2="${padL+chartW}" y2="${padT+chartH}" stroke="var(--line)" stroke-width="1"/>
+    ${bars}
+  </svg>`;
+}
+
+/* Line chart for trends (e1RM over time). */
+function svgLineChart(data, opts={}){
+  const { width=300, height=120, lineColour='var(--teal)', labelFontSize=9,
+          valueSuffix='', title='' } = opts;
+  const padL=28, padR=8, padT=title?18:8, padB=28;
+  const chartW = width-padL-padR;
+  const chartH = height-padT-padB;
+  const n = data.length;
+  if(n < 2) return `<div class="page-sub" style="padding:16px 0;text-align:center;">Need at least 2 sessions to show a trend</div>`;
+  const values = data.map(d=>d.value||0);
+  const maxV = Math.max(...values)||1;
+  const minV = Math.min(...values);
+  const range = maxV - minV || 1;
+  const pts = data.map((d,i)=>{
+    const x = padL + (i/(n-1))*chartW;
+    const y = padT + chartH - ((d.value-minV)/range)*chartH;
+    return { x, y, label:d.label, value:d.value };
+  });
+  const polyline = pts.map(p=>`${p.x},${p.y}`).join(' ');
+  const areaPoints = `${pts[0].x},${padT+chartH} ${polyline} ${pts[pts.length-1].x},${padT+chartH}`;
+  const dots = pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColour}">
+    <title>${p.label}: ${p.value}${valueSuffix}</title></circle>`).join('');
+  // Y axis labels
+  const yLabels = [minV, (minV+maxV)/2, maxV].map((v,i)=>{
+    const y = padT + chartH - ((v-minV)/range)*chartH;
+    return `<text x="${padL-4}" y="${y+3}" text-anchor="end" font-size="${labelFontSize}" fill="var(--ink-soft)">${Math.round(v)}${valueSuffix}</text>`;
+  }).join('');
+  // X axis: first and last label only
+  const xLabels = [
+    `<text x="${pts[0].x}" y="${padT+chartH+14}" text-anchor="middle" font-size="${labelFontSize}" fill="var(--ink-soft)">${(pts[0].label||'').slice(-5)}</text>`,
+    n>1 ? `<text x="${pts[n-1].x}" y="${padT+chartH+14}" text-anchor="middle" font-size="${labelFontSize}" fill="var(--ink-soft)">${(pts[n-1].label||'').slice(-5)}</text>` : '',
+  ].join('');
+  const titleEl = title ? `<text x="${width/2}" y="12" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">${escapeHtml(title)}</text>` : '';
+  return `<svg viewBox="0 0 ${width} ${height}" width="100%" xmlns="http://www.w3.org/2000/svg">
+    ${titleEl}
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="var(--line)" stroke-width="1"/>
+    <line x1="${padL}" y1="${padT+chartH}" x2="${padL+chartW}" y2="${padT+chartH}" stroke="var(--line)" stroke-width="1"/>
+    ${yLabels}${xLabels}
+    <polygon points="${areaPoints}" fill="${lineColour}" fill-opacity="0.1"/>
+    <polyline points="${polyline}" fill="none" stroke="${lineColour}" stroke-width="2" stroke-linejoin="round"/>
+    ${dots}
+  </svg>`;
+}
+
 function renderProgressView(){
   if(state.progressSelectedTaskId) return renderProgressTaskDetail(state.progressSelectedTaskId);
 
+  const tab = state.progressTab || 'tasks';
+
+  return `
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Progress</h1>
+      </div>
+    </div>
+    <div class="chip-select" style="margin-bottom:20px;">
+      <button class="${tab==='tasks'?'active':''}" onclick="state.progressTab='tasks';renderMain();">📋 Tasks</button>
+      <button class="${tab==='training'?'active':''}" onclick="state.progressTab='training';renderMain();">⛊ Training</button>
+    </div>
+    ${tab==='training' ? renderTrainingProgressTab() : renderTasksProgressTab()}
+  `;
+}
+
+function renderTasksProgressTab(){
   const rangeDays = state.progressRangeDays;
   const entries = buildActivityLog(rangeDays);
   const doneCount = entries.filter(e=>e.status==='done').length;
@@ -5402,30 +5688,18 @@ function renderProgressView(){
   const movedCount = entries.filter(e=>e.status==='moved').length;
   const resolvedTotal = doneCount + missedCount;
   const commitmentPct = resolvedTotal ? Math.round((doneCount/resolvedTotal)*100) : null;
-
   const kindFilter = state.progressKindFilter;
   const filteredEntries = kindFilter==='all' ? entries : entries.filter(e=>e.kind===kindFilter);
-
   const RANGE_OPTIONS = [[7,'7 Days'],[30,'30 Days'],[90,'90 Days'],[null,'All Time']];
-
   return `
-    <div class="topbar">
-      <div>
-        <h1 class="page-title">Progress</h1>
-        <div class="page-sub">Completion history and commitment rate across your tasks.</div>
-      </div>
-    </div>
-
     <div class="stat-strip">
       <div class="stat-card teal"><div class="stat-num">${commitmentPct===null?'—':commitmentPct+'%'}</div><div class="stat-label">Commitment Rate</div></div>
       <div class="stat-card"><div class="stat-num">${doneCount}</div><div class="stat-label">Completed</div></div>
       <div class="stat-card flag"><div class="stat-num">${missedCount}</div><div class="stat-label">Missed</div></div>
       <div class="stat-card brass"><div class="stat-num">${movedCount}</div><div class="stat-label">Moved</div></div>
     </div>
-
     ${renderFrequentlyMissedSection()}
     ${renderInsightsSection()}
-
     <div class="filter-bar">
       <div class="chip-select">
         ${RANGE_OPTIONS.map(([d,label])=>`<button class="${rangeDays===d?'active':''}" onclick="setProgressRange(${d})">${label}</button>`).join('')}
@@ -5434,7 +5708,6 @@ function renderProgressView(){
         ${[['all','All'],['recurring','Recurring'],['oneTime','One-Time']].map(([k,label])=>`<button class="${kindFilter===k?'active':''}" onclick="setProgressKindFilter('${k}')">${label}</button>`).join('')}
       </div>
     </div>
-
     <div class="section">
       <div class="section-head"><h2>Activity Log</h2><span class="section-count">${filteredEntries.length} entries</span></div>
       <div class="card" style="padding:4px 16px;">
@@ -5448,7 +5721,151 @@ function renderProgressView(){
           </div>
         `).join('') : `<div class="page-sub" style="padding:16px 0;">No activity in this range.</div>`}
       </div>
+    </div>`;
+}
+
+function renderTrainingProgressTab(){
+  const sets = state.training.sets||[];
+  const logs = state.training.logs||[];
+  const exercises = state.training.exercises||[];
+  const hasSets = sets.length > 0;
+  const hasLogs = logs.length > 0;
+
+  // --- Summary stats ---
+  const totalSessions = new Set(logs.filter(l=>l.completed).map(l=>l.date)).size;
+  const totalSets = sets.filter(s=>!s.isWarmup&&s.done).length;
+  const uniqueExercisesTrained = new Set(sets.map(s=>s.exerciseId)).size;
+  const totalFailureSets = sets.filter(s=>s.toFailure&&!s.isWarmup).length;
+
+  // e1RM: find the exercise with the most set data for a default view
+  const exWithMostSets = exercises.reduce((best,ex)=>{
+    const n=sets.filter(s=>s.exerciseId===ex.id&&!s.isWarmup&&s.done).length;
+    return n>(best.n||0)?{ex,n}:best;
+  }, {}).ex || null;
+  const selectedE1RMEx = state.progressE1RMExId
+    ? (exercises.find(e=>e.id===state.progressE1RMExId)||exWithMostSets)
+    : exWithMostSets;
+
+  // --- Adherence chart: last 8 weeks ---
+  const adherenceWeeks = sessionAdherenceHistory(8);
+  const adherenceHasData = adherenceWeeks.some(w=>w.planned>0||w.logged>0);
+  const adherenceChartData = adherenceWeeks.map(w=>({
+    label: w.label.slice(5), // MM-DD
+    value: w.logged,
+    colour: w.planned && w.logged<w.planned ? '#E9B84A' : 'var(--teal)',
+  }));
+  const adherenceOverall = adherenceWeeks.reduce((s,w)=>s+w.logged,0);
+  const adherencePlanned = adherenceWeeks.reduce((s,w)=>s+w.planned,0);
+
+  // --- Weekly volume trend: last 8 weeks, total hard sets ---
+  const volWeeks = weeklyVolumeHistory(8);
+  const volChartData = volWeeks.map(w=>({
+    label: w.label.slice(5),
+    value: Object.values(w.vol).reduce((s,v)=>s+v, 0),
+  }));
+
+  // --- e1RM trend for selected exercise ---
+  const e1RMData = selectedE1RMEx ? e1RMHistory(selectedE1RMEx.id).slice(0,12).reverse() : [];
+  const e1RMChartData = e1RMData.map(d=>({ label: d.date.slice(5), value: Math.round(d.e1rm) }));
+
+  // --- Failure rate ---
+  const failureRates = failureRateByExercise().slice(0,8);
+
+  // No data at all
+  if(!hasSets && !hasLogs){
+    return `<div class="card empty-state" style="margin-top:20px;">
+      <span class="glyph">⛊</span>
+      <p>No training data yet.</p>
+      <p class="page-sub">Once you start logging sets on the Training page, your trends will appear here.</p>
+    </div>`;
+  }
+
+  return `
+    <!-- Summary strip -->
+    <div class="stat-strip" style="margin-bottom:20px;">
+      <div class="stat-card teal"><div class="stat-num">${totalSessions}</div><div class="stat-label">Sessions logged</div></div>
+      <div class="stat-card"><div class="stat-num">${totalSets}</div><div class="stat-label">Working sets done</div></div>
+      <div class="stat-card"><div class="stat-num">${uniqueExercisesTrained}</div><div class="stat-label">Exercises trained</div></div>
+      <div class="stat-card brass"><div class="stat-num">${totalFailureSets}</div><div class="stat-label">Sets to failure</div></div>
     </div>
+
+    <!-- Session adherence -->
+    <div class="section" style="margin-bottom:20px;">
+      <div class="section-head">
+        <h2>Session Adherence</h2>
+        <span class="page-sub" style="font-size:11.5px;">${adherenceOverall} of ${adherencePlanned} planned ${adherencePlanned===1?'session':'sessions'} completed (last 8 weeks)</span>
+      </div>
+      <div class="card" style="padding:12px 14px;">
+        ${adherenceHasData
+          ? svgBarChart(adherenceChartData, { width:320, height:110, title:'Sessions logged per week', valueSuffix:'' })
+          : `<div class="page-sub" style="padding:8px 0;">Add sessions to your training calendar to see planned vs actual adherence.</div>`}
+      </div>
+    </div>
+
+    <!-- Weekly volume trend -->
+    <div class="section" style="margin-bottom:20px;">
+      <div class="section-head">
+        <h2>Weekly Volume</h2>
+        <span class="page-sub" style="font-size:11.5px;">Total hard sets completed per week (last 8 weeks)</span>
+      </div>
+      <div class="card" style="padding:12px 14px;">
+        ${hasSets
+          ? svgBarChart(volChartData, { width:320, height:110, title:'Hard sets / week', barColour:'var(--brass)' })
+          : `<div class="page-sub" style="padding:8px 0;">Log sets on the Training page to see volume trends.</div>`}
+      </div>
+    </div>
+
+    <!-- e1RM trend -->
+    <div class="section" style="margin-bottom:20px;">
+      <div class="section-head">
+        <h2>Estimated 1RM Trend</h2>
+      </div>
+      <div class="card" style="padding:12px 14px;">
+        <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="page-sub" style="font-size:12px;">Exercise:</span>
+          <select style="font-size:13px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink);"
+            onchange="state.progressE1RMExId=this.value; renderMain();">
+            ${exercises
+              .filter(ex=> ex.category!=='walking')
+              .sort((a,b)=>a.name.localeCompare(b.name))
+              .map(ex=>`<option value="${ex.id}" ${selectedE1RMEx&&ex.id===selectedE1RMEx.id?'selected':''}>${escapeHtml(ex.name)}</option>`).join('')}
+          </select>
+        </div>
+        ${e1RMChartData.length >= 2
+          ? svgLineChart(e1RMChartData, { width:320, height:120, valueSuffix:'kg',
+              title: selectedE1RMEx ? `e1RM — ${selectedE1RMEx.name}` : 'e1RM' })
+          : `<div class="page-sub" style="padding:8px 0;">${selectedE1RMEx
+              ? `Log ${selectedE1RMEx.name} at least twice with sets ≤10 reps to see an e1RM trend.`
+              : 'No exercises with enough data yet.'}</div>`}
+        ${e1RMChartData.length ? `<div class="page-sub" style="margin-top:6px;font-size:11px;">Epley formula (weight × (1 + reps/30)). Sets above 10 reps excluded — the formula is unreliable there.</div>` : ''}
+      </div>
+    </div>
+
+    <!-- Failure rate per exercise -->
+    ${failureRates.length ? `
+    <div class="section" style="margin-bottom:20px;">
+      <div class="section-head">
+        <h2>Failure Frequency</h2>
+        <span class="page-sub" style="font-size:11.5px;">Exercises with ≥ 3 logged sets, sorted by % taken to failure</span>
+      </div>
+      <div class="card" style="padding:4px 16px;">
+        ${failureRates.map(r=>{
+          const pctW = Math.max(2, r.pct);
+          const col = r.pct > 50 ? '#D95B5B' : r.pct > 20 ? '#E9B84A' : 'var(--teal)';
+          return `<div class="metric-manage-row">
+            <span class="metric-manage-name" style="flex:1;">${escapeHtml(r.name)}</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;min-width:120px;">
+              <div style="flex:1;height:6px;background:var(--paper-dim);border-radius:3px;overflow:hidden;">
+                <div style="width:${pctW}%;height:100%;background:${col};border-radius:3px;"></div>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:${col};width:36px;text-align:right;">${r.pct}%</span>
+              <span class="page-sub" style="font-size:11px;width:60px;">${r.failure}/${r.total} sets</span>
+            </div>
+          </div>`;
+        }).join('')}
+        <div class="page-sub" style="padding:8px 0;font-size:11px;">Taking sets to failure occasionally is useful as a reference. Consistently above 50% without progress is a signal to deload.</div>
+      </div>
+    </div>` : ''}
   `;
 }
 
@@ -5699,6 +6116,8 @@ function render(){
     .filter(key => NAV_META[key] && (key === 'dashboard' || key === 'settings' || !hidden.includes(key)))
     .map(key => [key, ...NAV_META[key]]);
 
+  const currentNavMeta = NAV_META[state.view] || ['','',''];
+  const currentLabel = currentNavMeta[1] || '';
   app.innerHTML = `
     <div class="sidebar">
       <div class="brand-row">
@@ -5714,12 +6133,43 @@ function render(){
         <div class="today-chip">TODAY<br><b>${fullDate(todayStr())}</b></div>
       </div>
     </div>
+    <div class="mobile-top-bar">
+      <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation" aria-expanded="${state.mobileNavOpen}">
+        <span class="brand-mark" style="width:10px;height:10px;background:var(--brass);transform:rotate(45deg);border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span class="mobile-page-label">${escapeHtml(currentLabel)}</span>
+        <span class="mobile-menu-icon">${state.mobileNavOpen ? '✕' : '☰'}</span>
+      </button>
+      <button class="dark-toggle-btn mobile-dark-btn" title="Toggle dark mode" onclick="toggleDarkMode()">${state.settings.darkMode ? '☀' : '☾'}</button>
+    </div>
+    ${state.mobileNavOpen ? `<div class="mobile-nav-drawer" id="mobileNavDrawer">
+      <nav class="mobile-nav-list">
+        ${navItems.map(([key,icon,label,count])=>`
+          <button class="mobile-nav-item ${state.view===key?'active':''}" onclick="setView('${key}'); closeMobileNav();">
+            <span class="mobile-nav-icon">${icon}</span>
+            <span class="mobile-nav-label">${escapeHtml(label)}</span>
+            ${count ? `<span class="mobile-nav-badge">${count}</span>` : ''}
+          </button>`).join('')}
+      </nav>
+      <div class="mobile-nav-footer">
+        <div id="syncBadgeWrapMobile">${syncBadgeHtml()}</div>
+      </div>
+    </div>
+    <div class="mobile-nav-overlay" onclick="closeMobileNav()"></div>` : ''}
     <div class="main" id="mainContent"></div>
     <div id="pinnedListPanel"></div>
   `;
   applyContentWidthClass();
   applyColorTheme();
   renderMain();
+}
+function toggleMobileNav(){
+  state.mobileNavOpen = !state.mobileNavOpen;
+  render();
+}
+function closeMobileNav(){
+  if(!state.mobileNavOpen) return;
+  state.mobileNavOpen = false;
+  render();
 }
 function applyContentWidthClass(){
   const el = document.getElementById('mainContent');
@@ -5875,6 +6325,7 @@ function setView(v){
   diagLogEvent('activity', `Navigated to ${v}`);
   state.view = v;
   state.searchQuery = '';
+  state.mobileNavOpen = false;
   if(v !== 'tasks'){ state.batchSelectMode = false; state.selectedTaskIds = new Set(); }
   // Was calling the full shell-rebuilding render() here — that re-created
   // every sidebar nav item on every single page click, re-triggering their
@@ -8226,11 +8677,15 @@ function bestE1RMForExercise(exId, excludeDate){
 let _restTimerHandle=null,_restTimerEnd=null,_restTimerExId=null,_restTimerDefaultSec=120;
 function startRestTimer(seconds,exId){
   if(_restTimerHandle) clearInterval(_restTimerHandle);
+  if(_tipRotationHandle) clearInterval(_tipRotationHandle);
   _restTimerEnd=Date.now()+seconds*1000;_restTimerExId=exId;_restTimerDefaultSec=seconds;
   _updateRestTimerUI();
   _restTimerHandle=setInterval(_updateRestTimerUI,1000);
+  // Rotate tips every 4.5 seconds, not every 1 second.
+  _tipRotationHandle=setInterval(_rotateTip,4500);
 }
 let _tipIndex=0;
+let _tipRotationHandle=null;
 const REST_TIPS=[
   'Slow walk — keeps you warm without loading the muscle',
   'Nasal breathing for 30s — heart rate settles faster',
@@ -8240,19 +8695,30 @@ const REST_TIPS=[
   'Hip circles or ankle rolls between lower-body sets',
   'Take a sip of water if you haven\'t in the last 10 minutes',
 ];
-function _nextRestTip(){ _tipIndex=(_tipIndex+1)%REST_TIPS.length; return REST_TIPS[_tipIndex]; }
+function _rotateTip(){
+  _tipIndex=(_tipIndex+1)%REST_TIPS.length;
+  const el=document.getElementById('restTimerTip');
+  if(el) el.textContent=REST_TIPS[_tipIndex];
+}
 function _updateRestTimerUI(){
   const remaining=Math.max(0,Math.round((_restTimerEnd-Date.now())/1000));
   const el=document.getElementById('restTimerDisplay');
   if(!el){if(_restTimerHandle){clearInterval(_restTimerHandle);_restTimerHandle=null;}return;}
   if(remaining<=0){clearInterval(_restTimerHandle);_restTimerHandle=null;el.innerHTML=_restTimerDoneHtml();return;}
   const m=Math.floor(remaining/60),s=remaining%60;
-  el.innerHTML=`<div class="rest-timer-box">
-    <span class="rest-timer-label">Rest</span>
-    <span class="rest-timer-count">${m}:${String(s).padStart(2,'0')}</span>
-    <button class="btn ghost sm" onclick="stopRestTimer()">Done early</button>
-    <div class="rest-timer-tip">${_nextRestTip()}</div>
-  </div>`;
+  // Only re-render the timer structure on the first call; after that only update the count.
+  // This prevents the tip re-rendering (and flickering) every second.
+  if(!document.getElementById('restTimerCount')){
+    el.innerHTML=`<div class="rest-timer-box">
+      <span class="rest-timer-label">Rest</span>
+      <span class="rest-timer-count" id="restTimerCount">${m}:${String(s).padStart(2,'0')}</span>
+      <button class="btn ghost sm" onclick="stopRestTimer()">Done early</button>
+      <div class="rest-timer-tip" id="restTimerTip">${REST_TIPS[_tipIndex]}</div>
+    </div>`;
+  } else {
+    const countEl=document.getElementById('restTimerCount');
+    if(countEl) countEl.textContent=`${m}:${String(s).padStart(2,'0')}`;
+  }
 }
 function _restTimerDoneHtml(){
   return `<div class="rest-timer-box rest-timer-done">
@@ -8263,6 +8729,7 @@ function _restTimerDoneHtml(){
 }
 function stopRestTimer(){
   if(_restTimerHandle){clearInterval(_restTimerHandle);_restTimerHandle=null;}
+  if(_tipRotationHandle){clearInterval(_tipRotationHandle);_tipRotationHandle=null;}
   _restTimerEnd=null;_restTimerExId=null;
   const el=document.getElementById('restTimerDisplay');if(el)el.innerHTML='';
 }
@@ -8542,6 +9009,8 @@ function renderTrainingToday(){
 
     ${renderTrainingDayCard(viewDate)}
 
+    ${renderWeeklyVolumePanel()}
+
     <div class="section">
       <div class="section-head"><h2>Recent Days</h2></div>
       <div class="card" style="padding:4px 16px;">
@@ -8773,10 +9242,25 @@ function renderTrainingExerciseLogRow(date, block, index){
     </div>`;
   }).join('');
 
-  // Aggregate for display
+  // Session target from the block (populated when a planned session is assigned)
+  // Aggregate for display — must be computed before the target comparison below
   const workingSets = sets.filter(s=>!s.isWarmup);
   const doneSets = workingSets.filter(s=>s.done).length;
   const e1RMDisplay = curE1RM ? `e1RM ~${Math.round(curE1RM)}kg${isPR?' 🏆 PR':''}` : '';
+
+  // Session target from the block (populated when a planned session is assigned)
+  const targetSets = block.sets || null;
+  const targetReps = block.reps || null;
+  const blockNotes = (block.notes||'').trim();
+  const suggestedWeightMatch = blockNotes.match(/suggested starting weight:\s*([\d.]+)\s*kg/i);
+  const suggestedWeightKg = suggestedWeightMatch ? Number(suggestedWeightMatch[1]) : null;
+  const hasTarget = !!(targetSets || targetReps);
+  const targetLabel = [
+    targetSets ? `${targetSets} sets` : null,
+    targetReps ? `${targetReps} reps` : null,
+    suggestedWeightKg ? `@ ${suggestedWeightKg} kg (suggested)` : null,
+  ].filter(Boolean).join(' × ');
+  const targetMet = hasTarget && targetSets ? workingSets.length >= Number(targetSets) : false;
 
   return `
     <div class="card" style="padding:12px 14px; margin-bottom:10px; background:var(--paper-dim);" data-exercise-id="${escapeHtml(block.exerciseId)}" data-row-id="${rowId}">
@@ -8789,6 +9273,11 @@ function renderTrainingExerciseLogRow(date, block, index){
       </div>
 
       ${ex && (ex.notes||'').trim() ? `<div class="page-sub" style="margin-top:2px;font-size:11.5px;">${escapeHtml(ex.notes)}</div>` : ''}
+
+      ${hasTarget ? `<div class="target-badge ${targetMet?'target-badge-met':''}">
+        🎯 Target: ${escapeHtml(targetLabel)}
+        ${workingSets.length && targetSets ? ` · <span style="font-weight:600;color:${targetMet?'var(--teal)':'var(--ink-soft)'};">${workingSets.length}/${targetSets} sets logged</span>` : ''}
+      </div>` : ''}
 
       ${suggestion ? `<div class="suggestion-box">
         💡 <b>Suggestion:</b> ${escapeHtml(suggestion.basis)}
@@ -8945,6 +9434,127 @@ function toggleSetDone(date, exId, setNo, restSec){
   updateTrainingDayAggPreview();
 }
 
+/* ---------- Weekly volume panel + SVG body map ----------
+
+   The map is an inline SVG front+back outline shaded by weekly hard sets
+   per muscle against an editable band. No image files, no external assets,
+   no licensing questions — inherits the theme colours.
+
+   Clicking any muscle region filters the Exercise Library to that muscle. */
+const MUSCLE_BAND_DEFAULT = { min:10, max:20 };
+
+function computeWeeklyVolumeByMuscle(){
+  const weekStart = addDays(todayStr(), -6);
+  const hard = (state.training.sets||[]).filter(s=>
+    s.date>=weekStart && !s.isWarmup && s.done
+  );
+  const vol = {};
+  hard.forEach(s=>{
+    const ex = getTrainingExerciseById(s.exerciseId);
+    const mg = ex && ex.muscleGroup;
+    if(!mg) return;
+    vol[mg] = (vol[mg]||0)+1;
+  });
+  return vol;
+}
+function muscleVolumeColour(sets,band){
+  const {min,max}=band||MUSCLE_BAND_DEFAULT;
+  if(!sets) return 'var(--paper-dim)';
+  if(sets<min) return '#E9B84A';
+  if(sets>max) return '#D95B5B';
+  return 'var(--teal)';
+}
+function muscleVolumeOpacity(sets,band){
+  const {max}=band||MUSCLE_BAND_DEFAULT;
+  if(!sets) return 0.15;
+  return 0.25+Math.min(0.65,(sets/max)*0.65);
+}
+function renderWeeklyVolumePanel(){
+  const vol=computeWeeklyVolumeByMuscle();
+  const band=state.settings.muscleBand||MUSCLE_BAND_DEFAULT;
+  const LABELS={chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs',forearms:'Forearms'};
+  const fs=(mg)=>`fill:${muscleVolumeColour(vol[mg]||0,band)};fill-opacity:${muscleVolumeOpacity(vol[mg]||0,band)};cursor:pointer;`;
+  const unmapped=state.training.exercises.filter(e=>e.category==='strength'&&!e.muscleGroup);
+  return `
+  <div class="section" style="margin-bottom:20px;">
+    <div class="section-head">
+      <h2>Weekly Volume</h2>
+      <span class="page-sub" style="font-size:11.5px;">Last 7 days · done working sets</span>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-size:11px;color:var(--ink-soft);margin-bottom:4px;text-align:center;">Tap a region to filter exercises</div>
+        <svg viewBox="0 0 240 220" width="200" xmlns="http://www.w3.org/2000/svg">
+          <!-- FRONT -->
+          <circle cx="60" cy="20" r="14" fill="var(--paper-dim)" fill-opacity="0.35" stroke="var(--line)" stroke-width="1"/>
+          <ellipse cx="60" cy="56" rx="22" ry="16" style="${fs('chest')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('chest')"><title>Chest: ${vol.chest||0} sets</title></ellipse>
+          <rect x="42" y="72" width="36" height="26" rx="6" style="${fs('abs')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('abs')"><title>Abs: ${vol.abs||0} sets</title></rect>
+          <ellipse cx="35" cy="50" rx="10" ry="12" style="${fs('shoulders')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('shoulders')"><title>Shoulders: ${vol.shoulders||0} sets</title></ellipse>
+          <ellipse cx="85" cy="50" rx="10" ry="12" style="${fs('shoulders')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('shoulders')"><title>Shoulders</title></ellipse>
+          <ellipse cx="25" cy="72" rx="8" ry="13" style="${fs('biceps')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('biceps')"><title>Biceps: ${vol.biceps||0} sets</title></ellipse>
+          <ellipse cx="95" cy="72" rx="8" ry="13" style="${fs('biceps')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('biceps')"><title>Biceps</title></ellipse>
+          <ellipse cx="18" cy="98" rx="6" ry="11" style="${fs('forearms')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('forearms')"><title>Forearms: ${vol.forearms||0} sets</title></ellipse>
+          <ellipse cx="102" cy="98" rx="6" ry="11" style="${fs('forearms')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('forearms')"><title>Forearms</title></ellipse>
+          <ellipse cx="47" cy="128" rx="14" ry="20" style="${fs('quads')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('quads')"><title>Quads: ${vol.quads||0} sets</title></ellipse>
+          <ellipse cx="73" cy="128" rx="14" ry="20" style="${fs('quads')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('quads')"><title>Quads</title></ellipse>
+          <ellipse cx="47" cy="172" rx="10" ry="16" style="${fs('calves')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('calves')"><title>Calves: ${vol.calves||0} sets</title></ellipse>
+          <ellipse cx="73" cy="172" rx="10" ry="16" style="${fs('calves')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('calves')"><title>Calves</title></ellipse>
+          <text x="60" y="200" text-anchor="middle" font-size="9" fill="var(--ink-soft)">FRONT</text>
+          <!-- BACK (offset +130) -->
+          <circle cx="190" cy="20" r="14" fill="var(--paper-dim)" fill-opacity="0.35" stroke="var(--line)" stroke-width="1"/>
+          <ellipse cx="190" cy="56" rx="22" ry="16" style="${fs('back')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('back')"><title>Back: ${vol.back||0} sets</title></ellipse>
+          <rect x="172" y="72" width="36" height="18" rx="6" style="${fs('back')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('back')"><title>Lower back</title></rect>
+          <ellipse cx="165" cy="50" rx="10" ry="12" style="${fs('shoulders')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('shoulders')"><title>Rear shoulders</title></ellipse>
+          <ellipse cx="215" cy="50" rx="10" ry="12" style="${fs('shoulders')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('shoulders')"><title>Rear shoulders</title></ellipse>
+          <ellipse cx="155" cy="72" rx="8" ry="13" style="${fs('triceps')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('triceps')"><title>Triceps: ${vol.triceps||0} sets</title></ellipse>
+          <ellipse cx="225" cy="72" rx="8" ry="13" style="${fs('triceps')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('triceps')"><title>Triceps</title></ellipse>
+          <ellipse cx="148" cy="98" rx="6" ry="11" style="${fs('forearms')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('forearms')"><title>Forearms</title></ellipse>
+          <ellipse cx="232" cy="98" rx="6" ry="11" style="${fs('forearms')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('forearms')"><title>Forearms</title></ellipse>
+          <ellipse cx="177" cy="106" rx="13" ry="13" style="${fs('glutes')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('glutes')"><title>Glutes: ${vol.glutes||0} sets</title></ellipse>
+          <ellipse cx="203" cy="106" rx="13" ry="13" style="${fs('glutes')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('glutes')"><title>Glutes</title></ellipse>
+          <ellipse cx="177" cy="140" rx="12" ry="18" style="${fs('hamstrings')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('hamstrings')"><title>Hamstrings: ${vol.hamstrings||0} sets</title></ellipse>
+          <ellipse cx="203" cy="140" rx="12" ry="18" style="${fs('hamstrings')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('hamstrings')"><title>Hamstrings</title></ellipse>
+          <ellipse cx="177" cy="172" rx="10" ry="16" style="${fs('calves')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('calves')"><title>Calves</title></ellipse>
+          <ellipse cx="203" cy="172" rx="10" ry="16" style="${fs('calves')}" stroke="var(--line)" stroke-width="0.8" onclick="filterExercisesByMuscle('calves')"><title>Calves</title></ellipse>
+          <text x="190" y="200" text-anchor="middle" font-size="9" fill="var(--ink-soft)">BACK</text>
+        </svg>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--ink-soft);">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#E9B84A;display:inline-block;"></span>Under</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--teal);display:inline-block;"></span>In band</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#D95B5B;display:inline-block;"></span>Over</span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <div style="display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:var(--ink-soft);">
+          <span style="flex:1;">Muscle</span><span style="width:38px;text-align:right;">Sets</span>
+        </div>
+        ${MUSCLE_GROUPS.map(mg=>{
+          const sets=vol[mg]||0; const colour=muscleVolumeColour(sets,band);
+          return `<div onclick="filterExercisesByMuscle('${mg}')" style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='var(--paper-dim)'" onmouseout="this.style.background=''">
+            <span style="width:8px;height:8px;border-radius:2px;background:${colour};flex-shrink:0;"></span>
+            <span style="flex:1;font-size:13px;">${LABELS[mg]||mg}</span>
+            <span style="width:38px;text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:600;color:${colour};">${sets||'—'}</span>
+          </div>`;
+        }).join('')}
+        ${unmapped.length?`<div class="page-sub" style="margin-top:8px;font-size:11.5px;">⚠ ${unmapped.length} exercise${unmapped.length===1?'':'s'} with no muscle group — set it in Exercise Library.</div>`:''}
+        <div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--ink-soft);">Band:</span>
+          <input type="number" min="1" max="50" value="${band.min}" style="width:46px;" class="train-input" onchange="setMuscleBand('min',Number(this.value))"> –
+          <input type="number" min="1" max="50" value="${band.max}" style="width:46px;" class="train-input" onchange="setMuscleBand('max',Number(this.value))">
+          <span style="font-size:11px;color:var(--ink-soft);">sets / week</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function setMuscleBand(key,val){
+  if(!state.settings.muscleBand) state.settings.muscleBand={...MUSCLE_BAND_DEFAULT};
+  state.settings.muscleBand[key]=val; saveSettings(); renderMain();
+}
+function filterExercisesByMuscle(mg){
+  state.trainingSection='exercises'; state.muscleGroupFilter=mg; renderMain();
+}
+
 function isTrainingDayFullyLogged(date, blocks){
   return blocks.length>0 && blocks.every(b => !!getTrainingLogForExercise(date, b.exerciseId));
 }
@@ -8952,16 +9562,53 @@ function renderTrainingDayCard(date){
   const exerciseIds = getTrainingDayExerciseIds(date);
   const agg = computeDayAggregateV2(date);
   const fullyLogged = isTrainingDayFullyLoggedV2(date);
+  // Look up the session assigned to this date so each exercise row can show
+  // its target (sets × rep range and suggested weight from the block notes).
+  const cal = getTrainingCalEntry(date);
+  const session = cal ? getTrainingSessionById(cal.sessionId) : null;
+  const sessionBlockMap = {};
+  if(session && session.blocks){
+    session.blocks.forEach(b=>{ if(b.exerciseId) sessionBlockMap[b.exerciseId]=b; });
+  }
 
   if(fullyLogged && state.trainingEditingDate !== date){
+    // Build a quick target-vs-actual summary for display on the completed card.
+    const sessionSummaryRows = session && session.blocks && session.blocks.length
+      ? exerciseIds.map(id=>{
+          const b = sessionBlockMap[id] || {};
+          const ex = getTrainingExerciseById(id);
+          const exSets = (state.training.sets||[]).filter(s=>s.date===date&&s.exerciseId===id&&!s.isWarmup&&s.done);
+          const best = exSets.reduce((mx,s)=>(!mx||s.weightKg>mx)?s.weightKg:mx, null);
+          const hasBlockTarget = !!(b.sets||b.reps);
+          if(!ex) return null;
+          return { name:ex.name, targetSets:b.sets||null, targetReps:b.reps||null,
+                   actualSets:exSets.length, bestWeight:best, hasTarget:hasBlockTarget };
+        }).filter(Boolean)
+      : [];
+    const metCount = sessionSummaryRows.filter(r=>r.hasTarget&&r.targetSets&&r.actualSets>=Number(r.targetSets)).length;
+    const totalTargeted = sessionSummaryRows.filter(r=>r.hasTarget&&r.targetSets).length;
     return `
       <div class="card" style="padding:18px; margin-bottom:20px; border:1px solid var(--teal);">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <span style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
           <h2 style="margin:0; font-family:var(--font-display);">Training logged</h2>
-          ${agg ? `<span class="page-sub" style="margin-left:auto; display:inline-flex; align-items:center; gap:6px;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg ${difficultyBadge(agg.avgDifficulty)}`:''}</span>` : ''}
+          ${agg ? `<span class="page-sub" style="margin-left:auto; display:inline-flex; align-items:center; gap:6px;">${agg.completed}/${agg.total} done${totalTargeted?` · ${metCount}/${totalTargeted} targets hit`:''}</span>` : ''}
         </div>
         <div class="page-sub" style="margin-top:6px;">${humanDate(date)}.</div>
+        ${sessionSummaryRows.length ? `
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:4px;">
+            ${sessionSummaryRows.map(r=>{
+              const met = r.hasTarget && r.targetSets && r.actualSets >= Number(r.targetSets);
+              const colour = !r.hasTarget ? 'var(--ink-soft)' : met ? 'var(--teal)' : 'var(--brass)';
+              return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                <span style="color:${colour};font-size:10px;flex-shrink:0;">${!r.hasTarget?'—':met?'✓':'·'}</span>
+                <span style="flex:1;">${escapeHtml(r.name)}</span>
+                <span class="page-sub" style="font-size:11px;">${r.actualSets} set${r.actualSets===1?'':'s'}${r.bestWeight?` · ${r.bestWeight}kg`:''}</span>
+                ${r.hasTarget?`<span class="page-sub" style="font-size:11px;color:var(--ink-soft);">vs ${r.targetSets||'?'}×${r.targetReps||'?'}</span>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+        ` : ''}
         <div class="modal-actions" style="justify-content:flex-start; margin-top:10px;">
           <button class="btn secondary sm" onclick="reopenTrainingDayLog('${date}')">Edit Log</button>
           <button class="btn ghost sm" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>
@@ -8976,7 +9623,7 @@ function renderTrainingDayCard(date){
         <span class="glyph">🏋</span>No exercises logged for ${humanDate(date)} yet.
         <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
           <button class="btn brass sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button>
-          <button class="btn secondary sm" onclick="openTrainingRandomizerModal('${date}')">🎲 Randomize</button>
+          <button class="btn secondary sm" onclick="openPlanDayModal('${date}')">📋 Plan Day</button>
         </div>
       </div>
     `;
@@ -8991,13 +9638,58 @@ function renderTrainingDayCard(date){
       </div>
 
       <div id="restTimerDisplay"></div>
+      <!-- Logging guide: RIR / Rest / Warm-up.
+           Shown as a collapsed card so it doesn't take up space once you know the terms.
+           The app_settings flag trainingGuideExpanded persists the user's preference. -->
+      <details id="trainingLoggingGuide" style="margin-bottom:12px;"
+        ${state.settings.trainingGuideExpanded ? 'open' : ''}>
+        <summary onclick="state.settings.trainingGuideExpanded=!document.getElementById('trainingLoggingGuide').open; saveSettings();"
+          style="cursor:pointer; font-size:12.5px; color:var(--ink-soft); font-weight:600; list-style:none; display:flex; align-items:center; gap:6px;">
+          <span>ℹ Logging guide</span>
+          <span style="font-size:10px; margin-left:auto; color:var(--slate);">tap to ${state.settings.trainingGuideExpanded?'hide':'show'}</span>
+        </summary>
+        <div style="padding:10px 0 4px; display:flex; flex-direction:column; gap:10px;">
+          <div style="background:var(--paper-dim); border-radius:8px; padding:10px 12px;">
+            <b style="font-size:12px;">RIR 0–4 (Reps In Reserve)</b>
+            <div style="font-size:12px; color:var(--slate); margin-top:4px; line-height:1.5;">
+              How many more reps <em>could</em> you do before form breaks down?<br>
+              <b style="color:var(--red);">0</b> — absolute limit, nothing left ·
+              <b style="color:#d46b00;">1</b> — one left, very hard ·
+              <b style="color:#b8960a;">2</b> — two left, working hard ·
+              <b style="color:var(--slate);">3–4</b> — comfortable<br>
+              <em>Target RIR 1–2 on your working sets. When all sets hit the top of your rep range at RIR ≤ 2, the app will suggest increasing the weight.</em>
+            </div>
+          </div>
+          <div style="background:var(--paper-dim); border-radius:8px; padding:10px 12px;">
+            <b style="font-size:12px;">F — Taken to Failure</b>
+            <div style="font-size:12px; color:var(--slate); margin-top:4px; line-height:1.5;">
+              Mark a set where you completed the last rep you physically could. Use occasionally as a reference point, not every set — repeated failure without recovery doesn't speed results and increases injury risk.
+            </div>
+          </div>
+          <div style="background:var(--paper-dim); border-radius:8px; padding:10px 12px;">
+            <b style="font-size:12px;">W — Warm-up Set</b>
+            <div style="font-size:12px; color:var(--slate); margin-top:4px; line-height:1.5;">
+              A lighter set (typically 50–70% of your working weight, 10–15 reps) to prepare the muscle and joint before your working sets. Warm-up sets are excluded from volume and estimated 1RM calculations.
+            </div>
+          </div>
+          <div style="background:var(--paper-dim); border-radius:8px; padding:10px 12px;">
+            <b style="font-size:12px;">Rest Timer</b>
+            <div style="font-size:12px; color:var(--slate); margin-top:4px; line-height:1.5;">
+              Starts automatically when you tick a set done. <b>120 s</b> for compound lifts (chest, back, shoulders, legs) · <b>90 s</b> for isolation (curls, extensions, raises). If your rep count drops sharply between sets, your rest is too short.
+            </div>
+          </div>
+        </div>
+      </details>
       <div id="trainingExerciseRows">
-        ${exerciseIds.map((id,i)=> renderTrainingExerciseLogRow(date, { exerciseId:id, reps:null, sets:null, notes:null }, i)).join('')}
+        ${exerciseIds.map((id,i)=>{
+          const block = sessionBlockMap[id] || { exerciseId:id, reps:null, sets:null, notes:null };
+          return renderTrainingExerciseLogRow(date, block, i);
+        }).join('')}
       </div>
 
       <div class="modal-actions" style="justify-content:flex-start; margin-top:4px; flex-wrap:wrap;">
         <button class="btn secondary sm" onclick="openQuickAddExerciseModal('${date}')">+ Add Exercise</button>
-        <button class="btn secondary sm" onclick="openTrainingRandomizerModal('${date}')">🎲 Randomize</button>
+        <button class="btn secondary sm" onclick="openPlanDayModal('${date}')">📋 Plan Day</button>
         <button class="btn brass" onclick="saveTrainingDayLogs('${date}')">Save Today's Log</button>
         ${hasLogs ? `<button class="btn secondary" onclick="deleteTrainingDayLogs('${date}')">Delete All Logs For This Day</button>` : ''}
       </div>
@@ -9206,16 +9898,34 @@ function afterQuickAddExPick(date){
   quickAddExIndex = 0;
   filterQuickAddExercisePicker(date);
 }
-/* ---------- Training randomizer ----------
-   Picks N exercises from a chosen tag and stages them into the day's log via
-   the SAME addExerciseToDay() path used by the manual picker — so they land
-   as pending adds you still confirm and save, never as silently-written log
-   rows, and duplicates are skipped by that function's own guard.
-
-   Two selection behaviours, chosen at the point of use:
-     - 'fresh'  : prefers what you've trained least recently (never-logged
-                  first, then oldest last-logged). Same pool, better spread.
-     - 'random' : uniformly random from the whole pool.
+/* ---------- Plan Day modal ----------
+   Replaces the old Randomize button. Instead of picking exercises randomly,
+   it loads the session assigned to this calendar date and stages all of its
+   exercises as pending adds. If no session is assigned it falls back to
+   letting you pick from the library — same as + Add Exercise. */
+function openPlanDayModal(date){
+  const cal = getTrainingCalEntry(date);
+  const session = cal ? getTrainingSessionById(cal.sessionId) : null;
+  if(session && session.blocks && session.blocks.length){
+    // Stage all session exercises as pending adds, skipping ones already added.
+    const already = new Set([
+      ...(state.trainingPendingAdds[date]||[]),
+      ...getTrainingLogsForDate(date).map(l=>l.exerciseId),
+    ]);
+    const toAdd = session.blocks.map(b=>b.exerciseId).filter(id=> !already.has(id));
+    if(!toAdd.length){ showToast(`All exercises from "${session.name}" are already on this day`); return; }
+    if(!state.trainingPendingAdds[date]) state.trainingPendingAdds[date]=[];
+    toAdd.forEach(id=> state.trainingPendingAdds[date].push(id));
+    state.trainingEditingDate = date;
+    flushTrainingDrafts();
+    renderMain();
+    showToast(`Added ${toAdd.length} exercise${toAdd.length===1?'':'s'} from "${session.name}"`);
+  } else {
+    // No session — fall through to the quick-add picker
+    openQuickAddExerciseModal(date);
+  }
+}
+/* ---------- Training randomizer (legacy — kept for the modal functions still referenced) ----------
    Both are drawn WITHOUT replacement, so you never get the same exercise twice. */
 function exerciseLastLoggedDate(exId){
   let latest = null;
@@ -9703,24 +10413,38 @@ async function deleteTrainingResource(id){
 /* ---------- Subpage: Exercise Library (alphabetical) ---------- */
 function renderTrainingExercisesSubpage(){
   const tagFilter = state.exerciseTagFilter || 'all';
+  const mgFilter = state.muscleGroupFilter || null;
   const allSorted = [...state.training.exercises].sort((a,b)=> a.name.localeCompare(b.name));
-  // 'untagged' is a pseudo-filter: it isn't a real tag id, it selects every
-  // exercise with no tags at all, so gaps in tagging are easy to spot and fix.
   const isUntagged = (ex)=> !(ex.tagIds||[]).length;
-  const sorted = tagFilter==='all' ? allSorted
-    : tagFilter==='untagged' ? allSorted.filter(isUntagged)
-    : allSorted.filter(ex=>(ex.tagIds||[]).includes(tagFilter));
-  const tags = state.settings.exerciseTags;
-  const untaggedCount = allSorted.filter(isUntagged).length;
+  // Apply muscle group filter first, then tag filter
+  const afterMg = mgFilter
+    ? allSorted.filter(ex=> ex.muscleGroup===mgFilter)
+    : allSorted;
+  const sorted = tagFilter==='all' ? afterMg
+    : tagFilter==='untagged' ? afterMg.filter(isUntagged)
+    : afterMg.filter(ex=>(ex.tagIds||[]).includes(tagFilter));
+  const tags = state.settings.exerciseTags || [];
+  const untaggedCount = afterMg.filter(isUntagged).length;
+  const LABELS={chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs',forearms:'Forearms'};
   return `
     <div class="section">
       <div class="section-head">
-        <h2>Exercise Library</h2>
+        <h2>Exercise Library${mgFilter?` — ${LABELS[mgFilter]||mgFilter}`:''}</h2>
         <span style="display:flex; gap:6px;">
+          ${mgFilter?`<button class="btn ghost sm" onclick="state.muscleGroupFilter=null;renderMain();">✕ Clear filter</button>`:''}
           <button class="icon-btn" title="Manage tags" onclick="openManageExerciseTagsModal()">⚙</button>
           <button class="btn brass sm" onclick="openAddExerciseModal()">+ Add Exercise</button>
         </span>
       </div>
+      ${MUSCLE_GROUPS.length ? `
+        <div class="chip-select" style="margin-bottom:6px; flex-wrap:wrap;">
+          <button class="${!mgFilter?'active':''}" onclick="state.muscleGroupFilter=null;renderMain();">All muscles</button>
+          ${MUSCLE_GROUPS.map(mg=>{
+            const n=allSorted.filter(ex=>ex.muscleGroup===mg).length;
+            return `<button class="${mgFilter===mg?'active':''}" onclick="filterExercisesByMuscle('${mg}')">${LABELS[mg]||mg}${n?` <span class=\"chip-count\">${n}</span>`:'→'}</button>`;
+          }).join('')}
+        </div>
+      ` : ''}
       ${(tags.length || untaggedCount) ? `
         <div class="chip-select" style="margin-bottom:10px; flex-wrap:wrap;">
           <button class="${tagFilter==='all'?'active':''}" onclick="setExerciseTagFilter('all')">All <span class="chip-count">${allSorted.length}</span></button>
@@ -9737,6 +10461,7 @@ function renderTrainingExercisesSubpage(){
           <div class="metric-manage-row">
             <span class="metric-manage-name">
               ${escapeHtml(ex.name)}${ex.category==='walking' ? ' <span class="page-sub" style="font-size:10px; text-transform:uppercase; letter-spacing:0.03em; border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:4px;">Walking</span>' : ''}
+              ${ex.muscleGroup ? `<span class="page-sub" style="font-size:10px; background:var(--teal-dim,color-mix(in srgb,var(--teal) 15%,var(--paper))); border:1px solid var(--teal); border-radius:4px; padding:1px 6px; margin-left:4px; color:var(--ink);">${ex.muscleGroup}</span>` : ''}
               ${(ex.tagIds||[]).map(tid=>{ const t = tags.find(x=>x.id===tid); return t ? `<span class="page-sub" style="font-size:10px; background:var(--paper-dim); border-radius:4px; padding:1px 6px; margin-left:4px;">${escapeHtml(t.name)}</span>` : ''; }).join('')}
             </span>
             ${exVideoUrls(ex).length ? (exVideoUrls(ex).length===1
@@ -10405,27 +11130,62 @@ function buildTrainingReviewPack(){
 function copyTrainingReviewPack(){
   const pack = buildTrainingReviewPack();
   const packJson = JSON.stringify(pack, null, 2);
+
+  // Current exercise library so the AI can reference existing exercise IDs.
+  const exerciseLibrary = state.training.exercises.map(e=>({
+    id: e.id, name: e.name, category: e.category||'strength',
+    muscleGroup: e.muscleGroup||null, tags: e.tags||[],
+  }));
+
   const prompt = `You are reviewing my CalendarOS training data for the period ${pack.reviewPeriod.from} to ${pack.reviewPeriod.to}.
 
-My goals: lose ~${pack.goals.weightLossTargetKg}kg (current target ${pack.goals.targetWeightKg}kg), build muscle, train ${pack.goals.weeklyTrainingDays} days/week.
+MY GOALS: lose ~${pack.goals.weightLossTargetKg}kg (current target ${pack.goals.targetWeightKg}kg), build muscle, train ${pack.goals.weeklyTrainingDays} days/week.
 
-Here is my full data pack (JSON):
+MY EXERCISE LIBRARY (use these IDs in the plan):
+\`\`\`json
+${JSON.stringify(exerciseLibrary, null, 2)}
+\`\`\`
+
+MY DATA PACK:
 \`\`\`json
 ${packJson}
 \`\`\`
 
-Please:
-1. Summarise what went well and what didn't (progression, adherence, volume balance by muscle, RIR trends).
-2. Flag any exercises that stalled (same weight 2+ sessions with RIR > 2) and suggest why.
-3. Flag any muscles that appear under-volume or over-volume vs the 10-20 sets/week band.
-4. Produce a revised plan for the next 2 weeks as a CalendarOS JSON import (exercises, sessions, calendar).
-   — Keep every exerciseId stable if the exercise is unchanged.
-   — Use double-progression rep ranges (e.g. "8-12") in blocks[].reps so the app can compute suggestions.
-   — Base load recommendations on my actual recent performance, not generic starting weights.
-   — Output valid JSON only, in a single code block, following the same schema as the existing import format.`;
+WHAT I NEED FROM YOU:
+
+1. **Performance summary** (4–6 bullet points): what went well, what didn't — look at load progression, adherence, RIR trends, and weekly volume per muscle vs the 10–20 set band.
+
+2. **Flags** (bullet points): any exercise that stalled (same weight ≥ 2 sessions with RIR > 2), any muscle that is consistently under or over the band, any anomalies.
+
+3. **Two-week plan as a CalendarOS import file.** This is the most important output. Produce a complete JSON file I can import directly — the plan should appear on my training calendar so that when I open Training on any gym day, the exercises are already there and pre-populated with the suggested weight and rep range.
+
+The JSON must follow this exact schema (the same format the app already accepts via Paste & Import):
+\`\`\`
+{
+  "exercises": [ { "id": "...", "name": "...", "category": "strength", "muscleGroup": "...", "tags": [], "notes": "..." } ],
+  "sessions": [
+    {
+      "id": "...", "name": "...", "type": "strength", "format": "", "color": null,
+      "blocks": [ { "exerciseId": "...", "sets": 3, "reps": "8-12", "notes": "suggested starting weight: 40kg" } ]
+    }
+  ],
+  "calendar": [
+    { "date": "YYYY-MM-DD", "sessionId": "..." }
+  ]
+}
+\`\`\`
+
+RULES for the plan:
+- Use existing exercise IDs from my library wherever the exercise already exists. Only define new exercises in "exercises" if they genuinely don't exist in my library.
+- Use double-progression rep ranges (e.g. "8-12") in blocks[].reps. Put the suggested starting weight in blocks[].notes as "suggested starting weight: Xkg" — the app will show this note while I log.
+- Base load recommendations on my actual recent performance from the data pack, not generic defaults.
+- Schedule training days on the next 14 calendar days starting from ${pack.reviewPeriod.to}, skipping the two rest days of the week that fit best (based on my adherence pattern from the data).
+- Each session block should have realistic set counts for a 40–50 minute session.
+- Output the import JSON in a single code block. Nothing else in that code block — no comments inside the JSON, valid JSON only.`;
+
   navigator.clipboard.writeText(prompt)
     .then(()=> showToast('Review pack copied — paste into your AI conversation'))
-    .catch(()=> showToast('Could not copy — select manually'));
+    .catch(()=>{ showToast('Could not auto-copy — see console'); console.log(prompt); });
 }
 
 function copyTrainingImportPrompt(){
@@ -11063,6 +11823,22 @@ function openExerciseVideoPicker(exId){
    exercise" link passes it, because that flow started from an explicit intent
    to log something today. Opening this from the Exercise Library leaves you
    exactly where you were. */
+/* Muscle group selector used in Add and Edit exercise modals.
+   Returns an HTML <select> so it is a single tap on mobile, not 11 pills. */
+function muscleGroupSelectHtml(selectId, current){
+  const LABELS = {
+    chest:'Chest', back:'Back', shoulders:'Shoulders',
+    biceps:'Biceps', triceps:'Triceps', quads:'Quads',
+    hamstrings:'Hamstrings', glutes:'Glutes', calves:'Calves',
+    abs:'Abs', forearms:'Forearms',
+  };
+  const opts = MUSCLE_GROUPS.map(mg=>`<option value="${mg}" ${current===mg?'selected':''}>${LABELS[mg]||mg}</option>`).join('');
+  return `<select id="${selectId}" class="field-select">
+    <option value="">— none —</option>
+    ${opts}
+  </select>`;
+}
+
 function openAddExerciseModal(addToDayDate){
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -11087,6 +11863,15 @@ function openAddExerciseModal(addToDayDate){
           ${state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
         </div>
         <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
+      </div>
+      <div class="field">
+        <label>Muscle Group</label>
+        ${muscleGroupSelectHtml('newExMuscleGroup', '')}
+        <div class="page-sub" style="margin-top:4px;">Used for rest-timer defaults (120s compounds, 90s isolation) and the weekly volume map.</div>
+      </div>
+      <div class="field">
+        <label>Rest between sets (seconds) <span class="page-sub" style="font-weight:400;">— overrides the default</span></label>
+        <input type="number" id="newExRestSec" min="30" max="600" step="5" placeholder="e.g. 90" style="width:100px;">
       </div>
       <div class="field">
         <label>Video URLs (optional)</label>
@@ -11115,7 +11900,11 @@ async function submitAddExercise(){
   const categoryBtn = document.querySelector('#newExCategoryPills .radio-pill.active');
   const category = categoryBtn ? categoryBtn.dataset.val : 'strength';
   const tagIds = [...document.querySelectorAll('#newExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
-  const newEx = { id:newId('ex'), name, videoUrl:video, videoUrls, notes, category, tagIds };
+  const mgEl = document.getElementById('newExMuscleGroup');
+  const muscleGroup = mgEl && mgEl.value ? mgEl.value : null;
+  const rsEl = document.getElementById('newExRestSec');
+  const restSec = rsEl && rsEl.value !== '' ? Number(rsEl.value) : null;
+  const newEx = { id:newId('ex'), name, videoUrl:video, videoUrls, notes, category, tagIds, muscleGroup, restSec };
   const overlay = document.getElementById('addExerciseOverlay');
   // Read the context flag BEFORE removing the overlay that carries it.
   const addToDay = overlay ? (overlay.dataset.addToDay || '') : '';
@@ -11164,6 +11953,15 @@ function openEditExerciseModal(id){
         <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
       </div>
       <div class="field">
+        <label>Muscle Group</label>
+        ${muscleGroupSelectHtml('editExMuscleGroup', ex.muscleGroup||'')}
+        <div class="page-sub" style="margin-top:4px;">Used for rest-timer defaults and the weekly volume map.</div>
+      </div>
+      <div class="field">
+        <label>Rest between sets (seconds) <span class="page-sub" style="font-weight:400;">— overrides the default</span></label>
+        <input type="number" id="editExRestSec" min="30" max="600" step="5" placeholder="e.g. 90" value="${ex.restSec||''}" style="width:100px;">
+      </div>
+      <div class="field">
         <label>Video URLs (optional)</label>
         <textarea id="editExVideo" rows="3" placeholder="One URL per line">${escapeHtml(exVideoUrls(ex).join('\n'))}</textarea>
         <div class="page-sub" style="margin-top:4px;">One per line. With more than one, the ▶ button opens a list to pick from.</div>
@@ -11191,6 +11989,10 @@ async function submitEditExercise(id){
   const categoryBtn = document.querySelector('#editExCategoryPills .radio-pill.active');
   ex.category = categoryBtn ? categoryBtn.dataset.val : 'strength';
   ex.tagIds = [...document.querySelectorAll('#editExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
+  const mgEl = document.getElementById('editExMuscleGroup');
+  if(mgEl) ex.muscleGroup = mgEl.value || null;
+  const rsEl = document.getElementById('editExRestSec');
+  if(rsEl) ex.restSec = rsEl.value !== '' ? Number(rsEl.value) : null;
   await saveTraining();
   const overlay = document.getElementById('editExerciseOverlay');
   if(overlay) overlay.remove();
@@ -11768,6 +12570,14 @@ create table if not exists training_resources (
   created_at timestamptz default now(), updated_at timestamptz default now(),
   primary key (pin, id)
 );
+
+-- v4.41.0: Muscle group and custom rest interval per exercise.
+-- muscle_group drives the body map and weekly volume calculation.
+-- rest_sec overrides the default rest timer for that exercise (120s compounds, 90s isolation).
+alter table training_exercises add column if not exists muscle_group text;
+alter table training_exercises add column if not exists rest_sec int;
+-- v4.41.0: Editable weekly volume band stored in settings.
+alter table app_settings add column if not exists muscle_band jsonb default '{"min":10,"max":20}';
 
 -- v4.40.0: Per-set logging. Each working set now has its own row.
 -- The existing training_logs row stays as a per-exercise header (notes, etc.)
