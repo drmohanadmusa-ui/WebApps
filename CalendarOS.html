@@ -661,6 +661,66 @@ select.filter-select, input.filter-date{
 }
 .train-remove-btn{width:26px; height:26px; font-size:12px;}
 
+/* ---- Shift-next-occurrence row on recurring task tickets ----
+   Lives inside .ticket-body, which is itself the click target for opening the
+   edit modal, so the row stops propagation in the markup. Kept on its own line
+   rather than as a sibling of .ticket-body: .ticket is a flex row, and a
+   sibling would have to introduce flex-wrap, which would change how every
+   existing ticket lays out on a narrow screen. */
+.next-shift-row{
+  display:flex; align-items:center; flex-wrap:wrap; gap:6px;
+  margin-top:8px; cursor:default;
+}
+.next-shift-label{font-size:11.5px; color:var(--ink-soft);}
+.next-shift-input{width:64px; text-align:center;}
+
+/* ============ PER-SET LOGGING (v4.40.0) ============ */
+.set-row{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:8px 0; border-bottom:1px solid var(--line);
+}
+.set-row:last-child{border-bottom:none;}
+.set-row-done .set-tick{ background:var(--teal); color:#fff; border-color:var(--teal); }
+.set-row-warmup{ opacity:0.7; }
+.set-tick{
+  width:36px; height:36px; border-radius:50%; border:2px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); font-size:13px; font-weight:600;
+  cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  transition:background .12s, border-color .12s, color .12s;
+}
+.set-tick-done{ background:var(--teal); color:#fff; border-color:var(--teal); }
+.set-last-ref{
+  font-size:10.5px; color:var(--ink-soft); letter-spacing:0.01em; margin-bottom:2px;
+}
+.set-num-input{ width:62px; text-align:center; }
+.set-unit{ font-size:11px; color:var(--ink-soft); align-self:center; }
+.set-rir-label{ font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em; align-self:center; }
+.rir-pill{
+  min-width:28px; height:26px; border-radius:13px; border:1.5px solid var(--line);
+  background:var(--paper); color:var(--ink); font-size:11px; font-weight:600;
+  cursor:pointer; padding:0 6px; transition:background .1s, color .1s, border-color .1s;
+}
+.rir-active{ border-color:transparent; }
+.suggestion-box{
+  background:var(--teal-dim, color-mix(in srgb, var(--teal) 12%, var(--paper)));
+  border:1px solid var(--teal); border-radius:6px;
+  padding:7px 10px; font-size:12px; margin-top:6px; color:var(--ink);
+}
+
+/* ============ REST TIMER ============ */
+#restTimerDisplay{ position:sticky; top:8px; z-index:10; margin-bottom:12px; }
+.rest-timer-box{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--paper-raised); border:1.5px solid var(--teal);
+  border-radius:var(--radius-m); padding:10px 14px;
+  box-shadow:var(--shadow-card);
+}
+.rest-timer-done{ border-color:var(--ink-soft); }
+.rest-timer-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); }
+.rest-timer-count{ font-size:22px; font-weight:700; font-family:var(--font-mono); color:var(--teal); min-width:52px; }
+.rest-timer-done .rest-timer-count{ color:var(--ink-soft); }
+.rest-timer-tip{ font-size:11px; color:var(--ink-soft); flex:1; min-width:120px; }
+
 /* ============ CALENDAR ============ */
 .cal-header{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
 .cal-header h2{font-family:var(--font-display); font-size:20px; margin:0; min-width:190px;}
@@ -1416,6 +1476,8 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
   .train-remove-btn{width:38px; height:38px; font-size:15px;}
   .btn.sm{padding:9px 14px; font-size:13px;}
   .btn.ghost{padding:9px 10px;}
+  .next-shift-input{min-width:64px;}
+  .next-shift-label{font-size:13px;}
 }
 
 /* ============================================================
@@ -1955,7 +2017,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.38.0';
+const APP_VERSION = '4.40.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -1963,6 +2025,37 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.40.0', changes: [
+    '\u{1F534} SQL migration required: run Settings \u2192 Cloud Sync \u2192 Copy SQL in the Supabase SQL editor. Creates one new table (training_sets) and adds one column (training_suggestions on app_settings). Additive and idempotent \u2014 safe to re-run. Also adds training_sets to the row-level-security loop. Nothing existing is touched or deleted.',
+    'TRAINING OVERHAUL: logging is now per set rather than one summary per exercise. Every exercise card shows individual set rows: tap the circle to mark a set done (starts the rest timer), enter reps and kg, and pick an RIR 0\u20134 or mark it with F (taken to failure). The summary numbers are derived from the set rows and kept for backward compatibility \u2014 old logs keep displaying exactly as before.',
+    'RIR (Reps In Reserve) replaces Difficulty 1\u20135 for new entries. RIR is a prediction (\u201chow many more reps could you do?\u201d) rather than a feeling after the fact, which makes it actionable: RIR 3 on your last set means add weight next time. Old difficulty ratings are kept and still display on existing logs.',
+    'Carry-forward: every set row shows what you did for that same set last time, greyed, and pre-fills with it. The most consistent finding in the research is that showing previous numbers at the moment of lifting drives progression better than anything else.',
+    'Double-progression suggestions: after each save, the app computes a load or rep suggestion for the next time you do that exercise and stores it. The suggestion appears at the top of the exercise card on the relevant day. Rule: once all working sets hit the top of the rep range at RIR \u22642, add 2.5 kg and drop back to the bottom. If any set fell short of the bottom of the range, hold the weight. Otherwise add reps. The suggestion and the actual result are both included in the review pack so the weekly AI review can compare them.',
+    'Rest timer: ticking a set done starts a countdown (120s for compound lifts, 90s for isolation) that stays visible while you rest. A rotating tip appears during the rest \u2014 labelled as \u201ckeeps you warm\u201d rather than as a recovery claim, because the evidence for active recovery between sets is weak and the app should not overstate it. No notifications: a backgrounded iOS tab cannot reliably fire one, and promising it would be worse than silence.',
+    'Sets can be marked as warm-up (W button) \u2014 excluded from volume and e1RM calculations \u2014 or as taken to failure (F button). Warm-up and failure sets record against the same table but are filtered out of any aggregate that should reflect working-set effort.',
+    'Estimated 1RM via Epley formula (w \xd7 (1 + reps/30)) shown per exercise when at least one working set has reps \u226410. A PR badge appears when today\u2019s e1RM beats the previous best. Only used on sets with \u226410 reps where the formula is reasonably accurate.',
+    'Review loop: Copy Review Pack bundles the last 2 weeks of per-set data, weekly volume by muscle, body metrics from Health Log, adherence, and the current plan into a prompt you paste into an AI. The AI returns a revised plan in the existing import JSON format, which you paste straight into Paste & Import. No server, no API key, no new dependency \u2014 the two pieces of plumbing (Copy Prompt and Paste & Import) already existed.',
+    'No changes to one-time tasks, lists, health, hydration, recipes, or recurring tasks. Only the training module changed.',
+  ]},
+  { v:'4.39.0', changes: [
+    'No SQL migration needed \u2014 front-end only. Reschedule exceptions already sync; nothing new is stored.',
+    'Recurring tasks on the All Tasks page now let you move the NEXT occurrence by a number of days without touching the pattern. Enter the number of days, press Shift, and only that one occurrence moves \u2014 every later one stays exactly where the recurrence says. An Undo button appears while an occurrence is shifted, putting it back on its original date.',
+    'FIXED: the "Next: ..." tag ignored reschedules entirely. It was computed from the raw recurrence pattern, so a task already moved to Wednesday still advertised Monday. Harmless while nothing acted on it; not harmless now that Shift applies to whatever that value says. It now accounts for moved occurrences.',
+    'FIXED: moving an occurrence used to leave it showing on BOTH dates \u2014 the new one because of the exception, and the original because the pattern still matched there. It was only hidden by marking the original missed. The original date is now properly suppressed by the move itself. Dates that already carry a logged result keep rendering exactly as before, so existing history is untouched.',
+    'Shifting a FUTURE occurrence no longer marks the original date as missed. A day that has not happened yet cannot have been missed, and that record counted against the on-time percentage in Progress for a task you fully intend to do. The existing "Move This Occurrence" dialog, which is for moving something you already failed to do today, still marks it as before.',
+    'Shifting the same occurrence repeatedly rewrites the existing move instead of stacking a new one on top, so exceptions cannot accumulate into a chain. Same single-hop reasoning as weekend location rules.',
+    'Guards: a shift that would land in the past, or past the task\'s end date, is refused with an explanation rather than applied.',
+    'The shift controls sit on their own line and are sized for touch on phone-width screens.',
+  ]},
+  { v:'4.38.1', changes: [
+    'No SQL migration needed \u2014 front-end only.',
+    'FIXED: searching on the All Tasks page crashed the page with "s.split is not a function". The filter function takes two arguments \u2014 the task and the date to resolve its location for \u2014 but it was being handed straight to .filter(), which supplies (item, index, array). The array INDEX was arriving where the date belonged. Index 0 is falsy so the first task returned early and looked fine; the second task onwards tried to parse the number 1 as a date and threw, taking the whole page down.',
+    'It only ever showed up under three conditions at once, which is why it stayed hidden: at least one weekend location rule had to exist (with none, the location resolver returns before it touches the date), the page had to be searching or filtering by location (nothing else resolves a location), and there had to be more than one task. Latent since weekend location rules shipped in v4.26.0.',
+    'The same bug also affected filtering All Tasks by location, not just searching \u2014 same call, same crash.',
+    'Recurring tasks are now filtered against today, matching the date their rows are actually rendered for. Previously a weekend-remapped recurring task could be filtered under one location while being displayed under another.',
+    'Hardening: the date parser now returns nothing for input that is not a date string, and records it in the Activity & Error Log, instead of throwing an error that takes down the page. A caller passing the wrong type is still a bug and still gets reported \u2014 it just no longer costs you the whole screen.',
+    'A check was added that scans the whole app for this class of mistake \u2014 a multi-argument function passed directly to filter/map/forEach. These two were the only cases.',
+  ]},
   { v:'4.38.0', changes: [
     'No SQL migration needed \u2014 front-end only. Nothing to run in Supabase, and no change to which tables are backed up.',
     'Closes the last gap left by 4.37.0. Areas that had unsent changes were still pushed without any comparison; if the area in question was TASKS or LISTS, a device carrying an older copy could still overwrite the newer one. Those two areas have always had a difference check \u2014 the one that shows the "this device vs online" prompt \u2014 but it only ever ran on a clean start. It now runs here too: the app pulls first for those areas, and where the two copies disagree it ASKS instead of silently choosing.',
@@ -2577,7 +2670,7 @@ const state = {
   // Training: exercises are a reusable library; sessions reference exercises via blocks;
   // calendar maps a specific date -> sessionId (this is what gets re-mapped monthly);
   // logs are session-level (completed/difficulty/notes) keyed by date.
-  training: { exercises: [], sessions: [], calendar: [], logs: [], resources: [] }, // resources: free-form reference library [{id,title,url,body,tagIds}]
+  training: { exercises: [], sessions: [], calendar: [], logs: [], resources: [], sets: [] },
   trainingSelectedDate: null, // date being viewed/logged on the Training page; defaults to today on first render
   recipes: { items: [] }, // recipe library — see recipe/ingredient row conversion functions
   recipesSelectedId: null, // which recipe is open in detail view, if any
@@ -2619,6 +2712,16 @@ function fmtDate(d){
 }
 function parseDate(s){
   if(!s) return null;
+  // Anything that is not a 'YYYY-MM-DD' string is a caller bug, not data to
+  // guess at. Returning null lets the callers that already check for it carry
+  // on safely, instead of throwing "s.split is not a function" and taking the
+  // whole page down — which is exactly what a stray array index did here. It
+  // is recorded rather than swallowed, so the mistake still shows up in
+  // Settings → Activity & Error Log instead of hiding.
+  if(typeof s !== 'string'){
+    try{ diagLogEvent('app', 'parseDate called with a non-string', { type: typeof s, value: String(s).slice(0,40) }); }catch(e){}
+    return null;
+  }
   const [y,m,d] = s.split('-').map(Number);
   return new Date(y, m-1, d);
 }
@@ -2710,18 +2813,110 @@ function isDueOn(task, dateStr){
 function rescheduleExceptionFor(task, dateStr){
   return (task.rescheduleExceptions||[]).find(e=>e.to===dateStr) || null;
 }
-function isEffectivelyDueOn(task, dateStr){
-  return isDueOn(task, dateStr) || !!rescheduleExceptionFor(task, dateStr);
+/* The other direction: an occurrence that was moved AWAY from this date. */
+function rescheduleMovedFrom(task, dateStr){
+  return (task.rescheduleExceptions||[]).find(e=>e.from===dateStr) || null;
 }
-async function rescheduleOccurrence(taskId, fromDate, toDate){
+function isEffectivelyDueOn(task, dateStr){
+  // Checked FIRST, before the moved-to case. Shifting an occurrence twice
+  // (Mon -> Wed, then Wed -> Fri) leaves Wed as both the target of one
+  // exception and the origin of another; without this order Wed would still
+  // report as due and the task would appear on two dates at once.
+  if(rescheduleMovedFrom(task, dateStr)){
+    // ...but only when nothing was ever logged against the original date.
+    // Older reschedules marked their origin 'missed' and relied on that record
+    // to show up in the calendar and in the stats. Suppressing those too would
+    // silently rewrite how existing history renders, so a date carrying a
+    // completion record keeps behaving exactly as it does today.
+    const log = state.tasks.completions[task.id];
+    if(!log || !log[dateStr]) return false;
+  }
+  if(rescheduleExceptionFor(task, dateStr)) return true;
+  return isDueOn(task, dateStr);
+}
+
+async function rescheduleOccurrence(taskId, fromDate, toDate, opts){
   const t = state.tasks.recurring.find(x=>x.id===taskId);
   if(!t) return;
   if(!t.rescheduleExceptions) t.rescheduleExceptions = [];
-  // replace any existing exception for this same original date
-  t.rescheduleExceptions = t.rescheduleExceptions.filter(e=>e.from!==fromDate);
-  t.rescheduleExceptions.push({ from: fromDate, to: toDate });
-  setOccurrenceStatus(taskId, fromDate, 'missed');
+  const markMissed = !(opts && opts.markMissed === false);
+
+  // If the date being moved is ITSELF where an earlier move landed, rewrite
+  // that exception rather than adding a second one. Chains would otherwise
+  // accumulate on every shift, and the same single-hop reasoning applies here
+  // as to weekend location rules: resolve, don't chain.
+  const inbound = t.rescheduleExceptions.find(e=>e.to===fromDate);
+  if(inbound){
+    inbound.to = toDate;
+  } else {
+    // replace any existing exception for this same original date
+    t.rescheduleExceptions = t.rescheduleExceptions.filter(e=>e.from!==fromDate);
+    t.rescheduleExceptions.push({ from: fromDate, to: toDate });
+  }
+
+  if(markMissed) setOccurrenceStatus(taskId, fromDate, 'missed');
   await saveTasks();
+}
+
+/* Moves the NEXT occurrence of a recurring task by a number of days.
+
+   Deliberately does not mark the original date missed when that date is today
+   or later. The existing "Move This Occurrence" dialog does mark it, and that
+   is right there — you are moving something you already failed to do. But a
+   future occurrence has not been missed, it has been rescheduled, and a
+   'missed' record would count against the on-time percentage in Progress for
+   a task you actually intend to do. The date is suppressed by the exception
+   instead, which is what isEffectivelyDueOn() now handles. */
+async function shiftNextOccurrence(taskId, days){
+  const n = parseInt(days, 10);
+  if(!isFinite(n) || n === 0){ showToast('Enter a number of days to shift by'); return null; }
+  const t = state.tasks.recurring.find(x=>x.id===taskId);
+  if(!t){ showToast('Task not found'); return null; }
+
+  const current = nextOccurrenceDate(t, todayStr());
+  if(!current){ showToast('No upcoming occurrence to move'); return null; }
+
+  const target = addDays(current, n);
+  if(target < todayStr()){
+    showToast("That would move it into the past — pick a smaller shift");
+    return null;
+  }
+  if(t.end && target > t.end){
+    showToast(`That would move it past this task's end date (${humanDate(t.end)})`);
+    return null;
+  }
+
+  await rescheduleOccurrence(taskId, current, target, { markMissed: current < todayStr() });
+  diagLogEvent('activity', `Shifted next occurrence of "${t.name}" by ${n} day(s)`, { from: current, to: target });
+  return { from: current, to: target };
+}
+
+async function shiftNextOccurrenceFromInput(taskId, inputId){
+  const el = document.getElementById(inputId);
+  const res = await shiftNextOccurrence(taskId, el ? el.value : null);
+  if(!res) return;
+  renderMain();
+  showToast(`Next occurrence moved to ${humanDate(res.to)}`);
+}
+
+async function undoNextOccurrenceShift(taskId, toDate){
+  const ex = await clearRescheduleForOccurrence(taskId, toDate);
+  if(!ex){ showToast('Nothing to undo'); return; }
+  renderMain();
+  showToast(`Back to ${humanDate(ex.from)}`);
+}
+async function clearRescheduleForOccurrence(taskId, toDate){
+  const t = state.tasks.recurring.find(x=>x.id===taskId);
+  if(!t || !t.rescheduleExceptions) return null;
+  const ex = t.rescheduleExceptions.find(e=>e.to===toDate);
+  if(!ex) return null;
+  t.rescheduleExceptions = t.rescheduleExceptions.filter(e=>e!==ex);
+  // If the original date was flagged missed purely because of the move, clear
+  // that too — otherwise undoing a shift would leave a penalty behind for an
+  // occurrence that is now simply due again on its normal date.
+  if(isMissedOn(taskId, ex.from)) setOccurrenceStatus(taskId, ex.from, null);
+  await saveTasks();
+  return ex;
 }
 
 /* ---------- Recurring "overdue" (mirrors one-time overdue) ----------
@@ -2860,12 +3055,20 @@ function computeStreak(task, refDateStr){
 // Next date (today or later) this recurring task is due, searching up to
 // ~2 years out. Returns null for tasks that have effectively ended (e.g. a
 // past end date) with no future occurrences.
-function nextOccurrenceDate(task){
-  let cursor = todayStr();
+/* The next date this task is due, on or after `fromDate` (today by default).
+
+   Uses isEffectivelyDueOn, NOT isDueOn. It previously used the latter, so the
+   "Next: …" tag ignored reschedule exceptions entirely — a task moved to
+   Wednesday still advertised Monday. That was cosmetic while nothing acted on
+   the value; it stopped being cosmetic once shifting the next occurrence
+   became an action, because the shift is applied to whatever this returns. */
+function nextOccurrenceDate(task, fromDate){
+  if(!task) return null;
+  let cursor = fromDate || todayStr();
   let guard = 0;
   while(guard < 730){
     if(task.end && cursor > task.end) return null;
-    if(isDueOn(task, cursor)) return cursor;
+    if(isEffectivelyDueOn(task, cursor)) return cursor;
     cursor = addDays(cursor, 1);
     guard++;
   }
@@ -3314,13 +3517,13 @@ const SYNCED_TABLES = [
   'one_time_tasks','recurring_tasks','task_completions','lists','list_items',
   'health_logs','daily_ratings','health_metric_defs','app_settings',
   'training_exercises','training_sessions','training_calendar','training_logs',
-  'training_resources','recipes','recipe_ingredients','hydration_logs',
+  'training_sets','training_resources','recipes','recipe_ingredients','hydration_logs',
 ];
 const BACKED_UP_TABLES = [
   'one_time_tasks','recurring_tasks','task_completions','lists','list_items',
   'health_logs','daily_ratings','health_metric_defs','app_settings',
   'training_exercises','training_sessions','training_calendar','training_logs',
-  'training_resources','recipes','recipe_ingredients','hydration_logs',
+  'training_sets','training_resources','recipes','recipe_ingredients','hydration_logs',
 ];
 /* Builds the backup script with its TABLES list generated from SYNCED_TABLES,
    so the code you copy is always current by construction. The banner tells you
@@ -3773,7 +3976,7 @@ function syncStepsForDomain(domain){
       ()=> { const rows = state.healthMetricDefs.map(metricDefToRow); return rows.length ? supaUpsert('health_metric_defs', rows, 'pin,id') : null; },
     ];
     case 'settings': return [
-      ()=> supaUpsert('app_settings', [{ pin: s.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: s.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null }], 'pin'),
     ];
     case 'training': return [
       ()=> flushPendingTrainingDeletes(),
@@ -3781,11 +3984,7 @@ function syncStepsForDomain(domain){
       ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
       ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
       ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
-      // training_resources was missing from the old full push (saveTraining()
-      // sent it, this path did not), so a resource created on a device whose
-      // sync then failed never reached Supabase on the retry. Same guard as
-      // saveTraining(): skipped entirely when empty, so a project that has not
-      // run the v4.28.0 migration is unaffected.
+      ()=> { const rows = (state.training.sets||[]).map(trainingSetToRow); return rows.length ? supaUpsert('training_sets', rows, 'pin,log_date,exercise_id,set_no') : null; },
       ()=> { const rows = (state.training.resources||[]).map(trainingResourceToRow); return rows.length ? supaUpsert('training_resources', rows, 'pin,id') : null; },
     ];
     case 'recipes': return [
@@ -3856,7 +4055,7 @@ async function pushFullStateToSupabase(onProgress){
 
 async function pullFromSupabase(onProgress){
   const coreTables = ['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings'];
-  const trainingTables = ['training_exercises','training_sessions','training_calendar','training_logs'];
+  const trainingTables = ['training_exercises','training_sessions','training_calendar','training_logs','training_sets'];
   const recipeTables = ['recipes','recipe_ingredients'];
   const hydrationTables = ['hydration_logs'];
   const totalTables = coreTables.length + trainingTables.length + recipeTables.length + hydrationTables.length;
@@ -4016,6 +4215,7 @@ async function pullFromSupabase(onProgress){
         sessions: trainingPulled.training_sessions.map(rowToTrainingSession),
         calendar: trainingPulled.training_calendar.map(rowToTrainingCalendar),
         logs: trainingPulled.training_logs.map(rowToTrainingLog),
+        sets: trainingPulled.training_sets ? trainingPulled.training_sets.map(rowToTrainingSet) : (state.training&&state.training.sets||[]),
         // If the resources pull failed, PRESERVE what's already local rather
         // than assigning [] — otherwise a missing table would silently delete
         // the person's whole reference library on the next open.
@@ -4064,6 +4264,13 @@ async function pullFromSupabase(onProgress){
       // yet — is undefined and correctly leaves the local value untouched.
       if(Array.isArray(settingsRows[0].weekend_days)) state.settings.weekendDays = settingsRows[0].weekend_days;
       if(Array.isArray(settingsRows[0].location_day_rules)) state.settings.locationDayRules = settingsRows[0].location_day_rules;
+      // Suggestions persist across devices — whoever last saved an exercise
+      // gets their computed suggestion to every other device.
+      if(settingsRows[0].training_suggestions && typeof settingsRows[0].training_suggestions==='object'){
+        state.settings.trainingSuggestions = Object.assign(
+          state.settings.trainingSuggestions||{}, settingsRows[0].training_suggestions
+        );
+      }
       // Whichever device confirmed a later day wins — this is what makes
       // "start a new day on one device" actually show up on the others,
       // instead of each device only ever trusting its own local record.
@@ -4650,7 +4857,7 @@ async function saveSettings(){
   await safeStorageSet(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings), 'settings');
   if(syncConfigured()){
     scheduleSync('settings', ()=>[
-      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate }], 'pin'),
+      ()=> supaUpsert('app_settings', [{ pin: state.settings.sync.pin, locations: state.settings.locations, silos: state.settings.silos, list_folders: state.settings.listFolders, week_view_presets: state.settings.weekViewPresets, calendar_view_presets: state.settings.calendarViewPresets, hydration_containers: state.settings.hydrationContainers, hydration_goal_ml: state.settings.hydrationGoalMl, exercise_tags: state.settings.exerciseTags, weekend_days: state.settings.weekendDays, location_day_rules: state.settings.locationDayRules, last_active_date: state.settings.lastActiveDate, training_suggestions: state.settings.trainingSuggestions||null }], 'pin'),
     ]);
   }
 }
@@ -4663,6 +4870,7 @@ async function saveTraining(){
       ()=> supaUpsert('training_sessions', state.training.sessions.map(trainingSessionToRow), 'pin,id'),
       ()=> { const rows = state.training.calendar.map(trainingCalendarToRow); return rows.length ? supaUpsert('training_calendar', rows, 'pin,cal_date') : null; },
       ()=> { const rows = state.training.logs.map(trainingLogToRow); return rows.length ? supaUpsert('training_logs', rows, 'pin,log_date,exercise_id') : null; },
+      ()=> { const rows = (state.training.sets||[]).map(trainingSetToRow); return rows.length ? supaUpsert('training_sets', rows, 'pin,log_date,exercise_id,set_no') : null; },
       ()=> { const rows = (state.training.resources||[]).map(trainingResourceToRow); return rows.length ? supaUpsert('training_resources', rows, 'pin,id') : null; },
     ]);
   }
@@ -5999,8 +6207,24 @@ function renderTicket(row, opts){
   const dueLabel = isRecurring
     ? (t.detail ? `${t.type}${t.type==='Days of Week'||t.type==='Weekly'||t.type==='Bi-Weekly' ? ' · '+t.detail : ''}` : t.type)
     : humanDate(t.due);
-  const nextDateTag = (opts.showNextDate && isRecurring)
-    ? (()=>{ const n = nextOccurrenceDate(t); return n ? `<span class="tag next-date-tag">Next: ${humanDate(n)}</span>` : ''; })()
+  const nextDate = (opts.showNextDate && isRecurring) ? nextOccurrenceDate(t) : null;
+  const nextShiftedFrom = nextDate ? rescheduleExceptionFor(t, nextDate) : null;
+  const nextDateTag = nextDate
+    ? `<span class="tag next-date-tag"${nextShiftedFrom ? ` title="Moved from ${humanDate(nextShiftedFrom.from)}"` : ''}>Next: ${humanDate(nextDate)}${nextShiftedFrom ? ' ↷' : ''}</span>`
+    : '';
+
+  /* Shift the next occurrence by N days, without touching the pattern.
+     Rendered outside the ticket-body click target, since that opens the edit
+     modal — a stray tap here should not swallow the row's own action. */
+  const shiftInputId = `shiftDays_${t.id}`;
+  const nextShiftRow = (opts.showNextDate && isRecurring && nextDate)
+    ? `<div class="next-shift-row" onclick="event.stopPropagation();">
+         <span class="next-shift-label">Shift next by</span>
+         <input class="train-input next-shift-input" type="number" id="${shiftInputId}" value="1" step="1" inputmode="numeric" aria-label="Days to shift the next occurrence of ${escapeHtml(t.name)}">
+         <span class="next-shift-label">day(s)</span>
+         <button type="button" class="btn secondary sm" onclick="shiftNextOccurrenceFromInput('${t.id}','${shiftInputId}')">Shift</button>
+         ${nextShiftedFrom ? `<button type="button" class="btn ghost sm" onclick="undoNextOccurrenceShift('${t.id}','${nextDate}')" title="Put it back on ${humanDate(nextShiftedFrom.from)}">Undo</button>` : ''}
+       </div>`
     : '';
 
   // one stamp at a time, priority: overdue > rescheduled > streak
@@ -6048,6 +6272,7 @@ function renderTicket(row, opts){
           ${nextDateTag}
           <span>${dueLabel}</span>
         </div>
+        ${nextShiftRow}
       </div>
       <div class="ticket-actions">
         ${missedBtn}
@@ -6267,9 +6492,20 @@ async function quickAddTask(name){
 
 function renderTasksView(){
   const tab = state.tasksTab;
-  const oneTimeList = state.tasks.oneTime.filter(matchesFilters)
+  // matchesFilters(item, dateStr) takes TWO arguments. Passing it point-free to
+  // .filter() handed it (element, index, array) — so the array index arrived as
+  // the date. Index 0 is falsy and returned early, which is why this looked
+  // fine; index 1 and up reached parseDate(1) and threw "s.split is not a
+  // function". It only surfaced once a weekend location rule existed (the
+  // resolver returns early when there are none) and only while searching or
+  // filtering by location, since those are the paths that resolve a location
+  // at all. Latent since weekend rules shipped in v4.26.0.
+  const oneTimeList = state.tasks.oneTime.filter(t=> matchesFilters(t, t.due || ''))
     .sort((a,b)=> (a.due||'9999') < (b.due||'9999') ? -1 : 1);
-  const recurringList = state.tasks.recurring.filter(matchesFilters)
+  // Recurring rows are rendered against today below (dueOn: todayStr()), so the
+  // filter has to resolve the location for the same date or a weekend-remapped
+  // task would be filtered under one location and displayed under another.
+  const recurringList = state.tasks.recurring.filter(t=> matchesFilters(t, todayStr()))
     .sort((a,b)=> a.name.localeCompare(b.name));
 
   const rows = tab === 'oneTime'
@@ -7927,6 +8163,182 @@ async function deleteMetricDef(metricId){
    Library / Exercise Library) live in a left sidebar + panel, same
    pattern as Settings.
    ========================================================= */
+
+/* ============================================================
+   PER-SET LOGGING & REST TIMER (v4.40.0)
+
+   State: state.training.sets = [{date, exerciseId, setNo, reps, weightKg,
+     done, rir, toFailure, isWarmup, restTakenSec, loggedAt}]
+
+   RIR (Reps In Reserve) replaces Difficulty 1-5 for new entries.
+   Old logs keep their difficulty field and continue to display it.
+   Suggestions are stored per (nextDate, exId) in state.settings.trainingSuggestions.
+   ============================================================ */
+
+const MUSCLE_GROUPS = [
+  'chest','back','shoulders','biceps','triceps','quads','hamstrings',
+  'glutes','calves','abs','forearms',
+];
+
+function doubleProgressionSuggestion(exId, sessionTarget, lastSets){
+  if(!lastSets || !lastSets.length) return null;
+  if(!sessionTarget || !sessionTarget.repsMin || !sessionTarget.repsMax) return null;
+  const { repsMin, repsMax, weightKg } = sessionTarget;
+  const working = lastSets.filter(s=> !s.isWarmup && !s.toFailure);
+  if(!working.length) return null;
+  const allAtTop = working.every(s=> s.reps >= repsMax && (s.rir==null||s.rir<=2));
+  const anyBelowBottom = working.some(s=> s.reps < repsMin);
+  if(allAtTop) return { type:'addWeight', newWeightKg:(weightKg||lastSets[0].weightKg||0)+2.5,
+    repsTarget:repsMin, message:`All sets hit ${repsMax} reps at RIR≤2 — try +2.5 kg, drop back to ${repsMin}` };
+  if(anyBelowBottom) return { type:'hold', newWeightKg:lastSets[0].weightKg,
+    repsTarget:repsMin, message:`Hold the weight — didn't reach ${repsMin} reps on all sets` };
+  const nextReps=Math.max(...working.map(s=>s.reps||0))+1;
+  return { type:'addRep', newWeightKg:lastSets[0].weightKg,
+    repsTarget:Math.min(nextReps,repsMax), message:`Try ${Math.min(nextReps,repsMax)} reps at the same weight` };
+}
+
+function getSetsForExercise(date, exId){
+  return (state.training.sets||[]).filter(s=>s.date===date&&s.exerciseId===exId).sort((a,b)=>a.setNo-b.setNo);
+}
+function getLastSetsForExercise(exId, excludeDate){
+  const byDate={};
+  (state.training.sets||[]).filter(s=>s.exerciseId===exId&&s.date!==excludeDate)
+    .forEach(s=>{(byDate[s.date]||(byDate[s.date]=[])).push(s);});
+  const dates=Object.keys(byDate).sort((a,b)=>a<b?1:-1);
+  return dates.length?byDate[dates[0]]:[];
+}
+function epley1RM(sets){
+  if(!sets||!sets.length) return null;
+  const w=sets.filter(s=>!s.isWarmup&&!s.toFailure&&s.reps&&s.reps<=10&&s.weightKg);
+  if(!w.length) return null;
+  return Math.max(...w.map(s=>s.weightKg*(1+s.reps/30)));
+}
+function bestE1RMForExercise(exId, excludeDate){
+  const all=(state.training.sets||[]).filter(s=>s.exerciseId===exId&&s.date!==excludeDate);
+  if(!all.length) return null;
+  const byDate={};
+  all.forEach(s=>{(byDate[s.date]||(byDate[s.date]=[])).push(s);});
+  let best=null;
+  Object.values(byDate).forEach(sets=>{const e=epley1RM(sets);if(e&&(best===null||e>best))best=e;});
+  return best;
+}
+
+let _restTimerHandle=null,_restTimerEnd=null,_restTimerExId=null,_restTimerDefaultSec=120;
+function startRestTimer(seconds,exId){
+  if(_restTimerHandle) clearInterval(_restTimerHandle);
+  _restTimerEnd=Date.now()+seconds*1000;_restTimerExId=exId;_restTimerDefaultSec=seconds;
+  _updateRestTimerUI();
+  _restTimerHandle=setInterval(_updateRestTimerUI,1000);
+}
+let _tipIndex=0;
+const REST_TIPS=[
+  'Slow walk — keeps you warm without loading the muscle',
+  'Nasal breathing for 30s — heart rate settles faster',
+  'Mobility for the NEXT muscle group, not the one you just worked',
+  'Review form cues in your head for the next set',
+  'Light shoulder circles between upper-body sets',
+  'Hip circles or ankle rolls between lower-body sets',
+  'Take a sip of water if you haven\'t in the last 10 minutes',
+];
+function _nextRestTip(){ _tipIndex=(_tipIndex+1)%REST_TIPS.length; return REST_TIPS[_tipIndex]; }
+function _updateRestTimerUI(){
+  const remaining=Math.max(0,Math.round((_restTimerEnd-Date.now())/1000));
+  const el=document.getElementById('restTimerDisplay');
+  if(!el){if(_restTimerHandle){clearInterval(_restTimerHandle);_restTimerHandle=null;}return;}
+  if(remaining<=0){clearInterval(_restTimerHandle);_restTimerHandle=null;el.innerHTML=_restTimerDoneHtml();return;}
+  const m=Math.floor(remaining/60),s=remaining%60;
+  el.innerHTML=`<div class="rest-timer-box">
+    <span class="rest-timer-label">Rest</span>
+    <span class="rest-timer-count">${m}:${String(s).padStart(2,'0')}</span>
+    <button class="btn ghost sm" onclick="stopRestTimer()">Done early</button>
+    <div class="rest-timer-tip">${_nextRestTip()}</div>
+  </div>`;
+}
+function _restTimerDoneHtml(){
+  return `<div class="rest-timer-box rest-timer-done">
+    <span class="rest-timer-label">Rest complete</span>
+    <span class="rest-timer-count">Go!</span>
+    <button class="btn ghost sm" onclick="stopRestTimer()">✓</button>
+  </div>`;
+}
+function stopRestTimer(){
+  if(_restTimerHandle){clearInterval(_restTimerHandle);_restTimerHandle=null;}
+  _restTimerEnd=null;_restTimerExId=null;
+  const el=document.getElementById('restTimerDisplay');if(el)el.innerHTML='';
+}
+function defaultRestSec(ex){
+  if(!ex) return 120;
+  if(ex.restSec) return Number(ex.restSec);
+  const compound=['chest','back','shoulders','quads','hamstrings','glutes'];
+  return (ex.muscleGroup&&compound.includes(ex.muscleGroup))?120:90;
+}
+function rirColour(rir){
+  if(rir===null||rir===undefined) return 'var(--ink-soft)';
+  if(rir===0) return 'var(--red)'; if(rir===1) return '#d46b00';
+  if(rir===2) return '#b8960a'; return 'var(--ink-soft)';
+}
+function upsertTrainingSet(row){
+  if(!state.training.sets) state.training.sets=[];
+  const idx=state.training.sets.findIndex(s=>s.date===row.date&&s.exerciseId===row.exerciseId&&s.setNo===row.setNo);
+  if(idx>=0) state.training.sets[idx]={...state.training.sets[idx],...row};
+  else state.training.sets.push(row);
+}
+function deleteTrainingSetsForExercise(date,exId){
+  if(!state.training.sets) return;
+  state.training.sets=state.training.sets.filter(s=>!(s.date===date&&s.exerciseId===exId));
+}
+function deleteTrainingSetsForDate(date){
+  if(!state.training.sets) return;
+  state.training.sets=state.training.sets.filter(s=>s.date!==date);
+}
+function trainingSetToRow(s){
+  const pin=state.settings.sync&&state.settings.sync.pin;
+  return {pin,log_date:s.date,exercise_id:s.exerciseId,set_no:s.setNo,
+    reps:s.reps||null,weight_kg:s.weightKg||null,done:!!s.done,
+    rir:s.rir!=null?s.rir:null,to_failure:!!s.toFailure,
+    is_warmup:!!s.isWarmup,rest_taken_sec:s.restTakenSec||null,logged_at:s.loggedAt||null};
+}
+function rowToTrainingSet(r){
+  return {date:r.log_date,exerciseId:r.exercise_id,setNo:r.set_no,
+    reps:r.reps||null,weightKg:r.weight_kg||null,done:!!r.done,
+    rir:r.rir!=null?r.rir:null,toFailure:!!r.to_failure,
+    isWarmup:!!r.is_warmup,restTakenSec:r.rest_taken_sec||null,loggedAt:r.logged_at||null};
+}
+function getTrainingSuggestion(date,exId){
+  return (state.settings.trainingSuggestions||{})[`${date}::${exId}`]||null;
+}
+function setTrainingSuggestion(date,exId,suggestion){
+  if(!state.settings.trainingSuggestions) state.settings.trainingSuggestions={};
+  state.settings.trainingSuggestions[`${date}::${exId}`]={...suggestion,generatedAt:new Date().toISOString()};
+}
+function refreshSuggestionForExercise(exId, date){
+  const lastSets=getLastSetsForExercise(exId,null); // null = include today now saved
+  if(!lastSets.length) return;
+  const cal=getTrainingCalEntry(date);
+  const session=cal?getTrainingSessionById(cal.sessionId):null;
+  const block=session&&session.blocks?session.blocks.find(b=>b.exerciseId===exId):null;
+  const target=block?{
+    repsMin:parseInt(String(block.reps||'').split('-')[0])||8,
+    repsMax:parseInt(String(block.reps||'').split('-').pop())||12,
+    weightKg:lastSets[0]&&lastSets[0].weightKg, sets:block.sets||3,
+  }:null;
+  const prog=doubleProgressionSuggestion(exId,target,lastSets.filter(s=>!s.isWarmup));
+  if(!prog) return;
+  // Find next calendar date for this exercise.
+  const futureDates=state.training.calendar.filter(c=>c.date>date).sort((a,b)=>a.date<b.date?-1:1);
+  let nextDate=null;
+  for(const entry of futureDates){
+    const sess=getTrainingSessionById(entry.sessionId);
+    if(sess&&sess.blocks&&sess.blocks.some(b=>b.exerciseId===exId)){nextDate=entry.date;break;}
+  }
+  const targetDate=nextDate||addDays(date,1);
+  setTrainingSuggestion(targetDate,exId,{
+    suggestedWeightKg:prog.newWeightKg,suggestedReps:prog.repsTarget,
+    suggestedSets:target?target.sets:lastSets.length,
+    basis:prog.message,basedOnDate:date,
+  });
+}
+
 const TRAINING_SESSION_LEVEL_ID = '__session__';
 
 function ensureTrainingViewDate(){
@@ -8092,6 +8504,7 @@ function renderTrainingView(){
         <button class="btn secondary sm" onclick="exportTrainingJson()">Export</button>
         <button class="btn secondary sm" onclick="copyTrainingImportTemplate()">Copy Import Template</button>
         <button class="btn secondary sm" onclick="copyTrainingImportPrompt()">Copy Prompt</button>
+        <button class="btn brass sm" onclick="copyTrainingReviewPack()" title="Copy your last 2 weeks of data + prompt for an AI review">📋 Copy Review Pack</button>
         <button class="btn secondary sm" onclick="openTrainingPasteImportModal()">Paste &amp; Import</button>
         <label class="btn brass sm" style="cursor:pointer;">
           Import File
@@ -8272,45 +8685,135 @@ function renderTrainingExerciseLogRow(date, block, index){
   const ex = isSessionLevel ? null : getTrainingExerciseById(block.exerciseId);
   const log = getTrainingLogForExercise(date, block.exerciseId);
   const draft = getTrainingDraft(date, block.exerciseId);
-  // Draft (in-progress, unsaved) values win over the last-saved log, which
-  // wins over blank — this is the fix: previously this only ever read from
-  // `log`, so a re-render mid-edit (adding another exercise, a background
-  // sync completing) would regenerate every field from stale saved data and
-  // silently discard anything typed but not yet saved.
   const val = (field, fallback) => (draft && draft[field]!==undefined) ? draft[field] : (log && log[field]!==undefined && log[field]!==null ? log[field] : fallback);
   const completedVal = (draft && draft.completed!==undefined) ? draft.completed : !!(log && log.completed);
-  const difficultyVal = (draft && draft.difficulty!==undefined) ? draft.difficulty : (log ? log.difficulty : null);
-  const reps = !isSessionLevel && block.reps ? String(block.reps) : '';
-  const sets = !isSessionLevel && block.sets ? `${block.sets} sets` : '';
-  const repsLine = [reps, sets].filter(Boolean).join(' · ');
   const isWalking = !isSessionLevel && ex && ex.category === 'walking';
   const rowId = `trainEx_${index}`;
   const title = isSessionLevel ? 'Log this session' : (ex ? ex.name : null);
+
+  // Per-set data — new in v4.40.0
+  const sets = !isSessionLevel && !isWalking ? getSetsForExercise(date, block.exerciseId) : [];
+  const lastSets = !isSessionLevel && !isWalking ? getLastSetsForExercise(block.exerciseId, date) : [];
+  const suggestion = !isSessionLevel && !isWalking ? getTrainingSuggestion(date, block.exerciseId) : null;
+  const prevE1RM = !isSessionLevel && !isWalking ? bestE1RMForExercise(block.exerciseId, date) : null;
+  const curE1RM = sets.length ? epley1RM(sets) : null;
+  const isPR = curE1RM && prevE1RM && curE1RM > prevE1RM;
+
+  // Last session carry-forward (first working set weight and reps, for quick reference)
+  const lastWorking = lastSets.filter(s=>!s.isWarmup);
+  const lastRef = lastWorking.length ? lastWorking[0] : null;
+
+  // Session-level log row (walk/rest days) — unchanged
+  if(isSessionLevel){
+    const difficultyVal = (draft && draft.difficulty!==undefined) ? draft.difficulty : (log ? log.difficulty : null);
+    return `
+    <div class="card" style="padding:12px 14px; margin-bottom:10px; background:var(--paper-dim);" data-exercise-id="${escapeHtml(block.exerciseId)}" data-row-id="${rowId}">
+      <b>Log this session</b>
+      <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
+        <div class="toggle-switch ${completedVal?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','completed', this.classList.contains('on')); updateTrainingDayAggPreview();"><div class="knob"></div></div>
+      </div>
+      <div class="field" style="margin-top:8px; margin-bottom:0;">
+        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this session…"
+                  oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','notes', this.value);">${escapeHtml(String(val('notes','')))}</textarea>
+      </div>
+    </div>`;
+  }
+
+  /* Build per-set rows. Pre-fill weight from last session for convenience.
+     If the person already has saved sets for today, show those; otherwise show
+     one row pre-filled from the last session (or the session block target). */
+  const defaultWeight = lastRef ? lastRef.weightKg : null;
+  const defaultReps = lastRef ? lastRef.reps : (block.reps ? parseInt(String(block.reps).split('-')[0])||null : null);
+  const displaySets = sets.length ? sets : [];
+
+  const setRowsHtml = displaySets.map((s, i) => {
+    const lastMatchingSet = lastWorking[i];
+    const lLabel = lastMatchingSet
+      ? `${lastMatchingSet.weightKg||'?'}kg × ${lastMatchingSet.reps||'?'}`
+      + (lastMatchingSet.rir!=null ? ` RIR${lastMatchingSet.rir}` : '')
+      : null;
+    return `
+    <div class="set-row ${s.done?'set-row-done':''} ${s.isWarmup?'set-row-warmup':''}" data-set-no="${s.setNo}">
+      <button type="button" class="set-tick ${s.done?'set-tick-done':''}"
+        onclick="toggleSetDone('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},${defaultRestSec(ex)});"
+        title="${s.done?'Unmark done':'Mark set done + start rest timer'}">${s.done?'✓':String(s.setNo)}</button>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        ${lLabel ? `<span class="set-last-ref">Last: ${escapeHtml(lLabel)}</span>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <input type="number" min="0" step="1" value="${s.reps||''}" placeholder="${defaultReps||'reps'}"
+            class="train-input set-num-input"
+            oninput="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'reps',this.value===''?null:Number(this.value));"
+            aria-label="Reps for set ${s.setNo}">
+          <span class="set-unit">reps</span>
+          <input type="number" min="0" step="0.5" value="${s.weightKg||''}" placeholder="${defaultWeight||'kg'}"
+            class="train-input set-num-input"
+            oninput="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'weightKg',this.value===''?null:Number(this.value));"
+            aria-label="Weight for set ${s.setNo}">
+          <span class="set-unit">kg</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span class="set-rir-label">RIR</span>
+            ${[0,1,2,3,4].map(r=>`<button type="button"
+              class="rir-pill ${s.rir===r?'rir-active':''}"
+              style="${s.rir===r?`background:${rirColour(r)};color:#fff;border-color:${rirColour(r)}`:''}"
+              onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'rir',${r===s.rir?'null':r});"
+              title="Reps in reserve: ${r===0?'last rep you could do':'could do '+r+' more'}">${r}</button>`).join('')}
+          </div>
+          <button type="button" class="rir-pill ${s.toFailure?'rir-active':''}"
+            style="${s.toFailure?'background:var(--red);color:#fff;border-color:var(--red)':''}"
+            onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'toFailure',${!s.toFailure});"
+            title="Mark this set taken to failure">F</button>
+          <button type="button" class="rir-pill ${s.isWarmup?'rir-active':''}"
+            style="${s.isWarmup?'background:var(--ink-soft);color:#fff':''}"
+            onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'isWarmup',${!s.isWarmup});"
+            title="Mark as warm-up (excluded from volume/e1RM)">W</button>
+          <button type="button" class="icon-btn" style="font-size:10px;width:22px;height:22px;"
+            onclick="removeSet('${date}','${escapeHtml(block.exerciseId)}',${s.setNo});" title="Remove this set">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Aggregate for display
+  const workingSets = sets.filter(s=>!s.isWarmup);
+  const doneSets = workingSets.filter(s=>s.done).length;
+  const e1RMDisplay = curE1RM ? `e1RM ~${Math.round(curE1RM)}kg${isPR?' 🏆 PR':''}` : '';
+
   return `
     <div class="card" style="padding:12px 14px; margin-bottom:10px; background:var(--paper-dim);" data-exercise-id="${escapeHtml(block.exerciseId)}" data-row-id="${rowId}">
       <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;">
         <b>${title ? escapeHtml(title) : `⚠ missing exercise "${escapeHtml(block.exerciseId||'')}"`}</b>
         <span style="display:flex; align-items:center; gap:8px;">
-          ${repsLine ? `<span class="page-sub">${escapeHtml(repsLine)}</span>` : ''}
-          ${!isSessionLevel ? `<button class="icon-btn train-remove-btn" title="Remove from this day" onclick="removeExerciseFromDay('${date}','${escapeHtml(block.exerciseId)}')">✕</button>` : ''}
+          ${sets.length ? `<span class="page-sub" style="font-size:11px;">${doneSets}/${workingSets.length} sets done${e1RMDisplay?` · ${e1RMDisplay}`:''}</span>` : ''}
+          <button class="icon-btn train-remove-btn" title="Remove from this day" onclick="removeExerciseFromDay('${date}','${escapeHtml(block.exerciseId)}')">✕</button>
         </span>
       </div>
-      ${!isSessionLevel && block.notes ? `<div class="page-sub" style="margin-top:2px;">${escapeHtml(block.notes)}</div>` : ''}
-      ${!isSessionLevel && ex ? `<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+
+      ${ex && (ex.notes||'').trim() ? `<div class="page-sub" style="margin-top:2px;font-size:11.5px;">${escapeHtml(ex.notes)}</div>` : ''}
+
+      ${suggestion ? `<div class="suggestion-box">
+        💡 <b>Suggestion:</b> ${escapeHtml(suggestion.basis)}
+        ${suggestion.suggestedWeightKg ? ` — try <b>${suggestion.suggestedWeightKg}kg</b>` : ''}
+      </div>` : (lastRef && !sets.length ? `<div class="suggestion-box" style="opacity:0.75;">
+        Last time: ${lastRef.weightKg||'?'}kg × ${lastRef.reps||'?'} reps${lastRef.rir!=null?` (RIR ${lastRef.rir})`:''}
+      </div>` : '')}
+
+      ${ex ? `<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px;">
         ${exVideoUrls(ex).length ? (exVideoUrls(ex).length===1
           ? `<a class="btn ghost sm" style="padding-left:0;" href="${escapeHtml(exVideoUrls(ex)[0])}" target="_blank" rel="noopener">▶ Form guide</a>`
           : `<button class="btn ghost sm" style="padding-left:0;" onclick="openExerciseVideoPicker('${ex.id}')">▶ Form guides (${exVideoUrls(ex).length})</button>`) : ''}
         <button class="btn ghost sm" style="padding-left:0;" onclick="openExerciseHistoryModal('${ex.id}','${date}')">↺ History</button>
       </div>` : ''}
-      <div style="display:flex; align-items:center; gap:16px; margin-top:8px; flex-wrap:wrap;">
-        <div class="toggle-switch ${completedVal?'on':''}" id="${rowId}_done" onclick="this.classList.toggle('on'); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','completed', this.classList.contains('on')); updateTrainingDayAggPreview();"><div class="knob"></div></div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="page-sub" style="text-transform:uppercase; font-size:10.5px; letter-spacing:0.03em;">Difficulty</span>
-          <div class="radio-pills" id="${rowId}_diff">
-            ${[1,2,3,4,5].map(v=>`<button type="button" class="radio-pill ${difficultyVal===v?'active':''}" data-val="${v}" onclick="pickTrainingExDifficultyUI('${rowId}',${v}); setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','difficulty', ${v});">${v}</button>`).join('')}
-          </div>
-        </div>
+
+      <div id="${rowId}_sets" style="margin-top:10px;">
+        ${setRowsHtml}
       </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+        <button type="button" class="btn secondary sm" onclick="addSet('${date}','${escapeHtml(block.exerciseId)}')">+ Set</button>
+        ${sets.length ? `<button type="button" class="btn ghost sm" onclick="addSetLikeLastSet('${date}','${escapeHtml(block.exerciseId)}')">Same as last set</button>` : ''}
+        ${!isWalking && sets.length ? `<button type="button" class="btn ghost sm" onclick="addWarmupSet('${date}','${escapeHtml(block.exerciseId)}')">+ Warm-up</button>` : ''}
+      </div>
+
       ${isWalking ? `
         <div style="display:flex; align-items:flex-end; gap:10px; margin-top:10px; flex-wrap:wrap;">
           <div style="display:flex; flex-direction:column; gap:3px;">
@@ -8331,78 +8834,115 @@ function renderTrainingExerciseLogRow(date, block, index){
                    oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgHeartRate', this.value===''?null:Number(this.value));"
                    class="train-input" style="width:76px;">
           </div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Avg Pace (min/km)</span>
-            <input type="text" id="${rowId}_avgPace" value="${escapeHtml(String(val('avgPace','')))}" placeholder="e.g. 6:30"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','avgPace', this.value);"
-                   class="train-input" style="width:90px;">
-          </div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Incline (%)</span>
-            <input type="text" id="${rowId}_incline" value="${escapeHtml(String(val('incline','')))}" placeholder="e.g. 3"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','incline', this.value);"
-                   class="train-input" style="width:70px;">
-          </div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Calories</span>
-            <input type="number" min="0" step="1" id="${rowId}_calories" value="${val('calories','')}" placeholder="—"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','calories', this.value===''?null:Number(this.value));"
-                   class="train-input" style="width:70px;">
-          </div>
-        </div>
-      ` : ''}
-      ${!isSessionLevel && !isWalking ? `
-        <div style="display:flex; align-items:flex-end; gap:10px; margin-top:10px; flex-wrap:wrap;">
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Sets</span>
-            <input type="number" min="0" step="1" id="${rowId}_sets" value="${val('sets','')}" placeholder="—"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','sets', this.value===''?null:Number(this.value));"
-                   class="train-input" style="width:56px;">
-          </div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Reps</span>
-            <input type="text" id="${rowId}_reps" value="${escapeHtml(String(val('reps','')))}" placeholder="e.g. 10 or 8-10"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','reps', this.value);"
-                   class="train-input" style="width:100px;">
-          </div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            <span class="page-sub" style="text-transform:uppercase; font-size:9.5px; letter-spacing:0.03em;">Weight (kg)</span>
-            <input type="number" min="0" step="0.5" id="${rowId}_weight" value="${val('weight','')}" placeholder="—"
-                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','weight', this.value===''?null:Number(this.value));"
-                   class="train-input" style="width:80px;">
-          </div>
-        </div>
-      ` : ''}
+        </div>` : ''}
+
       <div class="field" style="margin-top:8px; margin-bottom:0;">
-        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this ${isSessionLevel?'session':'exercise'}…"
+        <textarea id="${rowId}_notes" rows="2" placeholder="Notes for this exercise…"
                   oninput="setTrainingDraftField('${date}','${escapeHtml(block.exerciseId)}','notes', this.value);">${escapeHtml(String(val('notes','')))}</textarea>
       </div>
     </div>
   `;
 }
-function pickTrainingExDifficultyUI(rowId, val){
-  document.querySelectorAll(`#${rowId}_diff .radio-pill`).forEach(b=> b.classList.toggle('active', Number(b.dataset.val)===val));
-  updateTrainingDayAggPreview();
-}
-// Live preview of the header aggregate as you toggle/rate exercises, before
-// hitting Save — the saved-state recompute on save already worked, but
-// leaving the header stale until Save felt broken (reported: "counter next
-// to the session name does not update"). This reads current DOM state, not
-// saved state, purely for instant feedback; Save still writes the real data.
+// updateTrainingDayAggPreview now counts set-done ticks rather than the
+// old radio-pill difficulty. The per-set toggleSetDone handler calls it.
 function updateTrainingDayAggPreview(){
   const badge = document.getElementById('trainingDayAggBadge');
   if(!badge) return;
+  // Count done working sets across all exercises in today's card.
   const rowEls = document.querySelectorAll('#trainingExerciseRows [data-row-id]');
-  let completed = 0, diffSum = 0, diffCount = 0;
+  let doneSets=0, totalSets=0;
   rowEls.forEach(rowEl=>{
-    const rowId = rowEl.dataset.rowId;
-    const doneEl = document.getElementById(`${rowId}_done`);
-    if(doneEl && doneEl.classList.contains('on')) completed++;
-    const diffEl = document.querySelector(`#${rowId}_diff .radio-pill.active`);
-    if(diffEl){ diffSum += Number(diffEl.dataset.val); diffCount++; }
+    const exId = rowEl.dataset.exerciseId;
+    const date = state.trainingSelectedDate || todayStr();
+    const sets = getSetsForExercise(date, exId).filter(s=>!s.isWarmup);
+    totalSets += sets.length;
+    doneSets += sets.filter(s=>s.done).length;
   });
-  const avg = diffCount ? Math.round((diffSum/diffCount)*10)/10 : null;
-  badge.textContent = `${completed}/${rowEls.length} done${avg!=null?` · avg difficulty ${avg}`:''}`;
+  badge.textContent = `${doneSets}/${totalSets} sets done`;
+}
+
+/* ---- Per-set handlers (called from inline onclick in the log row) ---- */
+
+function addSet(date, exId){
+  if(!state.training.sets) state.training.sets=[];
+  const existing = getSetsForExercise(date, exId);
+  const last = existing[existing.length-1];
+  const lastSets = getLastSetsForExercise(exId, date);
+  const lastWorking = lastSets.filter(s=>!s.isWarmup);
+  const setNo = existing.length+1;
+  const matchingLast = lastWorking[existing.filter(s=>!s.isWarmup).length]; // same position from last time
+  upsertTrainingSet({
+    date, exerciseId:exId, setNo,
+    reps: matchingLast ? matchingLast.reps : (last ? last.reps : null),
+    weightKg: matchingLast ? matchingLast.weightKg : (last ? last.weightKg : null),
+    done:false, rir:null, toFailure:false, isWarmup:false,
+    restTakenSec:null, loggedAt:null,
+  });
+  scheduleTrainingDraftSave();
+  renderMain();
+}
+
+function addSetLikeLastSet(date, exId){
+  const existing = getSetsForExercise(date, exId);
+  if(!existing.length){ addSet(date, exId); return; }
+  const last = existing[existing.length-1];
+  const setNo = existing.length+1;
+  upsertTrainingSet({...last, setNo, done:false, restTakenSec:null, loggedAt:null});
+  scheduleTrainingDraftSave();
+  renderMain();
+}
+
+function addWarmupSet(date, exId){
+  const existing = getSetsForExercise(date, exId);
+  // Insert as set 0.x — use a fractional that sorts before 1.
+  // Simpler: re-number all existing, prepend new warmup as setNo 1.
+  const warmupCount = existing.filter(s=>s.isWarmup).length;
+  // Shift all existing sets up by 1.
+  existing.forEach(s=>{ s.setNo += 1; });
+  const lastSets = getLastSetsForExercise(exId, date);
+  const lastWarmup = (lastSets||[]).filter(s=>s.isWarmup)[warmupCount];
+  upsertTrainingSet({
+    date, exerciseId:exId, setNo:1,
+    reps: lastWarmup ? lastWarmup.reps : 10,
+    weightKg: lastWarmup ? lastWarmup.weightKg : null,
+    done:false, rir:null, toFailure:false, isWarmup:true,
+    restTakenSec:null, loggedAt:null,
+  });
+  scheduleTrainingDraftSave();
+  renderMain();
+}
+
+function removeSet(date, exId, setNo){
+  if(!state.training.sets) return;
+  state.training.sets = state.training.sets.filter(s=>!(s.date===date&&s.exerciseId===exId&&s.setNo===setNo));
+  // Re-number remaining sets sequentially.
+  const remaining = getSetsForExercise(date, exId);
+  remaining.forEach((s,i)=>{ s.setNo=i+1; });
+  scheduleTrainingDraftSave();
+  renderMain();
+}
+
+function updateSetField(date, exId, setNo, field, value){
+  if(!state.training.sets) state.training.sets=[];
+  const s = state.training.sets.find(s=>s.date===date&&s.exerciseId===exId&&s.setNo===setNo);
+  if(!s) return;
+  s[field] = value;
+  scheduleTrainingDraftSave();
+  // Partial re-render of just the set row to avoid losing focus.
+  updateTrainingDayAggPreview();
+}
+
+function toggleSetDone(date, exId, setNo, restSec){
+  if(!state.training.sets) state.training.sets=[];
+  const s = state.training.sets.find(s=>s.date===date&&s.exerciseId===exId&&s.setNo===setNo);
+  if(!s) return;
+  s.done = !s.done;
+  s.loggedAt = s.done ? new Date().toISOString() : null;
+  if(s.done) startRestTimer(restSec||120, exId);
+  else stopRestTimer();
+  scheduleTrainingDraftSave();
+  renderMain();
+  updateTrainingDayAggPreview();
 }
 
 function isTrainingDayFullyLogged(date, blocks){
@@ -8450,6 +8990,7 @@ function renderTrainingDayCard(date){
         ${agg ? `<span class="page-sub" id="trainingDayAggBadge" style="margin-left:auto;">${agg.completed}/${agg.total} done${agg.avgDifficulty!=null?` · avg difficulty ${agg.avgDifficulty}`:''}</span>` : ''}
       </div>
 
+      <div id="restTimerDisplay"></div>
       <div id="trainingExerciseRows">
         ${exerciseIds.map((id,i)=> renderTrainingExerciseLogRow(date, { exerciseId:id, reps:null, sets:null, notes:null }, i)).join('')}
       </div>
@@ -8475,62 +9016,63 @@ async function saveTrainingDayLogs(date){
   rowEls.forEach(rowEl=>{
     const rowId = rowEl.dataset.rowId;
     const exerciseId = rowEl.dataset.exerciseId;
-    const doneEl = document.getElementById(`${rowId}_done`);
-    const completed = doneEl ? doneEl.classList.contains('on') : false;
-    const diffEl = document.querySelector(`#${rowId}_diff .radio-pill.active`);
-    const difficulty = diffEl ? Number(diffEl.dataset.val) : null;
     const notesEl = document.getElementById(`${rowId}_notes`);
     const notes = notesEl ? notesEl.value.trim() : '';
-    const setsEl = document.getElementById(`${rowId}_sets`);
-    const sets = setsEl && setsEl.value !== '' ? Number(setsEl.value) : null;
-    const repsEl = document.getElementById(`${rowId}_reps`);
-    const reps = repsEl ? repsEl.value.trim() : '';
-    const weightEl = document.getElementById(`${rowId}_weight`);
-    const weight = weightEl && weightEl.value !== '' ? Number(weightEl.value) : null;
     const distanceEl = document.getElementById(`${rowId}_distanceKm`);
     const distanceKm = distanceEl && distanceEl.value !== '' ? Number(distanceEl.value) : null;
     const durationEl = document.getElementById(`${rowId}_durationMin`);
     const durationMin = durationEl && durationEl.value !== '' ? Number(durationEl.value) : null;
     const hrEl = document.getElementById(`${rowId}_avgHeartRate`);
     const avgHeartRate = hrEl && hrEl.value !== '' ? Number(hrEl.value) : null;
-    const paceEl = document.getElementById(`${rowId}_avgPace`);
-    const avgPace = paceEl ? paceEl.value.trim() : '';
-    const inclineEl = document.getElementById(`${rowId}_incline`);
-    const incline = inclineEl ? inclineEl.value.trim() : '';
     const calEl = document.getElementById(`${rowId}_calories`);
     const calories = calEl && calEl.value !== '' ? Number(calEl.value) : null;
+
+    // The per-set rows already live in state.training.sets from the live
+    // toggleSetDone / updateSetField handlers. Derive the summary-level
+    // completed flag from whether any working set is done.
+    const exSets = getSetsForExercise(date, exerciseId);
+    const anySetDone = exSets.some(s => s.done && !s.isWarmup);
+    const completed = exSets.length > 0 ? anySetDone : false;
+
     let log = getTrainingLogForExercise(date, exerciseId);
     if(!log){
-      log = { date, exerciseId, sessionId: null, completed:false, difficulty:null, notes:'', sets:null, reps:'', weight:null,
-               distanceKm:null, durationMin:null, avgHeartRate:null, avgPace:'', incline:'', calories:null, loggedAt:null };
+      log = { date, exerciseId, sessionId: null, completed:false, difficulty:null, notes:'',
+               sets:null, reps:'', weight:null, distanceKm:null, durationMin:null,
+               avgHeartRate:null, avgPace:'', incline:'', calories:null, loggedAt:null };
       state.training.logs.push(log);
     }
     log.completed = completed;
-    log.difficulty = difficulty;
     log.notes = notes;
-    log.sets = sets;
-    log.reps = reps;
-    log.weight = weight;
     log.distanceKm = distanceKm;
     log.durationMin = durationMin;
     log.avgHeartRate = avgHeartRate;
-    log.avgPace = avgPace;
-    log.incline = incline;
     log.calories = calories;
     log.loggedAt = new Date().toISOString();
+
+    // Denormalise a summary from sets for backward compat and the history modal.
+    if(exSets.length){
+      const working = exSets.filter(s=>!s.isWarmup);
+      log.sets = working.length;
+      log.weight = working.length ? (working[0].weightKg||null) : null;
+      log.reps = working.map(s=>s.reps||'?').join('/');
+    }
     count++;
   });
+
   if(state.trainingPendingAdds[date]) delete state.trainingPendingAdds[date];
   clearTrainingDraftsForDate(date);
-  flushTrainingDrafts(); // the values are committed to logs now — drop the draft copy at once
+  flushTrainingDrafts();
   await saveTraining();
+
+  // Compute and store next-session suggestions for each exercise saved today.
+  rowEls.forEach(rowEl=>{
+    try{ refreshSuggestionForExercise(rowEl.dataset.exerciseId, date); } catch(e){}
+  });
+  // Persist suggestions (they live in settings).
+  await saveSettings();
+
   diagLogEvent('activity', `Training log saved for ${date}`, { exercises: count });
-  // Saving after each machine is the right habit at the gym — it is what keeps
-  // a discarded tab from costing you the session. Collapsing to the summary
-  // card on every save punished that: adding the next exercise then cost an
-  // extra "Edit Log" tap each time. Today's card therefore stays open once
-  // saved; a past day still collapses, since there you are correcting a log
-  // rather than building one up.
+
   if(state.trainingEditingDate === date && date !== todayStr()) state.trainingEditingDate = null;
   else if(date === todayStr()) state.trainingEditingDate = date;
   renderMain();
@@ -8811,10 +9353,9 @@ async function deleteTrainingExerciseLog(date, exerciseId){
   delete state.trainingDraftValues[trainingDraftKey(date, exerciseId)];
   flushTrainingDrafts();
   state.training.logs = state.training.logs.filter(l=> !(l.date===date && l.exerciseId===exerciseId));
+  deleteTrainingSetsForExercise(date, exerciseId);
   pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:exerciseId } });
-  // Deleting training data is irreversible and is the one thing most worth
-  // being able to account for after the fact, so it goes in the activity log
-  // alongside task and list deletions rather than only in the raw sync trace.
+  pendingTrainingDeletes.push({ table:'training_sets', match:{ log_date:date, exercise_id:exerciseId } });
   diagLogEvent('activity', `Deleted training log for ${date}`, { exerciseId });
   await recordDeletion(`Training log for ${date}`, `exercise ${exerciseId}`);
   await saveTraining();
@@ -8826,7 +9367,9 @@ async function deleteTrainingDayLogs(date){
   if(!logs.length) return;
   if(!confirm(`Delete all ${logs.length} logged exercise${logs.length===1?'':'s'} for ${humanDate(date)}? This can't be undone.`)) return;
   logs.forEach(l=> pendingTrainingDeletes.push({ table:'training_logs', match:{ log_date:date, exercise_id:l.exerciseId } }));
+  pendingTrainingDeletes.push({ table:'training_sets', match:{ log_date:date } });
   state.training.logs = state.training.logs.filter(l=>l.date!==date);
+  deleteTrainingSetsForDate(date);
   diagLogEvent('activity', `Deleted ALL ${logs.length} training log(s) for ${date}`, { exerciseIds: logs.map(l=>l.exerciseId) });
   await recordDeletion(`ALL training logs for ${date}`, `${logs.length} entr${logs.length===1?'y':'ies'}`);
   await saveTraining();
@@ -9761,6 +10304,128 @@ function copyTrainingImportTemplate(){
 
 ${JSON.stringify(template, null, 2)}`;
   navigator.clipboard.writeText(text).then(()=> showToast('Import template copied')).catch(()=> showToast('Could not copy — select manually'));
+}
+
+/* ---- Weekly / bi-weekly review pack ----
+   Bundles everything needed to send to an AI and get a revised plan back.
+   Designed so the AI can return a JSON import in the existing format, and
+   you paste it straight into Paste & Import — no new infrastructure needed. */
+function buildTrainingReviewPack(){
+  const today = todayStr();
+  const sinceDate = addDays(today, -14); // last two weeks
+
+  // --- Logged sets since the last review ---
+  const recentSets = (state.training.sets||[])
+    .filter(s=> s.date >= sinceDate)
+    .sort((a,b)=> a.date<b.date?-1:1);
+
+  // --- Group by date and exercise, compute session-level stats ---
+  const sessionMap = {};
+  recentSets.forEach(s=>{
+    const key = `${s.date}::${s.exerciseId}`;
+    if(!sessionMap[key]) sessionMap[key] = { date:s.date, exerciseId:s.exerciseId, sets:[] };
+    sessionMap[key].sets.push(s);
+  });
+  const sessions = Object.values(sessionMap).map(e=>{
+    const ex = getTrainingExerciseById(e.exerciseId);
+    const working = e.sets.filter(s=>!s.isWarmup);
+    const warmup = e.sets.filter(s=>s.isWarmup);
+    const e1rm = epley1RM(working);
+    const prevE1rm = bestE1RMForExercise(e.exerciseId, e.date);
+    return {
+      date: e.date,
+      exercise: ex ? ex.name : e.exerciseId,
+      muscleGroup: ex ? (ex.muscleGroup||'unknown') : 'unknown',
+      warmupSets: warmup.length,
+      workingSets: working.map(s=>({
+        setNo: s.setNo,
+        reps: s.reps,
+        weightKg: s.weightKg,
+        done: s.done,
+        rir: s.rir,
+        toFailure: s.toFailure,
+      })),
+      e1rmKg: e1rm ? Math.round(e1rm*10)/10 : null,
+      isPR: e1rm && prevE1rm ? e1rm > prevE1rm : false,
+    };
+  });
+
+  // --- Weekly volume per muscle ---
+  const weekStart = addDays(today, -7);
+  const weekSets = (state.training.sets||[]).filter(s=> s.date>=weekStart && !s.isWarmup && s.done);
+  const volumeByMuscle = {};
+  weekSets.forEach(s=>{
+    const ex = getTrainingExerciseById(s.exerciseId);
+    const mg = ex ? (ex.muscleGroup||'unknown') : 'unknown';
+    volumeByMuscle[mg] = (volumeByMuscle[mg]||0)+1;
+  });
+
+  // --- Suggestions generated after last session ---
+  const suggestions = state.settings.trainingSuggestions||{};
+  const upcomingSuggestions = Object.entries(suggestions)
+    .filter(([k])=> k.split('::')[0] >= today)
+    .map(([k,v])=>{
+      const [date, exId] = k.split('::');
+      const ex = getTrainingExerciseById(exId);
+      return { date, exercise: ex?ex.name:exId, ...v };
+    });
+
+  // --- Body metrics from Health Log (last 14 days) ---
+  const bodyMetrics = state.health
+    .filter(h=> h.date >= sinceDate && (h.weight||h.water||h.calDeficit))
+    .sort((a,b)=>a.date<b.date?-1:1)
+    .map(h=>({ date:h.date, weightKg:h.weight||null, waterMl:h.water||null, calDeficit:h.calDeficit||null }));
+
+  // --- Adherence ---
+  const calendarDates = state.training.calendar.filter(c=>c.date>=sinceDate&&c.date<=today);
+  const loggedDates = new Set((state.training.logs||[]).filter(l=>l.date>=sinceDate).map(l=>l.date));
+  const adherence = { planned:calendarDates.length, logged:loggedDates.size };
+
+  // --- Current plan summary ---
+  const plan = state.training.sessions.map(sess=>({
+    name:sess.name, type:sess.type,
+    exercises: (sess.blocks||[]).map(b=>{
+      const ex=getTrainingExerciseById(b.exerciseId);
+      return { name:ex?ex.name:b.exerciseId, sets:b.sets, reps:b.reps };
+    }),
+  }));
+
+  return {
+    reviewPeriod: { from:sinceDate, to:today },
+    goals: { weightLossTargetKg: 20, targetWeightKg: 85, weeklyTrainingDays: 5 },
+    bodyMetrics,
+    adherence,
+    weeklyVolumeByMuscle: volumeByMuscle,
+    sessionDetail: sessions,
+    currentSuggestions: upcomingSuggestions,
+    currentPlan: plan,
+  };
+}
+
+function copyTrainingReviewPack(){
+  const pack = buildTrainingReviewPack();
+  const packJson = JSON.stringify(pack, null, 2);
+  const prompt = `You are reviewing my CalendarOS training data for the period ${pack.reviewPeriod.from} to ${pack.reviewPeriod.to}.
+
+My goals: lose ~${pack.goals.weightLossTargetKg}kg (current target ${pack.goals.targetWeightKg}kg), build muscle, train ${pack.goals.weeklyTrainingDays} days/week.
+
+Here is my full data pack (JSON):
+\`\`\`json
+${packJson}
+\`\`\`
+
+Please:
+1. Summarise what went well and what didn't (progression, adherence, volume balance by muscle, RIR trends).
+2. Flag any exercises that stalled (same weight 2+ sessions with RIR > 2) and suggest why.
+3. Flag any muscles that appear under-volume or over-volume vs the 10-20 sets/week band.
+4. Produce a revised plan for the next 2 weeks as a CalendarOS JSON import (exercises, sessions, calendar).
+   — Keep every exerciseId stable if the exercise is unchanged.
+   — Use double-progression rep ranges (e.g. "8-12") in blocks[].reps so the app can compute suggestions.
+   — Base load recommendations on my actual recent performance, not generic starting weights.
+   — Output valid JSON only, in a single code block, following the same schema as the existing import format.`;
+  navigator.clipboard.writeText(prompt)
+    .then(()=> showToast('Review pack copied — paste into your AI conversation'))
+    .catch(()=> showToast('Could not copy — select manually'));
 }
 
 function copyTrainingImportPrompt(){
@@ -11104,11 +11769,34 @@ create table if not exists training_resources (
   primary key (pin, id)
 );
 
+-- v4.40.0: Per-set logging. Each working set now has its own row.
+-- The existing training_logs row stays as a per-exercise header (notes, etc.)
+-- and is still updated for backward compat. The new table holds the detail.
+create table if not exists training_sets (
+  pin text not null,
+  log_date date not null,
+  exercise_id text not null,
+  set_no int not null,
+  reps int,
+  weight_kg numeric,
+  done boolean default false,
+  rir int,                         -- Reps In Reserve (0-4). Null = not logged.
+  to_failure boolean default false, -- set taken to muscle failure
+  is_warmup boolean default false,  -- excluded from volume/e1RM calculations
+  rest_taken_sec int,               -- actual rest taken before this set
+  logged_at timestamptz,
+  primary key (pin, log_date, exercise_id, set_no)
+);
+
+-- v4.40.0: Progression suggestions stored in app_settings so they sync
+-- across devices and are available for the AI review loop.
+alter table app_settings add column if not exists training_suggestions jsonb default '{}';
+
 do $$
 declare t text;
 begin
   for t in select unnest(array['one_time_tasks','recurring_tasks','task_completions','lists','list_items','health_logs','daily_ratings','health_metric_defs','app_settings',
-                                'training_exercises','training_sessions','training_calendar','training_logs','training_resources','recipes','recipe_ingredients','hydration_logs'])
+                                'training_exercises','training_sessions','training_calendar','training_logs','training_sets','training_resources','recipes','recipe_ingredients','hydration_logs'])
   loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists "allow anon all" on %I;', t);
