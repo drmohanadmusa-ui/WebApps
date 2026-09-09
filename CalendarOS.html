@@ -2087,7 +2087,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.42.1';
+const APP_VERSION = '4.43.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -2095,6 +2095,13 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.43.0', changes: [
+    'No SQL migration needed — front-end only for all changes.',
+    'UNDO extended: Ctrl+Z / Cmd+Z now undoes task setting edits and task deletions, not just completion changes. Before saving, a full snapshot of the task is taken. Restoring a deleted recurring task also restores its completion history. The confirm dialog now says you can undo. Toast messages show the undo shortcut hint.',
+    'EXERCISE TAGS removed from the UI. The muscle group field (added in v4.41.0) provides the same filtering capability, more clearly. The manage-tags panel, tag chips in the exercise library, and tag fields in the Add/Edit exercise modals are all gone. Existing tag data in the database is left in place — no migration needed to remove it, and keeping it means nothing breaks if the old data structure is ever read.',
+    'TRAINING PAGE buttons reduced from 6 to 4. Removed: Copy Import Template (superseded by the Review Pack loop) and Copy Prompt (superseded by Copy Review Pack). Kept: Export, Copy Review Pack, Paste & Import, Import File. The kept buttons are styled to make the primary workflow obvious.',
+    'NUMPAD on mobile: tapping reps or weight in a training set row now opens the number pad instead of the full keyboard on iOS. Enter / Next moves focus to the next input in the same row, and from the last input to the + Set button, so you can log a set one-handed without repositioning your thumb.',
+  ]},
   { v:'4.42.1', changes: [
     'No SQL migration needed \u2014 front-end only. Session blocks already have reps, sets and notes fields; this change reads them.',
     'Session targets now appear on every exercise card while you are logging. When a session is assigned to the calendar date (e.g. from a weekly review import), each exercise shows a gold \u201c\ud83c\udfaf Target\u201d badge: sets \xd7 rep range \xd7 suggested weight. The badge turns teal when the set count is met, and a live counter shows how many sets you have logged vs the target.',
@@ -6784,7 +6791,16 @@ async function toggleMissedTask(taskId, dateStr, isUndo){
   if(newDayReviewDate) refreshNewDayModal();
 }
 
-/* ---------- Undo (Ctrl+Z / Cmd+Z) ---------- */
+/* ---------- Undo (Ctrl+Z / Cmd+Z) ----------
+
+   The undo stack covers three things:
+   1. Completion status changes (done / missed) — existing
+   2. Task setting edits (name, frequency, dates, location, etc.)  — new
+   3. Task deletions  — new
+
+   For edits and deletes we snapshot the whole task object before the change,
+   so undo is a straight restore. Completion status changes record only the
+   before-value since that is all that needs to change. */
 function pushUndo(entry){
   state.undoStack.push(entry);
   if(state.undoStack.length > MAX_UNDO) state.undoStack.shift();
@@ -6792,6 +6808,42 @@ function pushUndo(entry){
 async function undoLast(){
   const entry = state.undoStack.pop();
   if(!entry) { showToast('Nothing to undo'); return; }
+
+  if(entry.action === 'edit_oneTime'){
+    const idx = state.tasks.oneTime.findIndex(x=>x.id===entry.snapshot.id);
+    if(idx>=0) state.tasks.oneTime[idx] = entry.snapshot;
+    else state.tasks.oneTime.push(entry.snapshot); // restored after delete
+    await saveTasks();
+    renderMain();
+    showToast(`Undid edit: ${entry.snapshot.name}`);
+    return;
+  }
+  if(entry.action === 'edit_recurring'){
+    const idx = state.tasks.recurring.findIndex(x=>x.id===entry.snapshot.id);
+    if(idx>=0) state.tasks.recurring[idx] = entry.snapshot;
+    else state.tasks.recurring.push(entry.snapshot);
+    await saveTasks();
+    renderMain();
+    showToast(`Undid edit: ${entry.snapshot.name}`);
+    return;
+  }
+  if(entry.action === 'delete_oneTime'){
+    state.tasks.oneTime.push(entry.snapshot);
+    await saveTasks();
+    renderMain();
+    showToast(`Restored: ${entry.snapshot.name}`);
+    return;
+  }
+  if(entry.action === 'delete_recurring'){
+    state.tasks.recurring.push(entry.snapshot);
+    if(entry.completions) state.tasks.completions[entry.snapshot.id] = entry.completions;
+    await saveTasks();
+    renderMain();
+    showToast(`Restored: ${entry.snapshot.name}`);
+    return;
+  }
+
+  // Original completion-status undo paths
   if(entry.kind === 'oneTime'){
     const t = state.tasks.oneTime.find(x=>x.id===entry.taskId);
     if(t){ t.done = entry.prevValue; t.doneDate = t.done ? todayStr() : null; saveTasks(); }
@@ -6876,15 +6928,20 @@ function dismissNewTaskHint(){
 }
 
 async function deleteTask(kind, taskId){
-  if(!confirm('Delete this task? This cannot be undone.')) return;
+  if(!confirm('Delete this task? You can undo with Ctrl+Z immediately after.')) return;
   const taskName = (kind==='oneTime' ? state.tasks.oneTime : state.tasks.recurring).find(t=>t.id===taskId)?.name;
-  diagLogEvent('activity', `Deleted ${kind} task "${taskName}"`, { id:taskId });
   if(kind === 'oneTime'){
+    const t = state.tasks.oneTime.find(x=>x.id===taskId);
+    if(t) pushUndo({ action:'delete_oneTime', snapshot: JSON.parse(JSON.stringify(t)) });
     state.tasks.oneTime = state.tasks.oneTime.filter(t=>t.id!==taskId);
   } else {
+    const t = state.tasks.recurring.find(x=>x.id===taskId);
+    const completions = state.tasks.completions[taskId] ? JSON.parse(JSON.stringify(state.tasks.completions[taskId])) : null;
+    if(t) pushUndo({ action:'delete_recurring', snapshot: JSON.parse(JSON.stringify(t)), completions });
     state.tasks.recurring = state.tasks.recurring.filter(t=>t.id!==taskId);
     delete state.tasks.completions[taskId];
   }
+  diagLogEvent('activity', `Deleted ${kind} task "${taskName}"`, { id:taskId });
   await saveTasks();
   if(syncConfigured()){
     await enqueueSync(()=> runSyncSteps([
@@ -6893,7 +6950,7 @@ async function deleteTask(kind, taskId){
     ], 'tasks'));
   }
   renderMain();
-  showToast('Task deleted');
+  showToast('Task deleted ↩ Ctrl+Z to restore');
 }
 
 /* =========================================================
@@ -8969,11 +9026,9 @@ function renderTrainingView(){
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn secondary sm" onclick="exportTrainingJson()">Export</button>
-        <button class="btn secondary sm" onclick="copyTrainingImportTemplate()">Copy Import Template</button>
-        <button class="btn secondary sm" onclick="copyTrainingImportPrompt()">Copy Prompt</button>
-        <button class="btn brass sm" onclick="copyTrainingReviewPack()" title="Copy your last 2 weeks of data + prompt for an AI review">📋 Copy Review Pack</button>
+        <button class="btn brass sm" onclick="copyTrainingReviewPack()" title="Bundle last 2 weeks of data + prompt for an AI review — paste result into Paste &amp; Import">📋 Copy Review Pack</button>
         <button class="btn secondary sm" onclick="openTrainingPasteImportModal()">Paste &amp; Import</button>
-        <label class="btn brass sm" style="cursor:pointer;">
+        <label class="btn secondary sm" style="cursor:pointer;">
           Import File
           <input type="file" accept="application/json" style="display:none;" onchange="handleImportTrainingJson(event)">
         </label>
@@ -9211,11 +9266,15 @@ function renderTrainingExerciseLogRow(date, block, index){
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <input type="number" min="0" step="1" value="${s.reps||''}" placeholder="${defaultReps||'reps'}"
             class="train-input set-num-input"
+            inputmode="numeric" enterkeyhint="next"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();focusNextTrainInput(this);}"
             oninput="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'reps',this.value===''?null:Number(this.value));"
             aria-label="Reps for set ${s.setNo}">
           <span class="set-unit">reps</span>
           <input type="number" min="0" step="0.5" value="${s.weightKg||''}" placeholder="${defaultWeight||'kg'}"
             class="train-input set-num-input"
+            inputmode="decimal" enterkeyhint="next"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();focusNextTrainInput(this);}"
             oninput="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'weightKg',this.value===''?null:Number(this.value));"
             aria-label="Weight for set ${s.setNo}">
           <span class="set-unit">kg</span>
@@ -9553,6 +9612,24 @@ function setMuscleBand(key,val){
 }
 function filterExercisesByMuscle(mg){
   state.trainingSection='exercises'; state.muscleGroupFilter=mg; renderMain();
+}
+
+/* Moves focus to the next number input in the training log, or to the
+   "+ Set" button when there are no more inputs in the current card.
+   Called by the Enter key handler on every set-row input. */
+function focusNextTrainInput(el){
+  // Collect all numeric inputs and the + Set button within the same exercise card.
+  const card = el.closest('[data-exercise-id]');
+  if(!card) return;
+  const inputs = [...card.querySelectorAll('input[type="number"].set-num-input')];
+  const idx = inputs.indexOf(el);
+  if(idx >= 0 && idx < inputs.length - 1){
+    inputs[idx+1].focus(); inputs[idx+1].select();
+  } else {
+    // End of this card — move to the + Set button.
+    const addSetBtn = card.querySelector('button.btn.secondary.sm');
+    if(addSetBtn) addSetBtn.focus();
+  }
 }
 
 function isTrainingDayFullyLogged(date, blocks){
@@ -10432,7 +10509,6 @@ function renderTrainingExercisesSubpage(){
         <h2>Exercise Library${mgFilter?` — ${LABELS[mgFilter]||mgFilter}`:''}</h2>
         <span style="display:flex; gap:6px;">
           ${mgFilter?`<button class="btn ghost sm" onclick="state.muscleGroupFilter=null;renderMain();">✕ Clear filter</button>`:''}
-          <button class="icon-btn" title="Manage tags" onclick="openManageExerciseTagsModal()">⚙</button>
           <button class="btn brass sm" onclick="openAddExerciseModal()">+ Add Exercise</button>
         </span>
       </div>
@@ -10445,17 +10521,7 @@ function renderTrainingExercisesSubpage(){
           }).join('')}
         </div>
       ` : ''}
-      ${(tags.length || untaggedCount) ? `
-        <div class="chip-select" style="margin-bottom:10px; flex-wrap:wrap;">
-          <button class="${tagFilter==='all'?'active':''}" onclick="setExerciseTagFilter('all')">All <span class="chip-count">${allSorted.length}</span></button>
-          ${tags.map(t=>{
-            const n = allSorted.filter(ex=>(ex.tagIds||[]).includes(t.id)).length;
-            return `<button class="${tagFilter===t.id?'active':''}" onclick="setExerciseTagFilter('${t.id}')">${escapeHtml(t.name)} <span class="chip-count">${n}</span></button>`;
-          }).join('')}
-          ${untaggedCount ? `<button class="chip-untagged ${tagFilter==='untagged'?'active':''}" onclick="setExerciseTagFilter('untagged')">Untagged <span class="chip-count">${untaggedCount}</span></button>` : ''}
-        </div>
-        ${tagFilter==='untagged' ? `<div class="page-sub" style="margin-bottom:10px;">These aren't tagged yet, so they won't appear under any body-part filter and the randomizer can't pick them. Tag them to fix that.</div>` : ''}
-      ` : ''}
+      ${(tags.length || untaggedCount) ? `` : ''}
       <div class="card" style="padding:4px 16px;">
         ${sorted.length ? sorted.map(ex=>`
           <div class="metric-manage-row">
@@ -11858,13 +11924,6 @@ function openAddExerciseModal(addToDayDate){
         <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
       </div>
       <div class="field">
-        <label>Tags <span class="page-sub" style="font-weight:400;">(body parts, etc.)</span></label>
-        <div class="radio-pills" id="newExTagPills" style="flex-wrap:wrap;">
-          ${state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
-        </div>
-        <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
-      </div>
-      <div class="field">
         <label>Muscle Group</label>
         ${muscleGroupSelectHtml('newExMuscleGroup', '')}
         <div class="page-sub" style="margin-top:4px;">Used for rest-timer defaults (120s compounds, 90s isolation) and the weekly volume map.</div>
@@ -11899,7 +11958,7 @@ async function submitAddExercise(){
   const notes = (document.getElementById('newExNotes').value||'').trim();
   const categoryBtn = document.querySelector('#newExCategoryPills .radio-pill.active');
   const category = categoryBtn ? categoryBtn.dataset.val : 'strength';
-  const tagIds = [...document.querySelectorAll('#newExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
+  const tagIds = [];
   const mgEl = document.getElementById('newExMuscleGroup');
   const muscleGroup = mgEl && mgEl.value ? mgEl.value : null;
   const rsEl = document.getElementById('newExRestSec');
@@ -11946,13 +12005,6 @@ function openEditExerciseModal(id){
         <div class="page-sub" style="margin-top:4px;">Walking exercises get distance/time/heart rate/speed/calories fields when logged, instead of sets/reps/weight.</div>
       </div>
       <div class="field">
-        <label>Tags <span class="page-sub" style="font-weight:400;">(body parts, etc.)</span></label>
-        <div class="radio-pills" id="editExTagPills" style="flex-wrap:wrap;">
-          ${state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${exTagIds.includes(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>'}
-        </div>
-        <a href="#" class="page-sub" onclick="event.preventDefault(); openManageExerciseTagsModal();" style="display:inline-block; margin-top:4px;">Manage tags</a>
-      </div>
-      <div class="field">
         <label>Muscle Group</label>
         ${muscleGroupSelectHtml('editExMuscleGroup', ex.muscleGroup||'')}
         <div class="page-sub" style="margin-top:4px;">Used for rest-timer defaults and the weekly volume map.</div>
@@ -11988,7 +12040,7 @@ async function submitEditExercise(id){
   ex.notes = (document.getElementById('editExNotes').value||'').trim();
   const categoryBtn = document.querySelector('#editExCategoryPills .radio-pill.active');
   ex.category = categoryBtn ? categoryBtn.dataset.val : 'strength';
-  ex.tagIds = [...document.querySelectorAll('#editExTagPills .radio-pill.active')].map(b=>b.dataset.tagId);
+  ex.tagIds = [];
   const mgEl = document.getElementById('editExMuscleGroup');
   if(mgEl) ex.muscleGroup = mgEl.value || null;
   const rsEl = document.getElementById('editExRestSec');
@@ -12082,25 +12134,12 @@ async function deleteExerciseTag(id){
   await saveSettings();
   await saveTraining();
   refreshManageExerciseTagsModal();
-  refreshOpenExerciseTagPickers();
   renderMain();
   showToast('Tag deleted');
 }
-// If the Add/Edit Exercise modal is open behind the tag manager, refresh its
-// tag picker in place so a newly-added/renamed tag shows up immediately
-// without losing whatever else was typed in that modal.
-function refreshOpenExerciseTagPickers(){
-  const addPills = document.getElementById('newExTagPills');
-  if(addPills){
-    const active = new Set([...addPills.querySelectorAll('.radio-pill.active')].map(b=>b.dataset.tagId));
-    addPills.innerHTML = state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${active.has(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>';
-  }
-  const editPills = document.getElementById('editExTagPills');
-  if(editPills){
-    const active = new Set([...editPills.querySelectorAll('.radio-pill.active')].map(b=>b.dataset.tagId));
-    editPills.innerHTML = state.settings.exerciseTags.map(t=>`<button type="button" class="radio-pill ${active.has(t.id)?'active':''}" data-tag-id="${t.id}" onclick="this.classList.toggle('active')">${escapeHtml(t.name)}</button>`).join('') || '<span class="page-sub">No tags yet.</span>';
-  }
-}
+// refreshOpenExerciseTagPickers is no longer needed — exercise tag pickers
+// were removed from Add/Edit modals in v4.43.0 (replaced by muscle group).
+function refreshOpenExerciseTagPickers(){ /* no-op, kept to avoid call errors */ }
 
 /* ---------- #1: Assign an existing session to several dates at once ---------- */
 let trainingAssignDraft = null; // { sessionId, dates: [] }
@@ -13687,10 +13726,10 @@ async function saveTaskModal(){
     const due = document.getElementById('f_due').value;
     if(modalEditingId){
       const t = state.tasks.oneTime.find(x=>x.id===modalEditingId);
+      // Snapshot BEFORE applying changes so Ctrl+Z can restore exactly.
+      pushUndo({ action:'edit_oneTime', snapshot: JSON.parse(JSON.stringify(t)) });
       if(!t.dueHistory) t.dueHistory = [];
-      if(t.due && due && t.due !== due){
-        t.dueHistory.push(t.due);
-      }
+      if(t.due && due && t.due !== due){ t.dueHistory.push(t.due); }
       Object.assign(t, { name, location, silo, priority, notes, due });
     } else {
       state.tasks.oneTime.push({ id:newId('ot'), name, location, silo, priority, notes, due, done:false, dueHistory:[] });
@@ -13702,6 +13741,8 @@ async function saveTaskModal(){
     const end = document.getElementById('f_end').value || null;
     if(modalEditingId){
       const t = state.tasks.recurring.find(x=>x.id===modalEditingId);
+      // Snapshot BEFORE applying changes.
+      pushUndo({ action:'edit_recurring', snapshot: JSON.parse(JSON.stringify(t)) });
       Object.assign(t, { name, location, silo, priority, notes, type, detail, start, end });
     } else {
       state.tasks.recurring.push({ id:newId('rt'), name, location, silo, priority, notes, type, detail, start, end });
@@ -13711,7 +13752,7 @@ async function saveTaskModal(){
   diagLogEvent('activity', `${modalEditingId?'Edited':'Created'} ${modalKind} task "${name}"`, { id: modalEditingId||'(new)' });
   closeModal();
   renderMain();
-  showToast(modalEditingId ? 'Task updated' : 'Task created');
+  showToast(modalEditingId ? 'Task updated ↩ Ctrl+Z to undo' : 'Task created');
 }
 
 /* =========================================================
