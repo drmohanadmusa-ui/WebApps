@@ -270,7 +270,9 @@ a{color:inherit;}
 /* When a list is pinned open in the floating right panel, push the main
    content area's right edge left so its text/columns never sit behind the
    panel. :has() reacts automatically whenever #pinnedListPanel gains/loses
-   its "open" class — no extra JS state needed. */
+   its "open" class — no extra JS state needed.
+   Mobile override lives in the ≤860px block further down — on a phone this
+   same margin left most of the screen sitting empty. */
 .main:has(+ #pinnedListPanel.open){margin-right:360px; max-width:min(1440px, 88vw);}
 
 .topbar{
@@ -718,6 +720,14 @@ select.filter-select, input.filter-date{
 }
 
 /* ============ REST TIMER ============ */
+/* Was position:sticky, which only sticks within its own containing block —
+   the day's .card, here — so once that card (i.e. the whole exercise list)
+   scrolled far enough that its top passed above the sticky offset, the timer
+   scrolled away with it. By exercise 3-4 it was gone. Fixed to the viewport
+   instead: it now stays visible the entire time a rest period is running,
+   regardless of scroll position. Desktop keeps the original in-flow sticky
+   behavior — the complaint was mobile-specific and desktop has no fixed top
+   bar to collide with. */
 #restTimerDisplay{ position:sticky; top:8px; z-index:10; margin-bottom:12px; }
 .rest-timer-box{
   display:flex; align-items:center; gap:12px; flex-wrap:wrap;
@@ -1478,6 +1488,17 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
   }
   .mobile-menu-icon{ font-size:18px; color:var(--slate); flex-shrink:0; }
   .mobile-dark-btn{ flex-shrink:0; }
+  /* v4.44.0: .dark-toggle-btn was styled assuming a permanently-dark
+     background — true for the desktop sidebar, but the mobile top bar uses
+     the theme's normal (often light) --paper-raised. The pale icon on a
+     near-white translucent chip was nearly invisible in every light theme.
+     Themed to --ink/--line instead so it reads clearly in light AND dark
+     mode, across every color theme, not just when the surface happens to be
+     dark. */
+  .mobile-dark-btn{
+    background:var(--paper-dim); color:var(--ink); border-color:var(--line);
+  }
+  .mobile-dark-btn:hover{ background:var(--line); }
 
   /* Push the main content below the top bar */
   #app{ padding-top:52px; }
@@ -1548,6 +1569,30 @@ body.dark-mode .splash-bypass:hover{ background:rgba(255,255,255,0.06); }
   .btn.ghost{padding:9px 10px;}
   .next-shift-input{min-width:64px;}
   .next-shift-label{font-size:13px;}
+  /* v4.44.0: the RIR/F/W row and the set-done tick were missed by the pass
+     above — still mouse-sized (26px/36px) while everything around them grew.
+     Enlarged toward the same ~44px guideline, and the RIR/F/W column reflows
+     onto its own line under the reps/weight inputs so growing it doesn't
+     force horizontal scrolling on narrow phones. */
+  .rir-pill{min-width:38px; height:38px; font-size:13px; padding:0 8px;}
+  .set-tick{width:44px; height:44px; font-size:15px;}
+  [data-setmode]{gap:8px !important; width:100%;}
+  /* Fixed rest-timer bar (see the comment by #restTimerDisplay's base rule
+     above) — pinned just under the 52px mobile top bar, full width, above
+     everything else on the page so it reads clearly over whatever exercise
+     card happens to be scrolled underneath it. */
+  #restTimerDisplay{
+    position:fixed; top:52px; left:0; right:0; z-index:290;
+    margin:0; padding:8px 12px 0;
+  }
+  .rest-timer-box{ border-radius:0 0 var(--radius-m) var(--radius-m); }
+  /* The pinned list panel is a fixed 340px-wide dock designed for a desktop
+     sidebar-width gap; on a ~375-430px phone that left a narrow, oddly-placed
+     content strip with dead space around it. Full-width overlay on mobile
+     instead, and the desktop-only margin-push above this block is cancelled
+     back to 0 here so it doesn't also squeeze .main. */
+  #pinnedListPanel{ width:100vw; }
+  .main:has(+ #pinnedListPanel.open){ margin-right:0; max-width:none; }
 }
 
 /* ============================================================
@@ -2087,7 +2132,7 @@ if(!usingNativeAppStorage){
 }
 
 /* ---------- App Version (bump on every shipped change) ---------- */
-const APP_VERSION = '4.43.0';
+const APP_VERSION = '4.44.0';
 const APP_NAME = 'CalendarOS';
 
 /* ---------- Change Log ----------
@@ -2095,6 +2140,18 @@ const APP_NAME = 'CalendarOS';
    here describing what shipped. Newest first. Rendered under
    Settings → Change Log. */
 const CHANGELOG = [
+  { v:'4.44.0', changes: [
+    'No SQL migration needed — front-end only for all changes.',
+    'SYNC CONFLICTS: with three devices in daily use, a difference between the local and online copy on launch is the common case, not a rare exception — the "which copy do you want to keep?" prompt was firing on nearly every launch. Default behavior is now "online always wins": a difference is still detected and logged (Settings → Diagnostics) for troubleshooting, but resolved automatically and immediately in favor of the online copy, with no prompt and no waiting. There is currently no way to keep a local edit instead when this happens — say so if that turns out to matter in practice.',
+    'REST TIMER defaults lowered: 90s for compound lifts (was 120s), 60s for isolation (was 90s). A custom rest interval set on an exercise still overrides this either way. Rest-timer tip text now rotates every 6s instead of 4.5s.',
+    'RIR / F (failure) / W (warm-up) are now mutually exclusive per set — picking one clears the other two, and tapping the active one again clears it back to none. Previously all three could be selected at once.',
+    'Fixed: tapping RIR / F / W did not visibly change color until something else forced a full page re-render (e.g. marking the day done) — the tap was saved but looked like nothing happened. Now updates immediately.',
+    'Quick-add-exercise (the search picker used from the training day card) now closes and lands you on the exercise\u2019s logging card after you pick one, instead of staying open expecting another pick.',
+    'MOBILE: enlarged the RIR/F/W buttons and the set-done tick — they were missed by the v4.40.1 touch-target pass and stayed mouse-sized (26\u201336px) while everything around them grew.',
+    'MOBILE: the rest timer is now a fixed bar pinned under the top bar instead of sticky-in-page, so it stays visible for the whole rest period no matter how far down the exercise list you\u2019ve scrolled.',
+    'MOBILE: fixed a bug where pinning a list open pushed the entire page 360px to the left, leaving a large empty gap on the right \u2014 that push was meant for desktop only. The pinned-list panel is now a proper full-width overlay on mobile.',
+    'MOBILE: the dark-mode toggle in the top bar was styled for the desktop sidebar\u2019s always-dark background and was nearly invisible against the (often light) mobile top bar. Re-themed to adapt to the current theme and mode.',
+  ]},
   { v:'4.43.0', changes: [
     'No SQL migration needed — front-end only for all changes.',
     'UNDO extended: Ctrl+Z / Cmd+Z now undoes task setting edits and task deletions, not just completion changes. Before saving, a full snapshot of the task is taken. Restoring a deleted recurring task also restores its completion history. The confirm dialog now says you can undo. Toast messages show the undo shortcut hint.',
@@ -3089,15 +3146,7 @@ const pendingCompletionDeletes = [];
 const pendingTrainingDeletes = []; // [{table, match: {col:val,...}}]
 const pendingRecipeDeletes = []; // [{table, match: {col:val,...}}]
 const pendingHydrationDeletes = []; // [{table, match: {col:val,...}}]
-let pendingDivergence = null; // set by a pull when local and remote disagree; consumed by maybeShowDivergenceModal()
-/* Set by init() when the New Day review had to stand aside for a divergence
-   prompt, and consumed by applyDivergenceChoices() once that prompt is
-   resolved. Without this the review was simply DROPPED for that launch: init
-   returned early intending to defer it, but nothing ever resumed it, so it
-   only reappeared on the next launch (lastActiveDate still being stale).
-   Deliberately startup-only — a mid-session sync that happens to surface a
-   divergence should not pop a "Good morning" review. */
-let newDayDeferredByDivergence = false;
+let pendingDivergence = null; // set by a pull when local and remote disagree; auto-resolved (online wins) inside runBackgroundSync()
 // Same pattern for health metric definitions — deleting one locally without
 // also telling Supabase means the next pull brings it right back (this was
 // a real, reported bug: "delete a metric, refresh, it's back").
@@ -3440,11 +3489,19 @@ async function runBackgroundSync(){
         setSyncBlockText('Pulling latest from Supabase…');
         await pullFromSupabase(onProgress);
         if(guarded.length && pendingDivergence){
-          // The person has to choose. applyDivergenceChoices() finishes the
-          // job: it restores whatever they keep locally and pushes it. These
-          // domains stay dirty until then ON PURPOSE, so a session interrupted
-          // before the prompt is answered retries rather than forgetting.
-          diagLogEvent('startup-sync', 'Differences found — asking before pushing', { domains: guarded });
+          // Standing preference: with three devices in daily use, a real
+          // difference between the local and online copy is the common case,
+          // not a rare exception — an interactive prompt on nearly every
+          // launch was more friction than protection. Default is now "online
+          // always wins": resolve immediately in favor of what the pull above
+          // already put in memory, no modal, no blocking. Every item's
+          // `choice` from detectDivergence() defaults to 'online', so calling
+          // applyDivergenceChoices() untouched does exactly what closing the
+          // old prompt without picking anything used to do — it just does it
+          // automatically now instead of waiting for a tap.
+          const total = pendingDivergence.categories.tasks.items.length + pendingDivergence.categories.lists.items.length;
+          diagLogEvent('startup-sync', `Differences found — auto-resolved keeping ONLINE (${total} item(s))`, { domains: guarded });
+          await applyDivergenceChoices();
         } else if(guarded.length){
           // No meaningful difference between the two copies, so there is
           // nothing to ask about and nothing a push would change. Marking them
@@ -3456,6 +3513,14 @@ async function runBackgroundSync(){
       }
     } else {
       await pullFromSupabase(onProgress);
+      if(pendingDivergence){
+        // Same "online always wins" default as the outstanding-domains branch
+        // above — this device wasn't dirty, but the remote copy can still have
+        // moved since the last pull (another device made changes since then).
+        const total = pendingDivergence.categories.tasks.items.length + pendingDivergence.categories.lists.items.length;
+        diagLogEvent('startup-sync', `Differences found on a clean pull — auto-resolved keeping ONLINE (${total} item(s))`);
+        await applyDivergenceChoices();
+      }
       await markSyncSuccess();
     }
     diagLogEvent('startup-sync', 'Completed OK', { ms: Math.round(performance.now()-startedAt) });
@@ -8739,7 +8804,7 @@ function startRestTimer(seconds,exId){
   _updateRestTimerUI();
   _restTimerHandle=setInterval(_updateRestTimerUI,1000);
   // Rotate tips every 4.5 seconds, not every 1 second.
-  _tipRotationHandle=setInterval(_rotateTip,4500);
+  _tipRotationHandle=setInterval(_rotateTip,6000); // was 4500 — slowed per request in v4.44.0
 }
 let _tipIndex=0;
 let _tipRotationHandle=null;
@@ -8791,10 +8856,14 @@ function stopRestTimer(){
   const el=document.getElementById('restTimerDisplay');if(el)el.innerHTML='';
 }
 function defaultRestSec(ex){
-  if(!ex) return 120;
+  // Lowered in v4.44.0: 120/90 felt too long in practice. 90s (compound) /
+  // 60s (isolation) still allows partial recovery between heavy sets while
+  // keeping session length down; a custom restSec on the exercise itself
+  // always overrides this.
+  if(!ex) return 90;
   if(ex.restSec) return Number(ex.restSec);
   const compound=['chest','back','shoulders','quads','hamstrings','glutes'];
-  return (ex.muscleGroup&&compound.includes(ex.muscleGroup))?120:90;
+  return (ex.muscleGroup&&compound.includes(ex.muscleGroup))?90:60;
 }
 function rirColour(rir){
   if(rir===null||rir===undefined) return 'var(--ink-soft)';
@@ -9278,22 +9347,9 @@ function renderTrainingExerciseLogRow(date, block, index){
             oninput="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'weightKg',this.value===''?null:Number(this.value));"
             aria-label="Weight for set ${s.setNo}">
           <span class="set-unit">kg</span>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="set-rir-label">RIR</span>
-            ${[0,1,2,3,4].map(r=>`<button type="button"
-              class="rir-pill ${s.rir===r?'rir-active':''}"
-              style="${s.rir===r?`background:${rirColour(r)};color:#fff;border-color:${rirColour(r)}`:''}"
-              onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'rir',${r===s.rir?'null':r});"
-              title="Reps in reserve: ${r===0?'last rep you could do':'could do '+r+' more'}">${r}</button>`).join('')}
+          <div data-setmode="${escapeHtml(date)}::${escapeHtml(block.exerciseId)}::${s.setNo}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            ${setModeGroupHtml(date, block.exerciseId, s)}
           </div>
-          <button type="button" class="rir-pill ${s.toFailure?'rir-active':''}"
-            style="${s.toFailure?'background:var(--red);color:#fff;border-color:var(--red)':''}"
-            onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'toFailure',${!s.toFailure});"
-            title="Mark this set taken to failure">F</button>
-          <button type="button" class="rir-pill ${s.isWarmup?'rir-active':''}"
-            style="${s.isWarmup?'background:var(--ink-soft);color:#fff':''}"
-            onclick="updateSetField('${date}','${escapeHtml(block.exerciseId)}',${s.setNo},'isWarmup',${!s.isWarmup});"
-            title="Mark as warm-up (excluded from volume/e1RM)">W</button>
           <button type="button" class="icon-btn" style="font-size:10px;width:22px;height:22px;"
             onclick="removeSet('${date}','${escapeHtml(block.exerciseId)}',${s.setNo});" title="Remove this set">✕</button>
         </div>
@@ -9470,6 +9526,56 @@ function removeSet(date, exId, setNo){
   renderMain();
 }
 
+/* RIR (0-4) / F (failure) / W (warm-up) render as one row and are mutually
+   exclusive — v4.44.0: picking one always clears the other two, on the
+   theory that a set is in exactly one of these states, never several at
+   once. Extracted into its own function so both the initial page render and
+   the post-click targeted refresh (setSetMode(), below) produce identical
+   markup from one source of truth instead of two copies drifting apart. */
+function setModeGroupHtml(date, exId, s){
+  return `
+    <span class="set-rir-label">RIR</span>
+    ${[0,1,2,3,4].map(r=>`<button type="button"
+      class="rir-pill ${s.rir===r?'rir-active':''}"
+      style="${s.rir===r?`background:${rirColour(r)};color:#fff;border-color:${rirColour(r)}`:''}"
+      onclick="setSetMode('${date}','${escapeHtml(exId)}',${s.setNo},'rir',${r});"
+      title="Reps in reserve: ${r===0?'last rep you could do':'could do '+r+' more'}">${r}</button>`).join('')}
+    <button type="button" class="rir-pill ${s.toFailure?'rir-active':''}"
+      style="${s.toFailure?'background:var(--red);color:#fff;border-color:var(--red)':''}"
+      onclick="setSetMode('${date}','${escapeHtml(exId)}',${s.setNo},'failure');"
+      title="Mark this set taken to failure">F</button>
+    <button type="button" class="rir-pill ${s.isWarmup?'rir-active':''}"
+      style="${s.isWarmup?'background:var(--ink-soft);color:#fff':''}"
+      onclick="setSetMode('${date}','${escapeHtml(exId)}',${s.setNo},'warmup');"
+      title="Mark as warm-up (excluded from volume/e1RM)">W</button>`;
+}
+/* Handles all RIR/F/W clicks. Tapping the already-active choice clears it
+   back to "none set"; tapping any other choice selects it and clears
+   whichever of the other two was active — exactly one of RIR/F/W/none at a
+   time. Previously this went through updateSetField(), which only refreshed
+   a small "N/M sets done" badge — the button itself never got its active
+   colour until something else (e.g. marking the whole day done) forced a
+   full page re-render. This now re-renders just this button group directly,
+   so the tap is visible immediately. */
+function setSetMode(date, exId, setNo, mode, rirValue){
+  if(!state.training.sets) state.training.sets=[];
+  const s = state.training.sets.find(s=>s.date===date&&s.exerciseId===exId&&s.setNo===setNo);
+  if(!s) return;
+  if(mode==='rir'){
+    s.rir = (s.rir===rirValue) ? null : rirValue;
+    if(s.rir!==null){ s.toFailure=false; s.isWarmup=false; }
+  } else if(mode==='failure'){
+    s.toFailure = !s.toFailure;
+    if(s.toFailure){ s.rir=null; s.isWarmup=false; }
+  } else if(mode==='warmup'){
+    s.isWarmup = !s.isWarmup;
+    if(s.isWarmup){ s.rir=null; s.toFailure=false; }
+  }
+  scheduleTrainingDraftSave();
+  const group = document.querySelector(`[data-setmode="${CSS.escape(date)}::${CSS.escape(exId)}::${setNo}"]`);
+  if(group) group.innerHTML = setModeGroupHtml(date, exId, s);
+  updateTrainingDayAggPreview();
+}
 function updateSetField(date, exId, setNo, field, value){
   if(!state.training.sets) state.training.sets=[];
   const s = state.training.sets.find(s=>s.date===date&&s.exerciseId===exId&&s.setNo===setNo);
@@ -9486,7 +9592,7 @@ function toggleSetDone(date, exId, setNo, restSec){
   if(!s) return;
   s.done = !s.done;
   s.loggedAt = s.done ? new Date().toISOString() : null;
-  if(s.done) startRestTimer(restSec||120, exId);
+  if(s.done) startRestTimer(restSec||90, exId);
   else stopRestTimer();
   scheduleTrainingDraftSave();
   renderMain();
@@ -9967,13 +10073,14 @@ function hideQuickAddExercisePickerResults(){
   if(el) el.style.display = 'none';
 }
 function afterQuickAddExPick(date){
-  showToast('Added — remember to Save');
-  // renderMain() (inside addExerciseToDay) rebuilds #mainContent but the
-  // modal lives on document.body, so it survives — just refresh the search.
-  const inputEl = document.getElementById('quickAddExInput');
-  if(inputEl){ inputEl.value=''; inputEl.focus(); }
-  quickAddExIndex = 0;
-  filterQuickAddExercisePicker(date);
+  // v4.44.0: this picker is for adding ONE exercise and going straight to
+  // logging it, not a multi-add queue — closing it here is what actually
+  // lands you on the logging page addExerciseToDay() already switched to,
+  // instead of leaving the search modal sitting on top of it. (The
+  // multi-select "Plan Day" flow is a separate, deliberately-multi picker
+  // and is unaffected by this.)
+  showToast('Added');
+  closeQuickAddExerciseModal();
 }
 /* ---------- Plan Day modal ----------
    Replaces the old Randomize button. Instead of picking exercises randomly,
@@ -13967,91 +14074,19 @@ function detectDivergence(local, remote, snapshot){
   };
 }
 
-function maybeShowDivergenceModal(){
-  if(!pendingDivergence) return false;
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'divergenceOverlay';
-  // Clicking the backdrop keeps ONLINE for everything — the safe default,
-  // stated on the modal so dismissing is never an accidental destructive act.
-  overlay.onclick = (e)=>{ if(e.target===overlay) applyDivergenceChoices(); };
-  document.body.appendChild(overlay);
-  renderDivergenceModalBody();
-  const totalCount = pendingDivergence.categories.tasks.items.length + pendingDivergence.categories.lists.items.length;
-  diagLogEvent('sync', `Divergence prompt shown (${totalCount} item(s) across categories)`);
-  return true;
-}
-function renderDivergenceModalBody(){
-  const overlay = document.getElementById('divergenceOverlay');
-  const d = pendingDivergence;
-  if(!overlay || !d) return;
-  const cats = Object.entries(d.categories).filter(([,c])=>c.items.length);
-  overlay.innerHTML = `
-    <div class="modal" style="max-width:620px; max-height:85vh; overflow-y:auto;">
-      <h3>⚠ This device and the online copy disagree</h3>
-      <div class="modal-sub">Choose per category by default, or expand a category to decide item by item. Nothing has been changed online yet.</div>
-      ${cats.map(([catKey, cat])=>`
-        <div class="card" style="padding:12px 14px; margin-bottom:12px; background:var(--paper-dim);">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-            <b>${escapeHtml(cat.label)} <span class="page-sub" style="font-weight:400;">(${cat.items.length} differ${cat.items.length===1?'':''})</span></b>
-            <span style="display:flex; gap:6px; align-items:center;">
-              <button class="btn secondary sm" onclick="setDivergenceCategoryChoice('${catKey}','local')">Keep all local</button>
-              <button class="btn secondary sm" onclick="setDivergenceCategoryChoice('${catKey}','online')">Keep all online</button>
-              <button class="icon-btn" title="${cat.expanded?'Collapse':'Expand'}" onclick="toggleDivergenceCategoryExpand('${catKey}')">${cat.expanded?'▾':'▸'}</button>
-            </span>
-          </div>
-          ${cat.expanded ? `
-            <div style="margin-top:10px;">
-              ${cat.items.map(item=>`
-                <div class="metric-manage-row" style="background:var(--paper-raised); border-radius:8px; margin-bottom:6px; padding:8px 10px;">
-                  <span class="metric-manage-name">
-                    <b>${escapeHtml(item.name)}</b>
-                    <div class="page-sub" style="margin-top:3px; line-height:1.5;">
-                      Local: ${escapeHtml(item.localSummary)}<br>Online: ${escapeHtml(item.onlineSummary)}
-                      ${(item.diffs && item.diffs.length) ? `<div class="divergence-diffs">${item.diffs.map(d=>`<span class="divergence-diff"><b>${escapeHtml(d.label)}:</b> ${escapeHtml(d.local)} <span class="divergence-arrow">vs</span> ${escapeHtml(d.online)}</span>`).join('')}</div>` : ''}
-                    </div>
-                  </span>
-                  <span class="chip-select" style="flex-shrink:0;">
-                    <button class="${item.choice==='local'?'active':''}" onclick="setDivergenceItemChoice('${catKey}','${item.id}','local')">Local</button>
-                    <button class="${item.choice==='online'?'active':''}" onclick="setDivergenceItemChoice('${catKey}','${item.id}','online')">Online</button>
-                  </span>
-                </div>
-              `).join('')}
-            </div>
-          ` : `<div class="page-sub" style="margin-top:6px;">Currently set to keep <b>${cat.items.every(i=>i.choice==='local')?'all local':cat.items.every(i=>i.choice==='online')?'all online':'a mix — expand to review'}</b> for this category.</div>`}
-        </div>
-      `).join('')}
-      <div class="page-sub" style="line-height:1.6; margin:6px 0 12px;">
-        Closing this without applying keeps <b>online</b> for everything — the safe default.
-      </div>
-      <div class="modal-actions">
-        <button class="btn brass" onclick="applyDivergenceChoices()">Apply Choices</button>
-      </div>
-    </div>
-  `;
-}
-function toggleDivergenceCategoryExpand(catKey){
-  pendingDivergence.categories[catKey].expanded = !pendingDivergence.categories[catKey].expanded;
-  renderDivergenceModalBody();
-}
-function setDivergenceCategoryChoice(catKey, choice){
-  pendingDivergence.categories[catKey].items.forEach(item=>{ item.choice = choice; });
-  renderDivergenceModalBody();
-}
-function setDivergenceItemChoice(catKey, itemId, choice){
-  const item = pendingDivergence.categories[catKey].items.find(i=>i.id===itemId);
-  if(item) item.choice = choice;
-  renderDivergenceModalBody();
-}
+/* Resolves a pending divergence in favor of the online copy. Called
+   automatically from runBackgroundSync() right after the pull — there is no
+   modal anymore (see the note there for why). Every item's `choice` from
+   detectDivergence() defaults to 'online' and nothing ever sets it to
+   'local' in the current app, so the `touchedLocal` branch below is dead in
+   practice; it's left in place because it's the one part of this function
+   that actually does something when a choice isn't 'online', and removing it
+   would mean re-deriving it from scratch if a manual override is ever added
+   back (e.g. a "review conflicts" screen in Settings). */
 async function applyDivergenceChoices(){
   const d = pendingDivergence;
   pendingDivergence = null;
-  const overlay = document.getElementById('divergenceOverlay');
-  if(overlay) overlay.remove();
-  // Resume on EVERY exit path, including this early one. If the deferred
-  // review were skipped here it would be dropped for the launch all over
-  // again — precisely the failure this release fixes.
-  if(!d){ resumeDeferredNewDayReview(); return; }
+  if(!d) return;
 
   let touchedLocal = false;
   const localChoices = [];
@@ -14118,22 +14153,16 @@ async function applyDivergenceChoices(){
     // flag here is what stops these domains being pushed on the next launch.
     for(const d of DIVERGENCE_GUARDED_DOMAINS) await markSyncSuccess(d);
     diagLogEvent('sync', 'Divergence resolved: kept ONLINE for everything');
-    showToast('Online copy kept for everything');
   }
-  renderMain();
-  updateNavActiveState();
-  updateNavBadges();
-
-  resumeDeferredNewDayReview();
-}
-
-/* Resumes the New Day review that stood aside for a divergence prompt at
-   startup. Safe to call on any exit path — it is a no-op unless a review was
-   actually deferred, and it clears the flag first so it can never fire twice. */
-function resumeDeferredNewDayReview(){
-  if(!newDayDeferredByDivergence) return;
-  newDayDeferredByDivergence = false;
-  maybeShowNewDayModal();
+  // This now runs automatically from inside runBackgroundSync(), on the very
+  // first launch, before the app shell exists yet — the same reason
+  // runBackgroundSync() itself guards its own render call at the end. A
+  // render here is only meaningful (and only safe) once #mainContent exists.
+  if(document.getElementById('mainContent')){
+    renderMain();
+    updateNavActiveState();
+    updateNavBadges();
+  }
 }
 
 
@@ -14510,17 +14539,9 @@ async function init(){
     runBackgroundSync().then(()=>{
       revealApp();
     }).then(()=>{
-      // Ordered BEFORE the New Day review deliberately: New Day marks
-      // unresolved tasks as missed and writes that up to Supabase, so it must
-      // never run against data the person hasn't confirmed is the right copy.
-      // If a divergence prompt is showing, New Day waits until it's resolved.
-      if(maybeShowDivergenceModal()){
-        // Stand aside, but leave a note so resolution can pick this back up.
-        // New Day writes 'missed' statuses up to Supabase, so it must never
-        // run against data the person hasn't confirmed is the right copy.
-        newDayDeferredByDivergence = true;
-        return;
-      }
+      // Divergence (if any) is now resolved automatically inside
+      // runBackgroundSync(), above, before this .then() ever runs — so there
+      // is nothing left to stand aside for. New Day can run immediately.
       maybeShowNewDayModal();
     }).catch((e)=>{
       console.error('Startup sync chain failed unexpectedly — revealing app anyway', e);
